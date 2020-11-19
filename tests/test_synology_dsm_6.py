@@ -470,3 +470,14 @@ class TestSynologyDSM6:
         assert dsm_6.surveillance_station.get_home_mode_status()
         assert dsm_6.surveillance_station.set_home_mode(False)
         assert dsm_6.surveillance_station.set_home_mode(True)
+
+    def test_hyper_backup(self, dsm_6):
+        """Test HyperBackup."""
+        assert dsm_6.api.backup
+        assert not dsm_6.api.backup.get_all_tasks()
+
+        dsm_6.api.backup.update()
+        assert dsm_6.api.backup.get_all_tasks()
+        assert dsm_6.api.backup.get_task(1)
+        assert dsm_6.api.backup.get_task(2)
+        assert dsm_6.api.backup.get_task(3)
