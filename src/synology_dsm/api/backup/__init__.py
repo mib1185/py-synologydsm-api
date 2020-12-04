@@ -30,10 +30,10 @@ class SynoBackup:
                 )["data"]
             )
 
-    def get_all_tasks(self):
+    def get_all_tasks(self) -> dict:
         """Return a list of all tasks."""
         return self._data.values()
 
-    def get_task(self, task_id):
+    def get_task(self, task_id) -> dict:
         """Return task matching task_id."""
         return self._data[task_id]

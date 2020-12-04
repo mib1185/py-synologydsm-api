@@ -24,61 +24,61 @@ class SynoBackupTask:
         self._data = data
 
     @property
-    def as_dict(self):
+    def as_dict(self) -> dict:
         """Return all details as dictionary."""
         return self._data
 
     @property
-    def data_enc(self):
+    def data_enc(self) -> bool:
         """Return data encryption."""
         return self._data.get(PROP_DATA_ENCRYPTION)
 
     @property
-    def data_type(self):
+    def data_type(self) -> str:
         """Return data type."""
         return self._data.get(PROP_DATA_TYPE)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return name."""
         return self._data.get(PROP_NAME)
 
     @property
-    def source(self):
+    def source(self) -> dict:
         """Return source."""
         return self._data.get(PROP_SOURCE)
 
     @property
-    def state(self):
+    def state(self) -> str:
         """Return state."""
         return self._data.get(PROP_STATE)
 
     @property
-    def status(self):
+    def status(self) -> str:
         """Return status."""
         return self._data.get(PROP_STATUS)
 
     @property
-    def target_id(self):
+    def target_id(self) -> str:
         """Return target id."""
         return self._data.get(PROP_TARGET_ID)
 
     @property
-    def target_type(self):
+    def target_type(self) -> str:
         """Return target type."""
         return self._data.get(PROP_TARGET_TYPE)
 
     @property
-    def task_id(self):
+    def task_id(self) -> int:
         """Return task id."""
         return self._data.get(PROP_TASKID)
 
     @property
-    def transfer_type(self):
+    def transfer_type(self) -> str:
         """Return transfer type."""
         return self._data.get(PROP_TRANSFER_TYPE)
 
     @property
-    def type(self):
+    def type(self) -> str:
         """Return type."""
         return self._data.get(PROP_TYPE)
