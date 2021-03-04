@@ -473,11 +473,11 @@ class TestSynologyDSM6:
 
     def test_hyper_backup(self, dsm_6):
         """Test HyperBackup."""
-        assert dsm_6.api.backup
-        assert not dsm_6.api.backup.get_all_tasks()
+        assert dsm_6.backup
+        assert not dsm_6.backup.get_all_tasks()
 
-        dsm_6.api.backup.update()
-        assert dsm_6.api.backup.get_all_tasks()
-        assert dsm_6.api.backup.get_task(1)
-        assert dsm_6.api.backup.get_task(2)
-        assert dsm_6.api.backup.get_task(3)
+        dsm_6.backup.update()
+        assert dsm_6.backup.get_all_tasks()
+        assert dsm_6.backup.get_task(1)
+        assert dsm_6.backup.get_task(2)
+        assert dsm_6.backup.get_task(3)

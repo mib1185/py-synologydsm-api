@@ -1,4 +1,7 @@
 """HyperBackup task data."""
+from typing import Any
+from typing import Dict
+
 from .const import PROP_DATA_ENCRYPTION
 from .const import PROP_DATA_TYPE
 from .const import PROP_NAME
@@ -15,16 +18,16 @@ from .const import PROP_TYPE
 class SynoBackupTask:
     """Class containing HyperBackup task data."""
 
-    def __init__(self, data):
+    def __init__(self, data: Dict[str, Any]):
         """Initialize a HyperBackup task."""
         self._data = data
 
-    def update(self, data):
+    def update(self, data: Dict[str, Any]):
         """Update the task."""
         self._data = data
 
     @property
-    def as_dict(self) -> dict:
+    def as_dict(self) -> Dict[str, Any]:
         """Return all details as dictionary."""
         return self._data
 
@@ -44,7 +47,7 @@ class SynoBackupTask:
         return self._data.get(PROP_NAME)
 
     @property
-    def source(self) -> dict:
+    def source(self) -> Dict[str, Any]:
         """Return source."""
         return self._data.get(PROP_SOURCE)
 
