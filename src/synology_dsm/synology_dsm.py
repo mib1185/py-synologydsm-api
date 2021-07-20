@@ -301,14 +301,14 @@ class SynologyDSM:
                     url, params=params, timeout=self._timeout, **kwargs
                 )
 
-            if params["api"] == API_AUTH:
+            if params["api"] == API_AUTH:  # pragma: no cover
                 self._debuglog(
                     "Request url: "
                     + response.url.replace(params["account"], "********").replace(
                         params["passwd"], "********"
                     )
                 )
-            else:
+            else:  # pragma: no cover
                 self._debuglog("Request url: " + response.url)
             self._debuglog("Request status_code: " + str(response.status_code))
             self._debuglog("Request headers: " + str(response.headers))
