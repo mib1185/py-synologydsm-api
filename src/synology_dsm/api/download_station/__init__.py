@@ -1,6 +1,7 @@
 """Synology DownloadStation API wrapper."""
 from .task import SynoDownloadTask
 
+from synology_dsm import SynologyDSM
 
 class SynoDownloadStation:
     """An implementation of a Synology DownloadStation."""
@@ -10,7 +11,7 @@ class SynoDownloadStation:
     STAT_API_KEY = "SYNO.DownloadStation.Statistic"
     TASK_API_KEY = "SYNO.DownloadStation.Task"
 
-    def __init__(self, dsm):
+    def __init__(self, dsm: SynologyDSM):
         """Initialize a Download Station."""
         self._dsm = dsm
         self._tasks_by_id = {}
@@ -19,7 +20,7 @@ class SynoDownloadStation:
             "file",
         ]  # Can contain: detail, transfer, file, tracker, peer
 
-    def update(self):
+    def update(self) -> None:
         """Update tasks from API."""
         self._tasks_by_id = {}
         list_data = self._dsm.get(

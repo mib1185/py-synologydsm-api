@@ -1,8 +1,12 @@
 """Class to interact with Synology DSM."""
+from __future__ import annotations
+
 import socket
 from json import JSONDecodeError
+from typing import Any
 from urllib.parse import quote
 
+import requests
 import urllib3
 from requests import Session
 from requests.exceptions import RequestException
@@ -45,10 +49,10 @@ class SynologyDSM:
         password: str,
         use_https: bool = False,
         verify_ssl: bool = False,
-        timeout: int = None,
-        device_token: str = None,
+        timeout: int | None = None,
+        device_token: str | None = None,
         debugmode: bool = False,
-    ):
+    ) -> None:
         """Constructor method."""
         self.username = username
         self._password = password
@@ -61,24 +65,24 @@ class SynologyDSM:
         self._session.verify = self._verify
 
         # Login
-        self._session_id = None
-        self._syno_token = None
+        self._session_id: str | None = None
+        self._syno_token: str | None = None
         self._device_token = device_token
 
         # Services
         self._apis = {
             "SYNO.API.Info": {"maxVersion": 1, "minVersion": 1, "path": "query.cgi"}
         }
-        self._download = None
-        self._information = None
-        self._network = None
-        self._security = None
-        self._share = None
-        self._storage = None
-        self._surveillance = None
-        self._system = None
-        self._utilisation = None
-        self._upgrade = None
+        self._download: SynoDownloadStation | None = None
+        self._information: SynoDSMInformation | None = None
+        self._network: SynoDSMNetwork | None = None
+        self._security: SynoCoreSecurity | None = None
+        self._share: SynoCoreShare | None = None
+        self._storage: SynoStorage | None = None
+        self._surveillance: SynoSurveillanceStation | None = None
+        self._system: SynoCoreSystem | None = None
+        self._utilisation: SynoCoreUtilization | None = None
+        self._upgrade: SynoCoreUpgrade | None = None
 
         # Build variables
         if use_https:
@@ -91,7 +95,7 @@ class SynologyDSM:
         else:
             self._base_url = f"http://{dsm_ip}:{dsm_port}"
 
-    def _debuglog(self, message: str):
+    def _debuglog(self, message: str) -> None:
         """Outputs message if debug mode is enabled."""
         if self._debugmode:
             print("DEBUG: " + message)
@@ -119,18 +123,18 @@ class SynologyDSM:
 
         return f"{self._base_url}/webapi/{self.apis[api]['path']}?"
 
-    def discover_apis(self):
+    def discover_apis(self) -> None:
         """Retreives available API infos from the NAS."""
         if self._apis.get(API_AUTH):
             return
         self._apis = self.get(API_INFO, "query")["data"]
 
     @property
-    def apis(self):
+    def apis(self) -> dict[str, dict[str, Any]]:
         """Gets available API infos from the NAS."""
         return self._apis
 
-    def login(self, otp_code: str = None) -> bool:
+    def login(self, otp_code: str | None = None) -> bool:
         """Create a logged session."""
         # First reset the session
         self._debuglog("Creating new session")
@@ -215,7 +219,7 @@ class SynologyDSM:
         params: dict = None,
         retry_once: bool = True,
         **kwargs,
-    ):
+    ) -> bytes | dict[str, Any]:
         """Handles API request."""
         # Discover existing APIs
         if api != API_INFO:
@@ -274,7 +278,9 @@ class SynologyDSM:
 
         return response
 
-    def _execute_request(self, method: str, url: str, params: dict, **kwargs):
+    def _execute_request(
+        self, method: str, url: str, params: dict[str, str], **kwargs: Any
+    ) -> bytes | dict[str, Any]:
         """Function to execute and handle a request."""
         # Execute Request
         try:
@@ -320,7 +326,9 @@ class SynologyDSM:
         except (RequestException, JSONDecodeError) as exp:
             raise SynologyDSMRequestException(exp) from exp
 
-    def update(self, with_information: bool = False, with_network: bool = False):
+    def update(
+        self, with_information: bool = False, with_network: bool = False
+    ) -> None:
         """Updates the various instanced modules."""
         if self._download:
             self._download.update()
@@ -352,7 +360,7 @@ class SynologyDSM:
         if self._upgrade:
             self._upgrade.update()
 
-    def reset(self, api: any) -> bool:
+    def reset(self, api: Any) -> bool:
         """Reset an API to avoid fetching in on update."""
         if isinstance(api, str):
             if api in ("information", SynoDSMInformation.API_KEY):

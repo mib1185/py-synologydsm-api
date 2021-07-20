@@ -1,11 +1,12 @@
 """Helpers."""
+from __future__ import annotations
 
 
 class SynoFormatHelper:
     """Class containing various formatting functions."""
 
     @staticmethod
-    def bytes_to_readable(num):
+    def bytes_to_readable(num: float | int) -> str:
         """Converts bytes to a human readable format."""
         if num < 512:
             return "0 Kb"
@@ -19,28 +20,28 @@ class SynoFormatHelper:
         return "%.1f%s" % (num, "Yb")
 
     @staticmethod
-    def bytes_to_megabytes(num):
+    def bytes_to_megabytes(num: float | int) -> float | int:
         """Converts bytes to megabytes."""
         var_mb = num / 1024.0 / 1024.0
 
         return round(var_mb, 1)
 
     @staticmethod
-    def bytes_to_gigabytes(num):
+    def bytes_to_gigabytes(num: float | int) -> float | int:
         """Converts bytes to gigabytes."""
         var_gb = num / 1024.0 / 1024.0 / 1024.0
 
         return round(var_gb, 1)
 
     @staticmethod
-    def bytes_to_terrabytes(num):
+    def bytes_to_terrabytes(num: float | int) -> float | int:
         """Converts bytes to terrabytes."""
         var_tb = num / 1024.0 / 1024.0 / 1024.0 / 1024.0
 
         return round(var_tb, 1)
 
     @staticmethod
-    def megabytes_to_bytes(num):
+    def megabytes_to_bytes(num: float | int) -> float | int:
         """Converts megabytes to bytes."""
         var_bytes = num * 1024.0 * 1024.0
 
