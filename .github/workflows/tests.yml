@@ -141,6 +141,7 @@ jobs:
 
   analyze:
     name: Analyze
+    if: ${{ !contains(github.ref, 'dependabot') }}
     runs-on: ubuntu-latest
     needs: tests
     permissions:
