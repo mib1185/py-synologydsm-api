@@ -2,8 +2,8 @@
 Python API for Synology DSM
 ===========================
 
-.. image:: https://github.com/hacf-fr/synologydsm-api/workflows/Tests/badge.svg
-    :target: https://github.com/hacf-fr/synologydsm-api/actions?query=workflow%3ATests+branch%3Amaster
+.. image:: https://github.com/mib1185/py-synologydsm-api/workflows/Tests/badge.svg
+    :target: https://github.com/mib1185/py-synologydsm-api/actions?query=workflow%3ATests+branch%3Amaster
 
 .. image:: https://img.shields.io/pypi/v/synologydsm-api.svg
     :alt: Library version
@@ -27,7 +27,7 @@ Installation
 
 .. code-block:: bash
 
-    [sudo] pip install synologydsm-api
+    [sudo] pip install py-synologydsm-api
 
 
 Usage
