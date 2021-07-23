@@ -34,7 +34,7 @@ class TestSynologyDSM:
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
 
-    @pytest.mark.parametrize("version", [5, 6])
+    @pytest.mark.parametrize("version", [5, 6, 7])
     def test_login_basic_failed(self, version):
         """Test basic failed login."""
         dsm = SynologyDSMMock(
@@ -55,7 +55,7 @@ class TestSynologyDSM:
         assert error_value["reason"] == "Max Tries (if auto blocking is set to true)"
         assert error_value["details"] == USER_MAX_TRY
 
-    @pytest.mark.parametrize("version", [5, 6])
+    @pytest.mark.parametrize("version", [5, 6, 7])
     def test_login_2sa_failed(self, version):
         """Test failed login with 2SA."""
         dsm = SynologyDSMMock(
@@ -94,7 +94,7 @@ class TestSynologyDSM:
         assert dsm._syno_token is None
         assert dsm._device_token is None
 
-    @pytest.mark.parametrize("version", [5, 6])
+    @pytest.mark.parametrize("version", [5, 6, 7])
     def test_connection_failed(self, version):
         """Test failed connection."""
         # No internet
@@ -209,7 +209,7 @@ class TestSynologyDSM:
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
 
-    @pytest.mark.parametrize("version", [5, 6])
+    @pytest.mark.parametrize("version", [5, 6, 7])
     def test_login_failed(self, version):
         """Test failed login."""
         dsm = SynologyDSMMock(
@@ -255,7 +255,7 @@ class TestSynologyDSM:
         assert dsm.apis.get(API_AUTH)
         assert not dsm._session_id
 
-    @pytest.mark.parametrize("version", [5, 6])
+    @pytest.mark.parametrize("version", [5, 6, 7])
     def test_request_timeout(self, version):
         """Test request timeout."""
         dsm = SynologyDSMMock(
