@@ -153,8 +153,6 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        language: ["python"]
 
     steps:
       - name: Checkout repository
@@ -164,9 +162,10 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
         with:
-          languages: ${{ matrix.language }}
+          languages: python
           setup-python-dependencies: true
-          paths: src
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
+        with:
+          paths: src
