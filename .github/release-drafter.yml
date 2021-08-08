@@ -6,7 +6,7 @@ categories:
   - title: ":fire: Removals and Deprecations"
     label: "removal"
   - title: ":beetle: Fixes"
-    label: 
+    labels:
       - "bug"
       - "bugfix"
   - title: ":racehorse: Performance"
