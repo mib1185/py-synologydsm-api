@@ -304,7 +304,9 @@ class SynologyDSM:
                     url, params=params, timeout=self._timeout, **kwargs
                 )
 
-            if params["api"] == API_AUTH:  # pragma: no cover
+            if all(
+                [params["api"] == API_AUTH, params.get("account"), params.get("passwd")]
+            ):  # pragma: no cover
                 self._debuglog(
                     "Request url: "
                     + response.url.replace(params["account"], "********").replace(
