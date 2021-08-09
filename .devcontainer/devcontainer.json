@@ -2,7 +2,7 @@
   "name": "Python Synology DSM API",
   "context": "..",
   "dockerFile": "Dockerfile",
-  "postCreateCommand": "pre-commit install",
+  "postCreateCommand": "scripts/setup",
   "containerEnv": { "DEVCONTAINER": "1" },
   "runArgs": ["-e", "GIT_EDITOR=code --wait"],
   "extensions": [
