@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-synologydsm-api"
-version = "1.0.3"
+version = "1.0.4"
 description = "Python API for communication with Synology DSM"
 authors = ["Michael Brussk (mib1185)", "Quentin POLLET (Quentame)", "FG van Zeelst (ProtoThis)"]
 license = "MIT"
