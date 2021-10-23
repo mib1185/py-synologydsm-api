@@ -77,3 +77,30 @@ jobs:
           tag: ${{ steps.check-version.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  analyze:
+    name: Analyze
+    if: ${{ !contains(github.ref, 'dependabot') }}
+    runs-on: ubuntu-latest
+    needs: release
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: python
+          setup-python-dependencies: true
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
