@@ -5,15 +5,15 @@ Python API for Synology DSM
 .. image:: https://github.com/mib1185/py-synologydsm-api/workflows/Tests/badge.svg
     :target: https://github.com/mib1185/py-synologydsm-api/actions?query=workflow%3ATests+branch%3Amaster
 
-.. image:: https://img.shields.io/pypi/v/synologydsm-api.svg
+.. image:: https://img.shields.io/pypi/v/py-synologydsm-api.svg
     :alt: Library version
     :target: https://pypi.org/project/py-synologydsm-api
 
-.. image:: https://img.shields.io/pypi/pyversions/synologydsm-api.svg
+.. image:: https://img.shields.io/pypi/pyversions/py-synologydsm-api.svg
     :alt: Supported versions
     :target: https://pypi.org/project/py-synologydsm-api
 
-.. image:: https://pepy.tech/badge/synologydsm-api
+.. image:: https://pepy.tech/badge/py-synologydsm-api
     :alt: Downloads
     :target: https://pypi.org/project/py-synologydsm-api
 
