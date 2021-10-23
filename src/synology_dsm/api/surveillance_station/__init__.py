@@ -2,6 +2,7 @@
 from .camera import SynoCamera
 from .const import MOTION_DETECTION_BY_SURVEILLANCE
 from .const import MOTION_DETECTION_DISABLED
+from .const import SNAPSHOT_PROFILE_BALANCED
 
 
 class SynoSurveillanceStation:
@@ -72,10 +73,19 @@ class SynoSurveillanceStation:
             return getattr(self._cameras_by_id[camera_id].live_view, video_format)
         return self._cameras_by_id[camera_id].live_view
 
-    def get_camera_image(self, camera_id):
-        """Return bytes of camera image for camera matching camera_id."""
+    def get_camera_image(self, camera_id, profile=SNAPSHOT_PROFILE_BALANCED):
+        """Return bytes of camera image for camera matching camera_id.
+
+        Args:
+            camera_id: ID of the camera we want to take a snapshot from
+            profile: SNAPSHOT_PROFILE_HIGH_QUALITY |
+                     SNAPSHOT_PROFILE_BALANCED |
+                     SNAPSHOT_PROFILE_LOW_BANDWIDTH
+        """
         return self._dsm.get(
-            self.CAMERA_API_KEY, "GetSnapshot", {"id": camera_id, "cameraId": camera_id}
+            self.CAMERA_API_KEY,
+            "GetSnapshot",
+            {"id": camera_id, "cameraId": camera_id, "profileType": profile},
         )
 
     def enable_camera(self, camera_id):
