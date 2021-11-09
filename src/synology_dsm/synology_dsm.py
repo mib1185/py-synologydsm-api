@@ -18,6 +18,7 @@ from .api.dsm.information import SynoDSMInformation
 from .api.dsm.network import SynoDSMNetwork
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
+from .api.virtual_machine_manager.guest import SynoVirtualMachineManager
 from .const import API_AUTH
 from .const import API_INFO
 from .const import SENSITIV_PARAMS
@@ -48,7 +49,7 @@ class SynologyDSM:
         dsm_port: int,
         username: str,
         password: str,
-        use_https: bool = False,
+        use_https: bool = True,
         verify_ssl: bool = False,
         timeout: int = None,
         device_token: str = None,
@@ -84,6 +85,8 @@ class SynologyDSM:
         self._system = None
         self._utilisation = None
         self._upgrade = None
+        self._guests = None
+
 
         # Build variables
         if use_https:
@@ -362,6 +365,9 @@ class SynologyDSM:
         if self._surveillance:
             self._surveillance.update()
 
+        if self._guests:
+            self._guests.update()
+
         if self._system:
             self._system.update()
 
@@ -400,6 +406,9 @@ class SynologyDSM:
             if api == SynoSurveillanceStation.API_KEY:
                 self._surveillance = None
                 return True
+            if api == SynoVirtualMachineManager.API_KEY:
+                self._guests = None
+                return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
             return True
@@ -423,6 +432,9 @@ class SynologyDSM:
             return True
         if isinstance(api, SynoSurveillanceStation):
             self._surveillance = None
+            return True
+        if isinstance(api, SynoVirtualMachineManager):
+            self._guests = None
             return True
         return False
 
@@ -495,3 +507,10 @@ class SynologyDSM:
         if not self._utilisation:
             self._utilisation = SynoCoreUtilization(self)
         return self._utilisation
+
+    @property
+    def virtual_machine_manager(self) -> SynoVirtualMachineManager:
+        """Gets NAS utilisation informations."""
+        if not self._guests:
+            self._guests = SynoVirtualMachineManager(self)
+        return self._guests
