@@ -1,1 +1,1 @@
-"""Synology Storage API models."""
+"""Synology Virtual Machine Manager API models."""

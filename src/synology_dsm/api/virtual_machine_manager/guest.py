@@ -1,9 +1,9 @@
-"""DSM Storage data."""
+"""DSM Virtual Machine data."""
 from synology_dsm.helpers import SynoFormatHelper
 
 
 class SynoVirtualMachineManager:
-    """Class containing Storage data."""
+    """Class containing Virtual Machine Guests"""
 
     API_KEY = "SYNO.Virtualization.API.Guest"
     ACTION_API_KEY = "SYNO.Virtualization.API.Guest.Action"
@@ -14,11 +14,10 @@ class SynoVirtualMachineManager:
         self._data = {}
 
     def update(self):
-        """Updates storage data."""
+        """Updates Virtual Machine Guest data."""
         raw_data = self._dsm.get(self.API_KEY, "list")
         if raw_data:
             self._data = raw_data["data"]
-          #  print(raw_data)
 
     # Root
     @property
@@ -46,14 +45,15 @@ class SynoVirtualMachineManager:
         return self.get_guest(guest_id).get("guest_name")
 
     def guest_status(self, guest_id):
-        """Gets storage env."""
+        """Gets Status of Guest (Shutdown, Running etc)"""
         return self.get_guest(guest_id).get("status")
 
     def guest_network_name(self, guest_id):
-        """Gets storage env."""
+        """Gets Network Name of Guest."""
         return self.get_guest(guest_id).get("network_name")
 
     def poweron(self, guest_id, guest_name):
+        """Power on a virtual machine"""
         res = self._dsm.post(
             self.ACTION_API_KEY,
             "poweron",
@@ -65,6 +65,7 @@ class SynoVirtualMachineManager:
         self.update()
 
     def shutdown(self, guest_id, guest_name):
+        """Gracefully Shutdown a virtual machine"""
         res = self._dsm.post(
             self.ACTION_API_KEY,
             "shutdown",
@@ -76,6 +77,7 @@ class SynoVirtualMachineManager:
         self.update()
     
     def poweroff(self, guest_id, guest_name):
+        """Force Shutdown a virtual machine"""
         res = self._dsm.post(
             self.ACTION_API_KEY,
             "poweroff",
