@@ -49,7 +49,7 @@ class SynologyDSM:
         dsm_port: int,
         username: str,
         password: str,
-        use_https: bool = True,
+        use_https: bool = False,
         verify_ssl: bool = False,
         timeout: int = None,
         device_token: str = None,
