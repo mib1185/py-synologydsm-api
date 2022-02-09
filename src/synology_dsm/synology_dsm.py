@@ -262,10 +262,10 @@ class SynologyDSM:
         url = self._build_url(api)
 
         # Request data
-        response = self._execute_request(request_method, url, params, **kwargs)
-        self._debuglog("Request Method: " + request_method)
-        self._debuglog("Successful returned data")
         self._debuglog("API: " + api)
+        self._debuglog("Request Method: " + request_method)
+        response = self._execute_request(request_method, url, params, **kwargs)
+        self._debuglog("Successful returned data")
         self._debuglog("RESPONSE: " + str(response))
 
         # Handle data errors
@@ -314,8 +314,8 @@ class SynologyDSM:
                         quote(params[param]), "********"
                     )
             self._debuglog("Request url: " + response_url)
-            self._debuglog("Request status_code: " + str(response.status_code))
-            self._debuglog("Request headers: " + str(response.headers))
+            self._debuglog("Response status_code: " + str(response.status_code))
+            self._debuglog("Response headers: " + str(response.headers))
 
             if response.status_code == 200:
                 # We got a DSM response
