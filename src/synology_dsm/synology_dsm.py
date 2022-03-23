@@ -149,7 +149,6 @@ class SynologyDSM:
             # "enable_syno_token": "yes",
             "enable_device_token": "yes",
             "device_name": socket.gethostname(),
-            "format": "sid",
         }
 
         if otp_code:
