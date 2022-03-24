@@ -201,6 +201,14 @@ class TestSynologyDSM6:
         assert dsm_6.upgrade.available_version == "DSM 6.2.3-25426 Update 2"
         assert dsm_6.upgrade.reboot_needed == "now"
         assert dsm_6.upgrade.service_restarts == "some"
+        assert dsm_6.upgrade.available_version_details == {
+            "buildnumber": 25426,
+            "major": 6,
+            "micro": 3,
+            "minor": 2,
+            "nano": 2,
+            "os_name": "DSM",
+        }
 
     def test_storage(self, dsm_6):
         """Test storage roots."""

@@ -73,3 +73,20 @@ class TestSynologyDSM7:
         assert dsm_7._syno_token == SYNO_TOKEN
         assert dsm_7._device_token == DEVICE_TOKEN
         assert dsm_7.device_token == DEVICE_TOKEN
+
+    def test_upgrade(self, dsm_7):
+        """Test upgrade."""
+        assert dsm_7.upgrade
+        dsm_7.upgrade.update()
+        assert dsm_7.upgrade.update_available
+        assert dsm_7.upgrade.available_version == "7.0.1-42218 Update 3"
+        assert dsm_7.upgrade.reboot_needed == "now"
+        assert dsm_7.upgrade.service_restarts == "some"
+        assert dsm_7.upgrade.available_version_details == {
+            "buildnumber": 42218,
+            "major": 7,
+            "micro": 1,
+            "minor": 0,
+            "nano": 3,
+            "os_name": "DSM",
+        }
