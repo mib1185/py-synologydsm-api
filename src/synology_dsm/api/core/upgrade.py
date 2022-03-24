@@ -29,6 +29,11 @@ class SynoCoreUpgrade:
         return self._data.get("version")
 
     @property
+    def available_version_details(self):
+        """Gets details about available verion."""
+        return self._data.get("version_details")
+
+    @property
     def reboot_needed(self):
         """Gets info if reboot is needed."""
         return self._data.get("reboot")

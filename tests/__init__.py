@@ -48,6 +48,7 @@ from .api_data.dsm_7 import DSM_7_API_INFO
 from .api_data.dsm_7 import DSM_7_AUTH_LOGIN
 from .api_data.dsm_7 import DSM_7_AUTH_LOGIN_2SA
 from .api_data.dsm_7 import DSM_7_AUTH_LOGIN_2SA_OTP
+from .api_data.dsm_7 import DSM_7_CORE_UPGRADE_TRUE
 from .api_data.dsm_7 import DSM_7_DSM_INFORMATION
 from .const import DEVICE_TOKEN
 from .const import ERROR_AUTH_INVALID_CREDENTIALS
@@ -106,6 +107,7 @@ API_SWITCHER = {
         "AUTH_LOGIN": DSM_7_AUTH_LOGIN,
         "AUTH_LOGIN_2SA": DSM_7_AUTH_LOGIN_2SA,
         "AUTH_LOGIN_2SA_OTP": DSM_7_AUTH_LOGIN_2SA_OTP,
+        "CORE_UPGRADE": DSM_7_CORE_UPGRADE_TRUE,
         "DSM_INFORMATION": DSM_7_DSM_INFORMATION,
     },
 }
