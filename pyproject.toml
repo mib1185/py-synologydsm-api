@@ -54,7 +54,7 @@ pep8-naming = "^0.12.1"
 darglint = "^1.8.1"
 reorder-python-imports = "^2.5.0"
 pre-commit-hooks = "^3.4.0"
-sphinx-rtd-theme = "^0.5.2"
+sphinx-rtd-theme = "^1.0.0"
 Pygments = "^2.8.1"
 
 [tool.poetry.scripts]
