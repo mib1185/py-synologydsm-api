@@ -298,12 +298,14 @@ class SynologyDSM:
                 data = {}
                 data.update(params)
                 data.update(kwargs.pop("data", {}))
-                data["mimeType"] = "application/json"
+                if not 'headers' in kwargs:
+                    kwargs["headers"] = {}
+                kwargs["headers"]['Content-Type'] = 'application/x-www-form-urlencoded'
                 kwargs["data"] = data
                 self._debuglog("POST data: " + str(data))
 
                 response = self._session.post(
-                    url, params=params, timeout=self._timeout, **kwargs
+                    url, timeout=self._timeout, **kwargs
                 )
 
             response_url = response.url
