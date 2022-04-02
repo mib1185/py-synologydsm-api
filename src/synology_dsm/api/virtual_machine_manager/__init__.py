@@ -1,0 +1,1 @@
+"""Synology Virtual Machine Manager API models."""
