@@ -8,6 +8,7 @@ import urllib3
 from requests import Session
 from requests.exceptions import RequestException
 
+from .api.audio_station import SynoAudioStation
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
 from .api.core.system import SynoCoreSystem
@@ -84,6 +85,7 @@ class SynologyDSM:
         self._system = None
         self._utilisation = None
         self._upgrade = None
+        self._audio = None
 
         # Build variables
         if use_https:
@@ -494,3 +496,10 @@ class SynologyDSM:
         if not self._utilisation:
             self._utilisation = SynoCoreUtilization(self)
         return self._utilisation
+
+    @property
+    def audio_station(self) -> SynoAudioStation:
+        """Gets NAS AudtioStation."""
+        if not self._audio:
+            self._audio = SynoAudioStation(self)
+        return self._audio
