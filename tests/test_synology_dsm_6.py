@@ -468,7 +468,12 @@ class TestSynologyDSM6:
         assert dsm_6.surveillance_station.get_all_cameras()
         assert dsm_6.surveillance_station.get_camera(1)
         assert dsm_6.surveillance_station.get_camera_live_view_path(1)
-        assert dsm_6.surveillance_station.get_camera_live_view_path(1, "rtsp")
+        assert dsm_6.surveillance_station.get_camera_live_view_path(1, "rtsp") == "rtsp://syno:stmkey1234567890@nas.mywebsite.me:554/Sms=1.unicast"
+        assert dsm_6.surveillance_station.get_camera_live_view_path(1, "mjpeg_http") == "http://nas.mywebsite.me:5000/webapi/entry.cgi?api=SYNO.SurveillanceStation.Stream.VideoStreaming&version=1&method=Stream&format=mjpeg&cameraId=1&StmKey=\"stmkey1234567890\""
+        assert dsm_6.surveillance_station.get_camera_live_view_path(1, "multicast") == "rtsp://syno:stmkey1234567890@nas.mywebsite.me:554/Sms=1.multicast"
+        assert dsm_6.surveillance_station.get_camera_live_view_path(1, "mxpeg_http") == "http://nas.mywebsite.me:5000/webapi/entry.cgi?api=SYNO.SurveillanceStation.Stream.VideoStreaming&version=1&method=Stream&format=mxpeg&cameraId=1&StmKey=\"stmkey1234567890\""
+        assert dsm_6.surveillance_station.get_camera_live_view_path(1, "rtsp_http") == "rtsp://nas.mywebsite.me:5000/webman/3rdparty/SurveillanceStation/cgi/rtsp.cgi?Sms=1.unicast&DsId=0&StmKey=stmkey1234567890"
+        assert dsm_6.surveillance_station.get_camera_live_view_path(1, "rtsp") == "rtsp://syno:stmkey1234567890@nas.mywebsite.me:554/Sms=1.unicast"
 
         # Motion detection
         assert dsm_6.surveillance_station.enable_motion_detection(1).get("success")
