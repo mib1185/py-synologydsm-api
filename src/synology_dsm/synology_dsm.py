@@ -15,6 +15,7 @@ from .api.core.upgrade import SynoCoreUpgrade
 from .api.core.utilization import SynoCoreUtilization
 from .api.download_station import SynoDownloadStation
 from .api.dsm.information import SynoDSMInformation
+from .api.photos import SynoPhotos
 from .api.dsm.network import SynoDSMNetwork
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
@@ -77,6 +78,7 @@ class SynologyDSM:
         self._download = None
         self._information = None
         self._network = None
+        self._photos = None
         self._security = None
         self._share = None
         self._storage = None
@@ -215,6 +217,56 @@ class SynologyDSM:
     def post(self, api: str, method: str, params: dict = None, **kwargs):
         """Handles API POST request."""
         return self._request("POST", api, method, params, **kwargs)
+
+    def get_url(self, api: str, method: str, params: dict = None, **kwargs):
+        """Return the url to handle the request themselves (needed for home assistant)."""
+        return self._build_request(api, method, params, **kwargs)
+
+    def _build_request(
+        self,
+        api: str,
+        method: str,
+        params: dict = None,
+        **kwargs,
+    ):
+        """Build the url for the request."""
+        # Discover existing APIs
+        if api != API_INFO:
+            self.discover_apis()
+
+        # Check if logged
+        if not self._session_id and api not in [API_AUTH, API_INFO]:
+            self.login()
+
+        # Build request params
+        if not params:
+            params = {}
+        params["api"] = api
+        params["version"] = 1
+
+        if not self._is_weird_api_url(api):
+            # Check if API is available
+            if not self.apis.get(api):
+                raise SynologyDSMAPINotExistsException(api)
+            params["version"] = self.apis[api]["maxVersion"]
+            max_version = kwargs.pop("max_version", None)
+            if max_version and params["version"] > max_version:
+                params["version"] = max_version
+
+        params["method"] = method
+
+        if api == SynoStorage.API_KEY:
+            params["action"] = method
+        if self._session_id:
+            params["_sid"] = self._session_id
+        if self._syno_token:
+            params["SynoToken"] = self._syno_token
+
+        url = self._build_url(api)
+        encoded_params = "&".join(
+            f"{key}={quote(str(value))}" for key, value in params.items()
+        )
+        return url + encoded_params
 
     def _request(
         self,
@@ -375,6 +427,9 @@ class SynologyDSM:
             if hasattr(self, "_" + api):
                 setattr(self, "_" + api, None)
                 return True
+            if api == SynoPhotos.API_KEY:
+                self._photos = None
+                return True
             if api == SynoCoreSecurity.API_KEY:
                 self._security = None
                 return True
@@ -399,6 +454,9 @@ class SynologyDSM:
             if api == SynoSurveillanceStation.API_KEY:
                 self._surveillance = None
                 return True
+        if isinstance(api, SynoPhotos):
+            self._photos = None
+            return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
             return True
@@ -445,6 +503,13 @@ class SynologyDSM:
         if not self._network:
             self._network = SynoDSMNetwork(self)
         return self._network
+
+    @property
+    def photos(self) -> SynoPhotos:
+        """Gets NAS photos."""
+        if not self._photos:
+            self._photos = SynoPhotos(self)
+        return self._photos
 
     @property
     def security(self) -> SynoCoreSecurity:
