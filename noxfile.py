@@ -5,9 +5,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import nox
-import nox_poetry.patch
-from nox.sessions import Session
-
+import nox_poetry
 
 package = "synology_dsm"
 python_versions = ["3.9", "3.8", "3.7"]
@@ -24,7 +22,7 @@ nox.options.sessions = (
 )
 
 
-def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
+def activate_virtualenv_in_precommit_hooks(session: nox_poetry.Session) -> None:
     """Activate virtualenv in hooks installed by pre-commit.
 
     This function patches git hooks installed by pre-commit to activate the
@@ -75,8 +73,8 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
         hook.write_text("\n".join(lines))
 
 
-@nox.session(name="pre-commit", python="3.9")
-def precommit(session: Session) -> None:
+@nox_poetry.session(name="pre-commit", python="3.9")
+def precommit(session: nox_poetry.Session) -> None:
     """Lint using pre-commit."""
     args = session.posargs or ["run", "--all-files", "--show-diff-on-failure"]
     session.install(
@@ -97,16 +95,16 @@ def precommit(session: Session) -> None:
         activate_virtualenv_in_precommit_hooks(session)
 
 
-@nox.session(python="3.9")
-def safety(session: Session) -> None:
+@nox_poetry.session(python="3.9")
+def safety(session: nox_poetry.Session) -> None:
     """Scan dependencies for insecure packages."""
-    requirements = nox_poetry.export_requirements(session)
+    requirements = session.poetry.export_requirements()
     session.install("safety")
     session.run("safety", "check", f"--file={requirements}", "--bare")
 
 
-@nox.session(python=python_versions)
-def mypy(session: Session) -> None:
+@nox_poetry.session(python=python_versions)
+def mypy(session: nox_poetry.Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src", "tests"]
     session.install(".")
@@ -116,8 +114,8 @@ def mypy(session: Session) -> None:
         session.run("mypy", f"--python-executable={sys.executable}", "noxfile.py")
 
 
-@nox.session(python=python_versions)
-def tests(session: Session) -> None:
+@nox_poetry.session(python=python_versions)
+def tests(session: nox_poetry.Session) -> None:
     """Run the test suite."""
     session.install(".")
     session.install("coverage[toml]", "pytest", "pygments")
@@ -128,8 +126,8 @@ def tests(session: Session) -> None:
             session.notify("coverage")
 
 
-@nox.session
-def coverage(session: Session) -> None:
+@nox_poetry.session
+def coverage(session: nox_poetry.Session) -> None:
     """Produce the coverage report."""
     # Do not use session.posargs unless this is the only session.
     has_args = session.posargs and len(session._runner.manifest) == 1
@@ -143,16 +141,16 @@ def coverage(session: Session) -> None:
     session.run("coverage", *args)
 
 
-@nox.session(python=python_versions)
-def typeguard(session: Session) -> None:
+@nox_poetry.session(python=python_versions)
+def typeguard(session: nox_poetry.Session) -> None:
     """Runtime type checking using Typeguard."""
     session.install(".")
     session.install("pytest", "typeguard", "pygments")
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
 
 
-@nox.session(python=python_versions)
-def xdoctest(session: Session) -> None:
+@nox_poetry.session(python=python_versions)
+def xdoctest(session: nox_poetry.Session) -> None:
     """Run examples with xdoctest."""
     args = session.posargs or ["all"]
     session.install(".")
@@ -160,8 +158,8 @@ def xdoctest(session: Session) -> None:
     session.run("python", "-m", "xdoctest", package, *args)
 
 
-@nox.session(name="docs-build", python="3.8")
-def docs_build(session: Session) -> None:
+@nox_poetry.session(name="docs-build", python="3.8")
+def docs_build(session: nox_poetry.Session) -> None:
     """Build the documentation."""
     args = session.posargs or ["docs", "docs/_build"]
     session.install(".")
@@ -174,8 +172,8 @@ def docs_build(session: Session) -> None:
     session.run("sphinx-build", *args)
 
 
-@nox.session(python="3.8")
-def docs(session: Session) -> None:
+@nox_poetry.session(python="3.8")
+def docs(session: nox_poetry.Session) -> None:
     """Build and serve the documentation with live reloading on file changes."""
     args = session.posargs or ["--open-browser", "docs", "docs/_build"]
     session.install(".")
