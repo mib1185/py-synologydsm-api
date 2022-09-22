@@ -21,8 +21,10 @@ class SynoPhotos:
         )
         return res["data"]["list"]
 
-    def get_items(self, album_id, offset=0, limit=100, additional=[]):
+    def get_items(self, album_id, offset=0, limit=100, additional=None):
         """Get list of all items in an album."""
+        if additional is None:
+            additional = list()
         res = self._dsm.get(
             self.BROWSE_ITEM_API_KEY,
             "list",
@@ -35,8 +37,10 @@ class SynoPhotos:
         )
         return res["data"]["list"]
 
-    def get_search(self, keyword, offset=0, limit=100, additional=[]):
+    def get_search(self, keyword, offset=0, limit=100, additional=None):
         """Search for item with keyword."""
+        if additional is None:
+            additional = list()
         res = self._dsm.get(
             self.SEARCH_API_KEY,
             "list_item",
@@ -49,20 +53,20 @@ class SynoPhotos:
         )
         return res["data"]["list"]
 
-    def get_thumbnail(self, id, cache_key, size="xl"):
+    def get_thumbnail(self, image_id, cache_key, size="xl"):
         """Get the image."""
         res = self._dsm.get(
             self.THUMBNAIL_API_KEY,
             "get",
-            {"id": id, "cache_key": cache_key, "size": size, "type": "unit"},
+            {"id": image_id, "cache_key": cache_key, "size": size, "type": "unit"},
         )
         return res
 
-    def get_thumbnail_url(self, id, cache_key, size="xl"):
+    def get_thumbnail_url(self, image_id, cache_key, size="xl"):
         """Get the url to request the thumbnail."""
         res = self._dsm.get_url(
             self.THUMBNAIL_API_KEY,
             "get",
-            {"id": id, "cache_key": cache_key, "size": size, "type": "unit"},
+            {"id": image_id, "cache_key": cache_key, "size": size, "type": "unit"},
         )
         return res
