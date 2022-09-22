@@ -14,6 +14,7 @@ from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
 from synology_dsm.api.core.upgrade import SynoCoreUpgrade
+from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.core.utilization import SynoCoreUtilization
 from synology_dsm.api.download_station import SynoDownloadStation
 from synology_dsm.api.dsm.information import SynoDSMInformation
@@ -523,6 +524,30 @@ class TestSynologyDSM:
         assert dsm._information
         assert not dsm.reset(dsm.information)
         assert dsm._information
+
+    def test_reset_str_attr_photos(self, dsm):
+        """Test reset with string photos attr (should not be reset)."""
+        assert not dsm._photos
+        assert dsm.photos
+        assert dsm._photos
+        assert not dsm.reset("photos")
+        assert dsm._photos
+
+    def test_reset_str_key_photos(self, dsm):
+        """Test reset with string information API key (should not be reset)."""
+        assert not dsm._photos
+        assert dsm.photos
+        assert dsm._photos
+        assert not dsm.reset(SynoPhotos.API_KEY)
+        assert dsm._photos
+
+    def test_reset_object_photos(self, dsm):
+        """Test reset with information object (should not be reset)."""
+        assert not dsm._photos
+        assert dsm.photos
+        assert dsm._photos
+        assert not dsm.reset(dsm.photos)
+        assert dsm._photos
 
     def test_utilisation(self, dsm):
         """Test utilisation."""
