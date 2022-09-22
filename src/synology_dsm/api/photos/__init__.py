@@ -24,7 +24,7 @@ class SynoPhotos:
     def get_items(self, album_id, offset=0, limit=100, additional=None):
         """Get list of all items in an album."""
         if additional is None:
-            additional = list()
+            additional = []
         res = self._dsm.get(
             self.BROWSE_ITEM_API_KEY,
             "list",
@@ -40,7 +40,7 @@ class SynoPhotos:
     def get_search(self, keyword, offset=0, limit=100, additional=None):
         """Search for item with keyword."""
         if additional is None:
-            additional = list()
+            additional = []
         res = self._dsm.get(
             self.SEARCH_API_KEY,
             "list_item",

@@ -15,8 +15,8 @@ from .api.core.upgrade import SynoCoreUpgrade
 from .api.core.utilization import SynoCoreUtilization
 from .api.download_station import SynoDownloadStation
 from .api.dsm.information import SynoDSMInformation
-from .api.photos import SynoPhotos
 from .api.dsm.network import SynoDSMNetwork
+from .api.photos import SynoPhotos
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
 from .const import API_AUTH
@@ -219,7 +219,7 @@ class SynologyDSM:
         return self._request("POST", api, method, params, **kwargs)
 
     def get_url(self, api: str, method: str, params: dict = None, **kwargs):
-        """Return the url to handle the request themselves (needed for home assistant)."""
+        """Return the url to handle the request themselves."""
         return self._build_request(api, method, params, **kwargs)
 
     def _build_request(
