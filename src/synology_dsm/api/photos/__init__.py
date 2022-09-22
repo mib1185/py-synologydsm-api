@@ -1,9 +1,6 @@
 """Synology Photos API wrapper."""
 
-from typing import Container
 
-
-test dev-Container
 class SynoPhotos:
     """An implementation of a Synology Photos."""
 
