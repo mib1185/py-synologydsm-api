@@ -8,6 +8,7 @@ import urllib3
 from requests import Session
 from requests.exceptions import RequestException
 
+from .api.backup import SynoBackup
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
 from .api.core.system import SynoCoreSystem
@@ -74,6 +75,7 @@ class SynologyDSM:
         self._apis = {
             "SYNO.API.Info": {"maxVersion": 1, "minVersion": 1, "path": "query.cgi"}
         }
+        self._backup = None
         self._download = None
         self._information = None
         self._network = None
@@ -337,6 +339,9 @@ class SynologyDSM:
 
     def update(self, with_information: bool = False, with_network: bool = False):
         """Updates the various instanced modules."""
+        if self._backup:
+            self._backup.update()
+
         if self._download:
             self._download.update()
 
@@ -375,6 +380,9 @@ class SynologyDSM:
             if hasattr(self, "_" + api):
                 setattr(self, "_" + api, None)
                 return True
+            if api == SynoBackup.API_KEY:
+                self._backup = None
+                return True
             if api == SynoCoreSecurity.API_KEY:
                 self._security = None
                 return True
@@ -399,6 +407,9 @@ class SynologyDSM:
             if api == SynoSurveillanceStation.API_KEY:
                 self._surveillance = None
                 return True
+        if isinstance(api, SynoBackup):
+            self._backup = None
+            return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
             return True
@@ -424,6 +435,13 @@ class SynologyDSM:
             self._surveillance = None
             return True
         return False
+
+    @property
+    def backup(self) -> SynoBackup:
+        """Gets NAS HyperBackup."""
+        if not self._backup:
+            self._backup = SynoBackup(self)
+        return self._backup
 
     @property
     def download_station(self) -> SynoDownloadStation:
