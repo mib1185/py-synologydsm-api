@@ -1,6 +1,7 @@
 """Synology DownloadStation API wrapper."""
-from .task import SynoDownloadTask
 from synology_dsm.api import SynoBaseApi
+
+from .task import SynoDownloadTask
 
 
 class SynoDownloadStation(SynoBaseApi):

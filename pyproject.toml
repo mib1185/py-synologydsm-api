@@ -71,6 +71,10 @@ source = ["synology_dsm"]
 show_missing = true
 fail_under = 80
 
+[tool.isort]
+profile = "black"
+src_paths = ["src", "tests"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
