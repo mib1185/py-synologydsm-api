@@ -79,6 +79,7 @@ src_paths = ["src", "tests"]
 [tool.pylint.MAIN]
 ignore = [
     "tests",
+    "noxfile.py",
 ]
 
 [tool.pylint.BASIC]
@@ -96,6 +97,7 @@ disable = [
     "too-many-public-methods",
     "too-many-return-statements",
 ]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
