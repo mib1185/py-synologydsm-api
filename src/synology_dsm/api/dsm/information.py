@@ -1,15 +1,11 @@
 """DSM Information data."""
+from synology_dsm.api import SynoBaseApi
 
 
-class SynoDSMInformation:
+class SynoDSMInformation(SynoBaseApi):
     """Class containing Information data."""
 
     API_KEY = "SYNO.DSM.Info"
-
-    def __init__(self, dsm):
-        """Constructor methods."""
-        self._dsm = dsm
-        self._data = {}
 
     def update(self):
         """Updates information data."""

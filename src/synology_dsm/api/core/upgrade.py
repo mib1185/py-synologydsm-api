@@ -1,16 +1,12 @@
 """DSM Upgrade data and actions."""
+from synology_dsm.api import SynoBaseApi
 
 
-class SynoCoreUpgrade:
+class SynoCoreUpgrade(SynoBaseApi):
     """Class containing upgrade data and actions."""
 
     API_KEY = "SYNO.Core.Upgrade"
     API_SERVER_KEY = API_KEY + ".Server"
-
-    def __init__(self, dsm):
-        """Constructor method."""
-        self._dsm = dsm
-        self._data = {}
 
     def update(self):
         """Updates Upgrade data."""

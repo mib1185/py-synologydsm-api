@@ -1,15 +1,11 @@
 """DSM System data and actions."""
+from synology_dsm.api import SynoBaseApi
 
 
-class SynoCoreSystem:
+class SynoCoreSystem(SynoBaseApi):
     """Class containing System data and actions."""
 
     API_KEY = "SYNO.Core.System"
-
-    def __init__(self, dsm):
-        """Constructor method."""
-        self._dsm = dsm
-        self._data = {}
 
     def update(self):
         """Updates System data."""

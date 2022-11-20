@@ -3,9 +3,10 @@ from .camera import SynoCamera
 from .const import MOTION_DETECTION_BY_SURVEILLANCE
 from .const import MOTION_DETECTION_DISABLED
 from .const import SNAPSHOT_PROFILE_BALANCED
+from synology_dsm.api import SynoBaseApi
 
 
-class SynoSurveillanceStation:
+class SynoSurveillanceStation(SynoBaseApi):
     """An implementation of a Synology SurveillanceStation."""
 
     API_KEY = "SYNO.SurveillanceStation.*"
@@ -15,38 +16,33 @@ class SynoSurveillanceStation:
     HOME_MODE_API_KEY = "SYNO.SurveillanceStation.HomeMode"
     SNAPSHOT_API_KEY = "SYNO.SurveillanceStation.SnapShot"
 
-    def __init__(self, dsm):
-        """Initialize a Surveillance Station."""
-        self._dsm = dsm
-        self._cameras_by_id = {}
-
     def update(self):
         """Update cameras and motion settings with latest from API."""
-        self._cameras_by_id = {}
+        self._data = {}
         list_data = self._dsm.get(self.CAMERA_API_KEY, "List", max_version=7)["data"]
         for camera_data in list_data["cameras"]:
-            if camera_data["id"] in self._cameras_by_id:
-                self._cameras_by_id[camera_data["id"]].update(camera_data)
+            if camera_data["id"] in self._data:
+                self._data[camera_data["id"]].update(camera_data)
             else:
-                self._cameras_by_id[camera_data["id"]] = SynoCamera(camera_data)
+                self._data[camera_data["id"]] = SynoCamera(camera_data)
 
-        for camera_id in self._cameras_by_id:
-            self._cameras_by_id[camera_id].update_motion_detection(
+        for camera_id in self._data:
+            self._data[camera_id].update_motion_detection(
                 self._dsm.get(
                     self.CAMERA_EVENT_API_KEY, "MotionEnum", {"camId": camera_id}
                 )["data"]
             )
 
-        if not self._cameras_by_id:
+        if not self._data:
             return
 
         live_view_datas = self._dsm.get(
             self.CAMERA_API_KEY,
             "GetLiveViewPath",
-            {"idList": ",".join(str(k) for k in self._cameras_by_id)},
+            {"idList": ",".join(str(k) for k in self._data)},
         )["data"]
         for live_view_data in live_view_datas:
-            self._cameras_by_id[live_view_data["id"]].live_view.update(live_view_data)
+            self._data[live_view_data["id"]].live_view.update(live_view_data)
 
     # Global
     def get_info(self):
@@ -56,11 +52,11 @@ class SynoSurveillanceStation:
     # Camera
     def get_all_cameras(self):
         """Return a list of cameras."""
-        return self._cameras_by_id.values()
+        return self._data.values()
 
     def get_camera(self, camera_id):
         """Return camera matching camera_id."""
-        return self._cameras_by_id[camera_id]
+        return self._data[camera_id]
 
     def get_camera_live_view_path(self, camera_id, video_format=None):
         """Return camera live view path matching camera_id.
@@ -70,8 +66,8 @@ class SynoSurveillanceStation:
             video_format: mjpeg_http | multicast | mxpeg_http |  rtsp_http | rtsp.
         """
         if video_format:
-            return getattr(self._cameras_by_id[camera_id].live_view, video_format)
-        return self._cameras_by_id[camera_id].live_view
+            return getattr(self._data[camera_id].live_view, video_format)
+        return self._data[camera_id].live_view
 
     def get_camera_image(self, camera_id, profile=SNAPSHOT_PROFILE_BALANCED):
         """Return bytes of camera image for camera matching camera_id.
@@ -128,7 +124,7 @@ class SynoSurveillanceStation:
     # Motion
     def is_motion_detection_enabled(self, camera_id):
         """Return motion setting matching camera_id."""
-        return self._cameras_by_id[camera_id].is_motion_detection_enabled
+        return self._data[camera_id].is_motion_detection_enabled
 
     def enable_motion_detection(self, camera_id):
         """Enable motion detection for camera matching camera_id."""
