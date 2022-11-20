@@ -1,18 +1,20 @@
 """Synology DSM tests."""
 import pytest
 
-from . import SynologyDSMMock
-from . import VALID_HOST
-from . import VALID_HTTPS
-from . import VALID_OTP
-from . import VALID_PASSWORD
-from . import VALID_PORT
-from . import VALID_USER_2SA
-from . import VALID_VERIFY_SSL
-from .const import DEVICE_TOKEN
-from .const import SESSION_ID
 from synology_dsm.const import API_AUTH
 from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
+
+from . import (
+    VALID_HOST,
+    VALID_HTTPS,
+    VALID_OTP,
+    VALID_PASSWORD,
+    VALID_PORT,
+    VALID_USER_2SA,
+    VALID_VERIFY_SSL,
+    SynologyDSMMock,
+)
+from .const import DEVICE_TOKEN, SESSION_ID
 
 
 class TestSynologyDSM5:

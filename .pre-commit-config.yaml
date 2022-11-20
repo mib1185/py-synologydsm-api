@@ -33,12 +33,6 @@ repos:
         language: system
         types: [python]
         require_serial: true
-      - id: reorder-python-imports
-        name: Reorder python imports
-        entry: reorder-python-imports
-        language: system
-        types: [python]
-        args: [--application-directories=src]
       - id: trailing-whitespace
         name: Trim Trailing Whitespace
         entry: trailing-whitespace-fixer
@@ -49,3 +43,7 @@ repos:
     rev: v2.2.1
     hooks:
       - id: prettier
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort

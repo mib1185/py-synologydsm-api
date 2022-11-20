@@ -1,15 +1,6 @@
 """Synology DSM tests."""
 import pytest
 
-from . import SynologyDSMMock
-from . import USER_MAX_TRY
-from . import VALID_HOST
-from . import VALID_HTTPS
-from . import VALID_PASSWORD
-from . import VALID_PORT
-from . import VALID_USER
-from . import VALID_USER_2SA
-from . import VALID_VERIFY_SSL
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -19,15 +10,28 @@ from synology_dsm.api.download_station import SynoDownloadStation
 from synology_dsm.api.dsm.information import SynoDSMInformation
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
-from synology_dsm.const import API_AUTH
-from synology_dsm.const import API_INFO
-from synology_dsm.exceptions import SynologyDSMAPIErrorException
-from synology_dsm.exceptions import SynologyDSMAPINotExistsException
-from synology_dsm.exceptions import SynologyDSMLogin2SAFailedException
-from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
-from synology_dsm.exceptions import SynologyDSMLoginFailedException
-from synology_dsm.exceptions import SynologyDSMLoginInvalidException
-from synology_dsm.exceptions import SynologyDSMRequestException
+from synology_dsm.const import API_AUTH, API_INFO
+from synology_dsm.exceptions import (
+    SynologyDSMAPIErrorException,
+    SynologyDSMAPINotExistsException,
+    SynologyDSMLogin2SAFailedException,
+    SynologyDSMLogin2SARequiredException,
+    SynologyDSMLoginFailedException,
+    SynologyDSMLoginInvalidException,
+    SynologyDSMRequestException,
+)
+
+from . import (
+    USER_MAX_TRY,
+    VALID_HOST,
+    VALID_HTTPS,
+    VALID_PASSWORD,
+    VALID_PORT,
+    VALID_USER,
+    VALID_USER_2SA,
+    VALID_VERIFY_SSL,
+    SynologyDSMMock,
+)
 
 
 class TestSynologyDSM:

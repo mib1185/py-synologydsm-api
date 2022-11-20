@@ -1,6 +1,5 @@
 """SurveillanceStation camera."""
-from .const import MOTION_DETECTION_DISABLED
-from .const import RECORDING_STATUS
+from .const import MOTION_DETECTION_DISABLED, RECORDING_STATUS
 
 
 class SynoCamera:

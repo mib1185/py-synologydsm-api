@@ -1,14 +1,17 @@
 """Main conftest."""
 import pytest
 
-from . import SynologyDSMMock
-from . import VALID_HOST
-from . import VALID_HTTPS
-from . import VALID_PASSWORD
-from . import VALID_PORT
-from . import VALID_USER
-from . import VALID_VERIFY_SSL
 from synology_dsm.synology_dsm import SynologyDSM
+
+from . import (
+    VALID_HOST,
+    VALID_HTTPS,
+    VALID_PASSWORD,
+    VALID_PORT,
+    VALID_USER,
+    VALID_VERIFY_SSL,
+    SynologyDSMMock,
+)
 
 
 @pytest.fixture
