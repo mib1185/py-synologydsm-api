@@ -29,8 +29,8 @@ class SynoSurveillanceStation(SynoBaseApi):
             else:
                 self._data[camera_data["id"]] = SynoCamera(camera_data)
 
-        for camera_id in self._data:
-            self._data[camera_id].update_motion_detection(
+        for camera_id, camera in self._data.items():
+            camera.update_motion_detection(
                 self._dsm.get(
                     self.CAMERA_EVENT_API_KEY, "MotionEnum", {"camId": camera_id}
                 )["data"]

@@ -9,14 +9,14 @@ class SynoFormatHelper:
         """Converts bytes to a human readable format."""
         if num < 512:
             return "0 Kb"
-        elif num < 1024:
+        if num < 1024:
             return "1 Kb"
 
         for unit in ["", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb"]:
             if abs(num) < 1024.0:
-                return "%3.1f%s" % (num, unit)
+                return f"{round(num,1)}{unit}"
             num /= 1024.0
-        return "%.1f%s" % (num, "Yb")
+        return f"{round(num,1)}Yb"
 
     @staticmethod
     def bytes_to_megabytes(num):

@@ -88,7 +88,6 @@ class SynologyDSM:
         # Build variables
         if use_https:
             if not verify_ssl:
-                # https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings  # noqa: B950
                 # disable SSL warnings due to the auto-genenerated cert
                 urllib3.disable_warnings()
 
