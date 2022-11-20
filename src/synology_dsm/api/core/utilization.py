@@ -1,16 +1,12 @@
 """DSM Utilization data."""
+from synology_dsm.api import SynoBaseApi
 from synology_dsm.helpers import SynoFormatHelper
 
 
-class SynoCoreUtilization:
+class SynoCoreUtilization(SynoBaseApi):
     """Class containing Utilization data."""
 
     API_KEY = "SYNO.Core.System.Utilization"
-
-    def __init__(self, dsm):
-        """Constructor method."""
-        self._dsm = dsm
-        self._data = {}
 
     def update(self):
         """Updates utilization data."""

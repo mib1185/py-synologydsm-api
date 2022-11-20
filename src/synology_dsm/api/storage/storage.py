@@ -1,16 +1,12 @@
 """DSM Storage data."""
+from synology_dsm.api import SynoBaseApi
 from synology_dsm.helpers import SynoFormatHelper
 
 
-class SynoStorage:
+class SynoStorage(SynoBaseApi):
     """Class containing Storage data."""
 
     API_KEY = "SYNO.Storage.CGI.Storage"
-
-    def __init__(self, dsm):
-        """Constructor method."""
-        self._dsm = dsm
-        self._data = {}
 
     def update(self):
         """Updates storage data."""

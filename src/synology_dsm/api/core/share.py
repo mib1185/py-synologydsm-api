@@ -1,8 +1,9 @@
 """Shared Folders data."""
+from synology_dsm.api import SynoBaseApi
 from synology_dsm.helpers import SynoFormatHelper
 
 
-class SynoCoreShare:
+class SynoCoreShare(SynoBaseApi):
     """Class containing Share data."""
 
     API_KEY = "SYNO.Core.Share"
@@ -19,11 +20,6 @@ class SynoCoreShare:
         '"is_cold_storage_share"]',
         "shareType": "all",
     }
-
-    def __init__(self, dsm):
-        """Constructor method."""
-        self._dsm = dsm
-        self._data = {}
 
     def update(self):
         """Updates share data."""
