@@ -21,9 +21,9 @@ class SynoCoreShare(SynoBaseApi):
         "shareType": "all",
     }
 
-    def update(self):
+    async def update(self):
         """Updates share data."""
-        raw_data = self._dsm.post(self.API_KEY, "list", data=self.REQUEST_DATA)
+        raw_data = await self._dsm.post(self.API_KEY, "list", data=self.REQUEST_DATA)
         if raw_data:
             self._data = raw_data["data"]
 

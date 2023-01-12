@@ -15,10 +15,11 @@ class SynoDownloadStation(SynoBaseApi):
         "additional": "detail,file"
     }  # Can contain: detail, transfer, file, tracker, peer
 
-    def update(self):
+    async def update(self):
         """Update tasks from API."""
         self._data = {}
-        list_data = self._dsm.get(self.TASK_API_KEY, "List", self.REQUEST_DATA)["data"]
+        raw_data = await self._dsm.get(self.TASK_API_KEY, "List", self.REQUEST_DATA)
+        list_data = raw_data["data"]
         for task_data in list_data["tasks"]:
             if task_data["id"] in self._data:
                 self._data[task_data["id"]].update(task_data)
@@ -26,17 +27,17 @@ class SynoDownloadStation(SynoBaseApi):
                 self._data[task_data["id"]] = SynoDownloadTask(task_data)
 
     # Global
-    def get_info(self):
+    async def get_info(self):
         """Return general informations about the Download Station instance."""
-        return self._dsm.get(self.INFO_API_KEY, "GetInfo")
+        return await self._dsm.get(self.INFO_API_KEY, "GetInfo")
 
-    def get_config(self):
+    async def get_config(self):
         """Return configuration about the Download Station instance."""
-        return self._dsm.get(self.INFO_API_KEY, "GetConfig")
+        return await self._dsm.get(self.INFO_API_KEY, "GetConfig")
 
-    def get_stat(self):
+    async def get_stat(self):
         """Return statistic about the Download Station instance."""
-        return self._dsm.get(self.STAT_API_KEY, "GetInfo")
+        return await self._dsm.get(self.STAT_API_KEY, "GetInfo")
 
     # Downloads
     def get_all_tasks(self):
@@ -61,29 +62,29 @@ class SynoDownloadStation(SynoBaseApi):
         self.update()
         return res
 
-    def pause(self, task_id):
+    async def pause(self, task_id):
         """Pause a download task."""
-        res = self._dsm.get(
+        res = await self._dsm.get(
             self.TASK_API_KEY,
             "Pause",
             {"id": ",".join(task_id) if isinstance(task_id, list) else task_id},
         )
-        self.update()
+        await self.update()
         return res
 
-    def resume(self, task_id):
+    async def resume(self, task_id):
         """Resume a paused download task."""
-        res = self._dsm.get(
+        res = await self._dsm.get(
             self.TASK_API_KEY,
             "Resume",
             {"id": ",".join(task_id) if isinstance(task_id, list) else task_id},
         )
-        self.update()
+        await self.update()
         return res
 
-    def delete(self, task_id, force_complete=False):
+    async def delete(self, task_id, force_complete=False):
         """Delete a download task."""
-        res = self._dsm.get(
+        res = await self._dsm.get(
             self.TASK_API_KEY,
             "Delete",
             {
@@ -91,5 +92,5 @@ class SynoDownloadStation(SynoBaseApi):
                 "force_complete": force_complete,
             },
         )
-        self.update()
+        await self.update()
         return res

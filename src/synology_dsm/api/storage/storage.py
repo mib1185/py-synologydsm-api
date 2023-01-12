@@ -8,9 +8,9 @@ class SynoStorage(SynoBaseApi):
 
     API_KEY = "SYNO.Storage.CGI.Storage"
 
-    def update(self):
+    async def update(self):
         """Updates storage data."""
-        raw_data = self._dsm.get(self.API_KEY, "load_info")
+        raw_data = await self._dsm.get(self.API_KEY, "load_info")
         if raw_data:
             self._data = raw_data
             if raw_data.get("data"):

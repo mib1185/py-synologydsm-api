@@ -8,9 +8,9 @@ class SynoCoreUpgrade(SynoBaseApi):
     API_KEY = "SYNO.Core.Upgrade"
     API_SERVER_KEY = API_KEY + ".Server"
 
-    def update(self):
+    async def update(self):
         """Updates Upgrade data."""
-        raw_data = self._dsm.get(self.API_SERVER_KEY, "check")
+        raw_data = await self._dsm.get(self.API_SERVER_KEY, "check")
         if raw_data:
             self._data = raw_data["data"].get("update", raw_data["data"])
 

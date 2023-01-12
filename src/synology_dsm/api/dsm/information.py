@@ -7,11 +7,11 @@ class SynoDSMInformation(SynoBaseApi):
 
     API_KEY = "SYNO.DSM.Info"
 
-    def update(self):
+    async def update(self):
         """Updates information data."""
-        raw_data = self._dsm.get(self.API_KEY, "getinfo")
+        raw_data = await self._dsm.get(self.API_KEY, "getinfo")
         if raw_data:
-            self._data = raw_data["data"]
+            self._data: dict = raw_data["data"]
 
     @property
     def model(self):

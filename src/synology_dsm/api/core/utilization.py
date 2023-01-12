@@ -8,9 +8,9 @@ class SynoCoreUtilization(SynoBaseApi):
 
     API_KEY = "SYNO.Core.System.Utilization"
 
-    def update(self):
+    async def update(self):
         """Updates utilization data."""
-        raw_data = self._dsm.get(self.API_KEY, "get")
+        raw_data = await self._dsm.get(self.API_KEY, "get")
         if raw_data:
             self._data = raw_data["data"]
 

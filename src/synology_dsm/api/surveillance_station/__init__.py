@@ -19,10 +19,11 @@ class SynoSurveillanceStation(SynoBaseApi):
     HOME_MODE_API_KEY = "SYNO.SurveillanceStation.HomeMode"
     SNAPSHOT_API_KEY = "SYNO.SurveillanceStation.SnapShot"
 
-    def update(self):
+    async def update(self):
         """Update cameras and motion settings with latest from API."""
         self._data = {}
-        list_data = self._dsm.get(self.CAMERA_API_KEY, "List", max_version=7)["data"]
+        raw_data = await self._dsm.get(self.CAMERA_API_KEY, "List", max_version=7)
+        list_data = raw_data["data"]
         for camera_data in list_data["cameras"]:
             if camera_data["id"] in self._data:
                 self._data[camera_data["id"]].update(camera_data)
@@ -30,27 +31,26 @@ class SynoSurveillanceStation(SynoBaseApi):
                 self._data[camera_data["id"]] = SynoCamera(camera_data)
 
         for camera_id, camera in self._data.items():
-            camera.update_motion_detection(
-                self._dsm.get(
-                    self.CAMERA_EVENT_API_KEY, "MotionEnum", {"camId": camera_id}
-                )["data"]
+            motion_raw_data = await self._dsm.get(
+                self.CAMERA_EVENT_API_KEY, "MotionEnum", {"camId": camera_id}
             )
+            camera.update_motion_detection(motion_raw_data["data"])
 
         if not self._data:
             return
 
-        live_view_datas = self._dsm.get(
+        live_view_datas = await self._dsm.get(
             self.CAMERA_API_KEY,
             "GetLiveViewPath",
             {"idList": ",".join(str(k) for k in self._data)},
-        )["data"]
-        for live_view_data in live_view_datas:
+        )
+        for live_view_data in live_view_datas["data"]:
             self._data[live_view_data["id"]].live_view.update(live_view_data)
 
     # Global
-    def get_info(self):
+    async def get_info(self):
         """Return general informations about the Surveillance Station instance."""
-        return self._dsm.get(self.INFO_API_KEY, "GetInfo")
+        return await self._dsm.get(self.INFO_API_KEY, "GetInfo")
 
     # Camera
     def get_all_cameras(self):
@@ -72,7 +72,7 @@ class SynoSurveillanceStation(SynoBaseApi):
             return getattr(self._data[camera_id].live_view, video_format)
         return self._data[camera_id].live_view
 
-    def get_camera_image(self, camera_id, profile=SNAPSHOT_PROFILE_BALANCED):
+    async def get_camera_image(self, camera_id, profile=SNAPSHOT_PROFILE_BALANCED):
         """Return bytes of camera image for camera matching camera_id.
 
         Args:
@@ -81,28 +81,30 @@ class SynoSurveillanceStation(SynoBaseApi):
                      SNAPSHOT_PROFILE_BALANCED |
                      SNAPSHOT_PROFILE_LOW_BANDWIDTH
         """
-        return self._dsm.get(
+        return await self._dsm.get(
             self.CAMERA_API_KEY,
             "GetSnapshot",
             {"id": camera_id, "cameraId": camera_id, "profileType": profile},
         )
 
-    def enable_camera(self, camera_id):
+    async def enable_camera(self, camera_id):
         """Enable camera(s) - multiple ID or single ex 1 or 1,2,3."""
-        return self._dsm.get(self.CAMERA_API_KEY, "Enable", {"idList": camera_id})[
-            "success"
-        ]
+        raw_data = await self._dsm.get(
+            self.CAMERA_API_KEY, "Enable", {"idList": camera_id}
+        )
+        return raw_data["success"]
 
-    def disable_camera(self, camera_id):
+    async def disable_camera(self, camera_id):
         """Disable camera(s) - multiple ID or single ex 1 or 1,2,3."""
-        return self._dsm.get(self.CAMERA_API_KEY, "Disable", {"idList": camera_id})[
-            "success"
-        ]
+        raw_data = await self._dsm.get(
+            self.CAMERA_API_KEY, "Disable", {"idList": camera_id}
+        )
+        return raw_data["success"]
 
     # Snapshot
-    def capture_camera_image(self, camera_id, save=True):
+    async def capture_camera_image(self, camera_id, save=True):
         """Capture a snapshot for camera matching camera_id."""
-        return self._dsm.get(
+        return await self._dsm.get(
             self.SNAPSHOT_API_KEY,
             "TakeSnapshot",
             {
@@ -111,14 +113,14 @@ class SynoSurveillanceStation(SynoBaseApi):
             },
         )
 
-    def download_snapshot(self, snapshot_id, snapshot_size):
+    async def download_snapshot(self, snapshot_id, snapshot_size):
         """Download snapshot image binary for a givent snapshot_id.
 
         Args:
             snapshot_id: ID of the snapshot we want to download.
             snapshot_size: SNAPSHOT_SIZE_ICON | SNAPSHOT_SIZE_FULL.
         """
-        return self._dsm.get(
+        return await self._dsm.get(
             self.SNAPSHOT_API_KEY,
             "LoadSnapshot",
             {"id": snapshot_id, "imgSize": snapshot_size},
@@ -129,29 +131,31 @@ class SynoSurveillanceStation(SynoBaseApi):
         """Return motion setting matching camera_id."""
         return self._data[camera_id].is_motion_detection_enabled
 
-    def enable_motion_detection(self, camera_id):
+    async def enable_motion_detection(self, camera_id):
         """Enable motion detection for camera matching camera_id."""
-        return self._dsm.get(
+        return await self._dsm.get(
             self.CAMERA_EVENT_API_KEY,
             "MDParamSave",
             {"camId": camera_id, "source": MOTION_DETECTION_BY_SURVEILLANCE},
         )
 
-    def disable_motion_detection(self, camera_id):
+    async def disable_motion_detection(self, camera_id):
         """Disable motion detection for camera matching camera_id."""
-        return self._dsm.get(
+        return await self._dsm.get(
             self.CAMERA_EVENT_API_KEY,
             "MDParamSave",
             {"camId": camera_id, "source": MOTION_DETECTION_DISABLED},
         )
 
     # Home mode
-    def get_home_mode_status(self):
+    async def get_home_mode_status(self):
         """Get the state of Home Mode."""
-        return self._dsm.get(self.HOME_MODE_API_KEY, "GetInfo")["data"]["on"]
+        raw_data = await self._dsm.get(self.HOME_MODE_API_KEY, "GetInfo")
+        return raw_data["data"]["on"]
 
-    def set_home_mode(self, state):
+    async def set_home_mode(self, state):
         """Set the state of Home Mode (state: bool)."""
-        return self._dsm.get(
+        raw_data = await self._dsm.get(
             self.HOME_MODE_API_KEY, "Switch", {"on": str(state).lower()}
-        )["success"]
+        )
+        return raw_data["success"]
