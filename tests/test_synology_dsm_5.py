@@ -11,7 +11,6 @@ from . import (
     VALID_PASSWORD,
     VALID_PORT,
     VALID_USER_2SA,
-    VALID_VERIFY_SSL,
     SynologyDSMMock,
 )
 from .const import DEVICE_TOKEN, SESSION_ID
@@ -20,56 +19,60 @@ from .const import DEVICE_TOKEN, SESSION_ID
 class TestSynologyDSM5:
     """SynologyDSM 5test cases."""
 
-    def test_login(self, dsm_5):
+    @pytest.mark.asyncio
+    async def test_login(self, dsm_5):
         """Test login."""
-        assert dsm_5.login()
+        assert await dsm_5.login()
         assert dsm_5.apis.get(API_AUTH)
         assert dsm_5._session_id == SESSION_ID
         assert dsm_5._syno_token is None
 
-    def test_login_2sa(self):
+    @pytest.mark.asyncio
+    async def test_login_2sa(self):
         """Test login with 2SA."""
         dsm_5 = SynologyDSMMock(
+            None,
             VALID_HOST,
             VALID_PORT,
             VALID_USER_2SA,
             VALID_PASSWORD,
             VALID_HTTPS,
-            VALID_VERIFY_SSL,
         )
         dsm_5.dsm_version = 5
         with pytest.raises(SynologyDSMLogin2SARequiredException):
-            dsm_5.login()
-        dsm_5.login(VALID_OTP)
+            await dsm_5.login()
+        await dsm_5.login(VALID_OTP)
 
         assert dsm_5._session_id == SESSION_ID
         assert dsm_5._syno_token is None
         assert dsm_5._device_token == DEVICE_TOKEN
         assert dsm_5.device_token == DEVICE_TOKEN
 
-    def test_login_2sa_new_session(self):
+    @pytest.mark.asyncio
+    async def test_login_2sa_new_session(self):
         """Test login with 2SA and a new session with granted device."""
         dsm_5 = SynologyDSMMock(
+            None,
             VALID_HOST,
             VALID_PORT,
             VALID_USER_2SA,
             VALID_PASSWORD,
             VALID_HTTPS,
-            VALID_VERIFY_SSL,
             device_token=DEVICE_TOKEN,
         )
         dsm_5.dsm_version = 5
-        assert dsm_5.login()
+        assert await dsm_5.login()
 
         assert dsm_5._session_id == SESSION_ID
         assert dsm_5._syno_token is None
         assert dsm_5._device_token == DEVICE_TOKEN
         assert dsm_5.device_token == DEVICE_TOKEN
 
-    def test_information(self, dsm_5):
+    @pytest.mark.asyncio
+    async def test_information(self, dsm_5):
         """Test information."""
         assert dsm_5.information
-        dsm_5.information.update()
+        await dsm_5.information.update()
         assert dsm_5.information.model == "DS3615xs"
         assert dsm_5.information.ram == 6144
         assert dsm_5.information.serial == "B3J4N01003"
@@ -79,10 +82,11 @@ class TestSynologyDSM5:
         assert dsm_5.information.version == "5967"
         assert dsm_5.information.version_string == "DSM 5.2-5967 Update 9"
 
-    def test_network(self, dsm_5):
+    @pytest.mark.asyncio
+    async def test_network(self, dsm_5):
         """Test network."""
         assert dsm_5.network
-        dsm_5.network.update()
+        await dsm_5.network.update()
         assert dsm_5.network.dns
         assert dsm_5.network.gateway
         assert dsm_5.network.hostname
@@ -92,18 +96,20 @@ class TestSynologyDSM5:
         assert dsm_5.network.macs
         assert dsm_5.network.workgroup
 
-    def test_storage(self, dsm_5):
+    @pytest.mark.asyncio
+    async def test_storage(self, dsm_5):
         """Test storage roots."""
         assert dsm_5.storage
-        dsm_5.storage.update()
+        await dsm_5.storage.update()
         assert dsm_5.storage.disks
         assert dsm_5.storage.env
         assert dsm_5.storage.storage_pools == []
         assert dsm_5.storage.volumes
 
-    def test_storage_volumes(self, dsm_5):
+    @pytest.mark.asyncio
+    async def test_storage_volumes(self, dsm_5):
         """Test storage volumes."""
-        dsm_5.storage.update()
+        await dsm_5.storage.update()
         # Basics
         assert dsm_5.storage.volumes_ids
         for volume_id in dsm_5.storage.volumes_ids:
@@ -160,9 +166,10 @@ class TestSynologyDSM5:
         assert dsm_5.storage.volume_disk_temp_avg("test_volume") is None
         assert dsm_5.storage.volume_disk_temp_max("test_volume") is None
 
-    def test_storage_disks(self, dsm_5):
+    @pytest.mark.asyncio
+    async def test_storage_disks(self, dsm_5):
         """Test storage disks."""
-        dsm_5.storage.update()
+        await dsm_5.storage.update()
         # Basics
         assert dsm_5.storage.disks_ids
         for disk_id in dsm_5.storage.disks_ids:

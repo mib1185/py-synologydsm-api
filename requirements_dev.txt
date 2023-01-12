@@ -1,23 +1,24 @@
 -r requirements.txt
 
-pytest==7.2.0
-coverage[toml]
-safety==2.2.1
-mypy==0.931
-typeguard==2.12.1
-pre-commit==2.14.0
-flake8==5.0.4
 black==22.8.0
+coverage[toml]
+darglint==1.8.1
 flake8-bandit==4.1.1
 flake8-bugbear==22.10.27
 flake8-docstrings==1.6.0
 flake8-rst-docstrings==0.2.7
+flake8==5.0.4
+mypy==0.931
 pep8-naming==0.12.1
-darglint==1.8.1
-reorder-python-imports==3.8.2
 pre-commit-hooks==3.4.0
-sphinx-rtd-theme==1.0.0
+pre-commit==2.14.0
 Pygments==2.8.1
 pylint==2.15.6
+pytest-asyncio==0.20.3
+pytest==7.2.0
+reorder-python-imports==3.8.2
+safety==2.2.1
+sphinx-rtd-theme==1.0.0
+typeguard==2.12.1
 
 -e .
