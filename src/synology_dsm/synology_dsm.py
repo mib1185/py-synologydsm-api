@@ -134,8 +134,6 @@ class SynologyDSM:
         """Create a logged session."""
         # First reset the session
         self._debuglog("Creating new session")
-        # self._session = Session()
-        # self._session.verify = self._verify
 
         params = {
             "account": self.username,
@@ -191,7 +189,6 @@ class SynologyDSM:
     async def logout(self) -> bool:
         """Log out of the session."""
         result = await self.get(API_AUTH, "logout")
-        # self._session = None
         return result["success"]
 
     @property
@@ -328,7 +325,7 @@ class SynologyDSM:
             # We got a 400, 401 or 404 ...
             raise RequestException(response)
 
-        except (RequestException, JSONDecodeError) as exp:
+        except (aiohttp.ClientError, JSONDecodeError) as exp:
             raise SynologyDSMRequestException(exp) from exp
 
     async def update(self, with_information: bool = False, with_network: bool = False):
