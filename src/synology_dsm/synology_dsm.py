@@ -184,7 +184,7 @@ class SynologyDSM:
 
         if not self._information:
             self._information = SynoDSMInformation(self)
-            self._information.update()
+            await self._information.update()
 
         return result["success"]
 
@@ -331,37 +331,37 @@ class SynologyDSM:
         except (RequestException, JSONDecodeError) as exp:
             raise SynologyDSMRequestException(exp) from exp
 
-    def update(self, with_information: bool = False, with_network: bool = False):
+    async def update(self, with_information: bool = False, with_network: bool = False):
         """Updates the various instanced modules."""
         if self._download:
-            self._download.update()
+            await self._download.update()
 
         if self._information and with_information:
-            self._information.update()
+            await self._information.update()
 
         if self._network and with_network:
-            self._network.update()
+            await self._network.update()
 
         if self._security:
-            self._security.update()
+            await self._security.update()
 
         if self._utilisation:
-            self._utilisation.update()
+            await self._utilisation.update()
 
         if self._storage:
-            self._storage.update()
+            await self._storage.update()
 
         if self._share:
-            self._share.update()
+            await self._share.update()
 
         if self._surveillance:
-            self._surveillance.update()
+            await self._surveillance.update()
 
         if self._system:
-            self._system.update()
+            await self._system.update()
 
         if self._upgrade:
-            self._upgrade.update()
+            await self._upgrade.update()
 
     def reset(self, api: any) -> bool:
         """Reset an API to avoid fetching in on update."""
