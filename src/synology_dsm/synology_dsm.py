@@ -50,14 +50,14 @@ class SynologyDSM:
         username: str,
         password: str,
         use_https: bool = False,
-        timeout: int = None,
+        timeout: int = 10,
         device_token: str = None,
         debugmode: bool = False,
     ):
         """Constructor method."""
         self.username = username
         self._password = password
-        self._timeout = timeout or 10
+        self._timeout = timeout
         self._debugmode = debugmode
 
         # Session
@@ -284,7 +284,7 @@ class SynologyDSM:
                 )
                 async with async_timeout.timeout(self._timeout):
                     response = await self._session.get(
-                        url, params=encoded_params, timeout=self._timeout, **kwargs
+                        url, params=encoded_params, **kwargs
                     )
             elif method == "POST":
                 data = {}
@@ -295,9 +295,7 @@ class SynologyDSM:
                 self._debuglog("POST data: " + str(data))
 
                 async with async_timeout.timeout(self._timeout):
-                    response = await self._session.post(
-                        url, params=params, timeout=self._timeout, **kwargs
-                    )
+                    response = await self._session.post(url, params=params, **kwargs)
 
             response_url = str(response.url)
             for param in SENSITIV_PARAMS:

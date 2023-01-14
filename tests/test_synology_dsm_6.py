@@ -451,9 +451,11 @@ class TestSynologyDSM6:
         assert dsm_6.download_station
         assert not dsm_6.download_station.get_all_tasks()
 
-        assert dsm_6.download_station.get_info()["data"]["version"]
-        assert dsm_6.download_station.get_config()["data"]["default_destination"]
-        assert dsm_6.download_station.get_stat()["data"]["speed_download"]
+        assert (await dsm_6.download_station.get_info())["data"]["version"]
+        assert (await dsm_6.download_station.get_config())["data"][
+            "default_destination"
+        ]
+        assert (await dsm_6.download_station.get_stat())["data"]["speed_download"]
         await dsm_6.download_station.update()
         assert dsm_6.download_station.get_all_tasks()
         assert len(dsm_6.download_station.get_all_tasks()) == 8
@@ -489,10 +491,14 @@ class TestSynologyDSM6:
         assert dsm_6.surveillance_station.get_camera_live_view_path(1, "rtsp")
 
         # Motion detection
-        assert dsm_6.surveillance_station.enable_motion_detection(1).get("success")
-        assert dsm_6.surveillance_station.disable_motion_detection(1).get("success")
+        assert (await dsm_6.surveillance_station.enable_motion_detection(1)).get(
+            "success"
+        )
+        assert (await dsm_6.surveillance_station.disable_motion_detection(1)).get(
+            "success"
+        )
 
         # Home mode
-        assert dsm_6.surveillance_station.get_home_mode_status()
-        assert dsm_6.surveillance_station.set_home_mode(False)
-        assert dsm_6.surveillance_station.set_home_mode(True)
+        assert await dsm_6.surveillance_station.get_home_mode_status()
+        assert await dsm_6.surveillance_station.set_home_mode(False)
+        assert await dsm_6.surveillance_station.set_home_mode(True)

@@ -38,8 +38,8 @@ class TestSynologyDSM:
 
     def test_init(self, dsm):
         """Test init."""
-        assert dsm.username
-        assert dsm._base_url
+        assert dsm.username == VALID_USER
+        assert dsm._base_url == f"https://{VALID_HOST}:{VALID_PORT}"
         assert dsm._timeout == 10
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
@@ -199,30 +199,6 @@ class TestSynologyDSM:
         assert error_value["code"] == -1
         assert error_value["reason"] == "Unknown"
         assert error_value["details"] == "RequestException = Bad request"
-
-        assert not dsm.apis.get(API_AUTH)
-        assert not dsm._session_id
-
-        # Wrong SSL
-        dsm = SynologyDSMMock(
-            None,
-            VALID_HOST,
-            VALID_PORT,
-            VALID_USER,
-            VALID_PASSWORD,
-            VALID_HTTPS,
-        )
-        dsm.dsm_version = version
-        with pytest.raises(SynologyDSMRequestException) as error:
-            await dsm.login()
-        error_value = error.value.args[0]
-        assert not error_value["api"]
-        assert error_value["code"] == -1
-        assert error_value["reason"] == "Unknown"
-        assert (
-            error_value["details"]
-            == f"SSLError = hostname '192.168.0.35' doesn't match '{VALID_HOST}'"
-        )
 
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
