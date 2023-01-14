@@ -9,7 +9,6 @@ from . import (
     VALID_PASSWORD,
     VALID_PORT,
     VALID_USER,
-    VALID_VERIFY_SSL,
     SynologyDSMMock,
 )
 
@@ -18,12 +17,12 @@ from . import (
 def api() -> SynologyDSM:
     """Return a mock DSM 6 API."""
     return SynologyDSMMock(
+        None,
         VALID_HOST,
         VALID_PORT,
         VALID_USER,
         VALID_PASSWORD,
         VALID_HTTPS,
-        VALID_VERIFY_SSL,
     )
 
 

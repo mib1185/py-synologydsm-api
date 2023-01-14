@@ -137,37 +137,36 @@ class SynologyDSMMock(SynologyDSM):
 
     def __init__(
         self,
+        session,
         dsm_ip,
         dsm_port,
         username,
         password,
         use_https=False,
-        verify_ssl=False,
-        timeout=None,
+        timeout=10,
         device_token=None,
         debugmode=False,
     ):
         """Constructor method."""
         SynologyDSM.__init__(
             self,
+            session,
             dsm_ip,
             dsm_port,
             username,
             password,
             use_https,
-            verify_ssl,
             timeout,
             device_token,
             debugmode,
         )
 
-        self.verify_ssl = verify_ssl
         self.dsm_version = 6  # 5 or 6
         self.disks_redundancy = "RAID"  # RAID or SHR[number][_EXPANSION]
         self.error = False
         self.with_surveillance = False
 
-    def _execute_request(self, method, url, params, **kwargs):
+    async def _execute_request(self, method, url, params, **kwargs):
         url += urlencode(params or {})
 
         if "no_internet" in url:
@@ -202,11 +201,6 @@ class SynologyDSMMock(SynologyDSM):
 
         if "https" not in url:
             raise SynologyDSMRequestException(RequestException("Bad request"))
-
-        if not self.verify_ssl:
-            raise SynologyDSMRequestException(
-                SSLError(f"hostname '192.168.0.35' doesn't match '{VALID_HOST}'")
-            )
 
         if API_INFO in url:
             if self.with_surveillance:

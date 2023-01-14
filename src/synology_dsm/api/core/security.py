@@ -7,9 +7,9 @@ class SynoCoreSecurity(SynoBaseApi):
 
     API_KEY = "SYNO.Core.SecurityScan.Status"
 
-    def update(self):
+    async def update(self):
         """Updates security data."""
-        raw_data = self._dsm.get(self.API_KEY, "system_get")
+        raw_data = await self._dsm.get(self.API_KEY, "system_get")
         if raw_data:
             self._data = raw_data["data"]
 

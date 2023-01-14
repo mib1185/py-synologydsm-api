@@ -7,9 +7,9 @@ class SynoCoreSystem(SynoBaseApi):
 
     API_KEY = "SYNO.Core.System"
 
-    def update(self):
+    async def update(self):
         """Updates System data."""
-        raw_data = self._dsm.get(self.API_KEY, "info")
+        raw_data = await self._dsm.get(self.API_KEY, "info")
         if raw_data:
             self._data = raw_data["data"]
 
@@ -99,20 +99,18 @@ class SynoCoreSystem(SynoBaseApi):
     #
     # do system actions
     #
-    def shutdown(self):
+    async def shutdown(self):
         """Shutdown NAS."""
-        res = self._dsm.get(
+        return await self._dsm.get(
             self.API_KEY,
             "shutdown",
             max_version=1,  # shutdown method is only available on api version 1
         )
-        return res
 
-    def reboot(self):
+    async def reboot(self):
         """Reboot NAS."""
-        res = self._dsm.get(
+        return await self._dsm.get(
             self.API_KEY,
             "reboot",
             max_version=1,  # reboot method is only available on api version 1
         )
-        return res
