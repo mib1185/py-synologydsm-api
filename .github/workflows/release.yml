@@ -21,15 +21,10 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Upgrade pip
+      - name: Install build dependencies
         run: |
-          pip install --constraint=.github/workflows/constraints.txt pip
-          pip --version
-
-      - name: Install Poetry
-        run: |
-          pip install --constraint=.github/workflows/constraints.txt poetry
-          poetry --version
+          python -m pip install --upgrade pip
+          pip install setuptools wheel build
 
       - name: Check if there is a parent commit
         id: check-parent-commit
@@ -42,18 +37,16 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@v2.0.1
         with:
           version-command: |
-            bash -o pipefail -c "poetry version | awk '{ print \$2 }'"
+            sed -n 's/version = \"\(.*\)\"/\1/p' pyproject.toml
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          poetry version patch &&
-          version=$(poetry version | awk '{ print $2 }') &&
-          poetry version $version.dev.$(date +%s)
+          sed "s/version = \"\(.*\)\"/version = \"\1\.dev\.`date +%Y%m%d%H%M%S`\"/" pyproject.toml
 
       - name: Build package
         run: |
-          poetry build --ansi
+          python -m build . --wheel
 
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
