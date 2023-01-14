@@ -15,4 +15,4 @@ if [ ! -f "$SETTINGS_FILE" ]; then
 fi
 
 # install git pre-commit hook
-nox --session=pre-commit -- install
+pre-commit install
