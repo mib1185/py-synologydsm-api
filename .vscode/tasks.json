@@ -11,6 +11,15 @@
         "kind": "test",
         "isDefault": true
       }
+    },
+    {
+      "label": "reinstall dependencies",
+      "type": "shell",
+      "command": "pip3 --disable-pip-version-check --no-cache-dir install -r requirements_dev.txt",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }
