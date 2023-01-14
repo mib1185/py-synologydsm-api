@@ -99,7 +99,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements_dev.txt
+          pip install coverage[toml]
 
       - name: Download coverage data
         uses: actions/download-artifact@v3.0.0
