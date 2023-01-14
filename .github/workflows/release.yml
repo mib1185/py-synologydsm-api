@@ -42,7 +42,7 @@ jobs:
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          sed "s/version = \"\(.*\)\"/version = \"\1\.dev\.`date +%Y%m%d%H%M%S`\"/" pyproject.toml
+          sed "s/version = \"\(.*\)\"/version = \"\1\.dev\.`date +%Y%m%d%H%M%S`\"/" -i pyproject.toml
 
       - name: Build package
         run: |
