@@ -316,7 +316,7 @@ class SynologyDSM:
                     "text/json",
                     "text/plain",  # Can happen with some API
                 ]:
-                    return await response.json()
+                    return await response.json(content_type=content_type)
 
                 return await response.text()
 
