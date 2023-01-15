@@ -58,7 +58,7 @@ class SynologyDSM:
         self.username = username
         self._password = password
         self._timeout = timeout
-        self._debugmode = debugmode
+        self._debugmode = True
 
         # Session
         self._session = session
