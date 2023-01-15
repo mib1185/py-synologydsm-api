@@ -154,6 +154,9 @@ class SynologyDSM:
 
         # Handle errors
         if error:
+            # Remove this
+            _LOGGER.error("Attempt to login (%s/%s) failed: %s", self.username, self._password, error)
+
             switcher = {
                 400: SynologyDSMLoginInvalidException(self.username, error),
                 401: SynologyDSMLoginDisabledAccountException(self.username, error),
