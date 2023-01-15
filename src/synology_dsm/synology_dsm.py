@@ -313,6 +313,9 @@ class SynologyDSM:
                 ]:
                     return await response.json(content_type=content_type)
 
+                if content_type.startswith("image"):
+                    return await response.read()
+
                 return await response.text()
 
             # We got a 400, 401 or 404 ...
