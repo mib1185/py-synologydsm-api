@@ -279,13 +279,8 @@ class SynologyDSM:
         # Execute Request
         try:
             if method == "GET":
-                encoded_params = "&".join(
-                    f"{key}={quote(str(value))}" for key, value in params.items()
-                )
                 async with async_timeout.timeout(self._timeout):
-                    response = await self._session.get(
-                        url, params=encoded_params, **kwargs
-                    )
+                    response = await self._session.get(url, params=params, **kwargs)
             elif method == "POST":
                 data = {}
                 data.update(params)
