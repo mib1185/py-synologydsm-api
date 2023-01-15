@@ -139,8 +139,8 @@ class SynologyDSM:
             "account": self.username,
             "passwd": self._password,
             # "enable_syno_token": "yes",
-            "enable_device_token": "yes",
-            "device_name": socket.gethostname(),
+            #"enable_device_token": "yes",
+            #"device_name": socket.gethostname(),
         }
 
         if otp_code:
