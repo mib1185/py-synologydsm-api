@@ -267,7 +267,7 @@ class SynologyDSM:
                 self._session_id = None
                 self._syno_token = None
                 self._device_token = None
-                return self._request(request_method, api, method, params, False)
+                return await self._request(request_method, api, method, params, False)
             raise SynologyDSMAPIErrorException(
                 api, response["error"]["code"], response["error"].get("errors")
             )
