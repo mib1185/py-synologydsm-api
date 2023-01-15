@@ -1,8 +1,11 @@
 """Class to interact with Synology DSM."""
+from __future__ import annotations
+
 import asyncio
 import logging
 import socket
 from json import JSONDecodeError
+from typing import Any
 from urllib.parse import quote, urlencode
 
 import aiohttp
@@ -54,7 +57,7 @@ class SynologyDSM:
         password: str,
         use_https: bool = False,
         timeout: int = 10,
-        device_token: str = None,
+        device_token: str | None = None,
         debugmode: bool = False,
     ):
         """Constructor method."""
@@ -75,17 +78,17 @@ class SynologyDSM:
         self._apis = {
             "SYNO.API.Info": {"maxVersion": 1, "minVersion": 1, "path": "query.cgi"}
         }
-        self._download = None
-        self._information = None
-        self._network = None
-        self._photos = None
-        self._security = None
-        self._share = None
-        self._storage = None
-        self._surveillance = None
-        self._system = None
-        self._utilisation = None
-        self._upgrade = None
+        self._download: SynoDownloadStation | None = None
+        self._information: SynoDSMInformation | None = None
+        self._network: SynoDSMNetwork | None = None
+        self._photos: SynoPhotos | None = None
+        self._security: SynoCoreSecurity | None = None
+        self._share: SynoCoreShare | None = None
+        self._storage: SynoStorage | None = None
+        self._surveillance: SynoSurveillanceStation | None = None
+        self._system: SynoCoreSystem | None = None
+        self._utilisation: SynoCoreUtilization | None = None
+        self._upgrade: SynoCoreUpgrade | None = None
 
         # Build variables
         if use_https:
@@ -93,7 +96,7 @@ class SynologyDSM:
         else:
             self._base_url = f"http://{dsm_ip}:{dsm_port}"
 
-    def _debuglog(self, message: str):
+    def _debuglog(self, message: str) -> None:
         """Outputs message if debug mode is enabled."""
         _LOGGER.debug(message)
         if self._debugmode:
@@ -107,7 +110,7 @@ class SynologyDSM:
         """
         return (
             api in self.DSM_5_WEIRD_URL_API
-            and self._information
+            and self._information is not None
             and self._information.version
             and int(self._information.version) < 7321  # < DSM 6
         )
@@ -122,7 +125,7 @@ class SynologyDSM:
 
         return f"{self._base_url}/webapi/{self.apis[api]['path']}?"
 
-    async def discover_apis(self):
+    async def discover_apis(self) -> None:
         """Retreives available API infos from the NAS."""
         if self._apis.get(API_AUTH):
             return
@@ -130,11 +133,11 @@ class SynologyDSM:
         self._apis = data["data"]
 
     @property
-    def apis(self):
+    def apis(self) -> dict[str, dict[str, Any]] | None:
         """Gets available API infos from the NAS."""
         return self._apis
 
-    async def login(self, otp_code: str = None) -> bool:
+    async def login(self, otp_code: str | None = None) -> bool:
         """Create a logged session."""
         # First reset the session
         self._debuglog("Creating new session")
@@ -193,21 +196,25 @@ class SynologyDSM:
     async def logout(self) -> bool:
         """Log out of the session."""
         result = await self.get(API_AUTH, "logout")
-        return result["success"]
+        return bool(result["success"])
 
     @property
-    def device_token(self) -> str:
+    def device_token(self) -> str | None:
         """Gets the device token.
 
         Used to remember the 2SA access was granted on this device.
         """
         return self._device_token
 
-    async def get(self, api: str, method: str, params: dict = None, **kwargs):
+    async def get(
+        self, api: str, method: str, params: dict | None = None, **kwargs
+    ) -> bytes | dict | str:
         """Handles API GET request."""
         return await self._request("GET", api, method, params, **kwargs)
 
-    async def post(self, api: str, method: str, params: dict = None, **kwargs):
+    async def post(
+        self, api: str, method: str, params: dict = None, **kwargs
+    ) -> bytes | dict | str:
         """Handles API POST request."""
         return await self._request("POST", api, method, params, **kwargs)
 
