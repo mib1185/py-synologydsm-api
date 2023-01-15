@@ -150,16 +150,17 @@ class SynologyDSM:
 
         # Request login
         result = await self.get(API_AUTH, "login", params)
+        error = result.get("error")
 
         # Handle errors
-        if result.get("error"):
+        if error:
             switcher = {
-                400: SynologyDSMLoginInvalidException(self.username),
-                401: SynologyDSMLoginDisabledAccountException(self.username),
-                402: SynologyDSMLoginPermissionDeniedException(self.username),
-                403: SynologyDSMLogin2SARequiredException(self.username),
-                404: SynologyDSMLogin2SAFailedException(),
-                406: SynologyDSMLogin2SAForcedException(self.username),
+                400: SynologyDSMLoginInvalidException(self.username, error),
+                401: SynologyDSMLoginDisabledAccountException(self.username, error),
+                402: SynologyDSMLoginPermissionDeniedException(self.username, error),
+                403: SynologyDSMLogin2SARequiredException(self.username, error),
+                404: SynologyDSMLogin2SAFailedException(self.username, error),
+                406: SynologyDSMLogin2SAForcedException(self.username, error),
             }
             raise switcher.get(
                 result["error"]["code"],

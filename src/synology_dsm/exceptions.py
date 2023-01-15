@@ -80,54 +80,52 @@ class SynologyDSMLoginFailedException(SynologyDSMException):
 class SynologyDSMLoginInvalidException(SynologyDSMLoginFailedException):
     """Invalid password & not admin account exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str, error: str) -> None:
         """Constructor method."""
-        message = f"Invalid password or not admin account: {username}"
+        message = f"Invalid password or not admin account: {username}: {error}"
         super().__init__(400, message)
 
 
 class SynologyDSMLoginDisabledAccountException(SynologyDSMLoginFailedException):
     """Guest & disabled account exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str, error: str) -> None:
         """Constructor method."""
-        message = f"Guest or disabled account: {username}"
+        message = f"Guest or disabled account: {username}: {error}"
         super().__init__(401, message)
 
 
 class SynologyDSMLoginPermissionDeniedException(SynologyDSMLoginFailedException):
     """No access to login exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str, error: str) -> None:
         """Constructor method."""
-        message = f"Permission denied for account: {username}"
+        message = f"Permission denied for account: {username}: {error}"
         super().__init__(402, message)
 
 
 class SynologyDSMLogin2SARequiredException(SynologyDSMLoginFailedException):
     """2SA required to login exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str, error: str) -> None:
         """Constructor method."""
-        message = f"Two-step authentication required for account: {username}"
+        message = f"Two-step authentication required for account: {username}: {error}"
         super().__init__(403, message)
 
 
 class SynologyDSMLogin2SAFailedException(SynologyDSMLoginFailedException):
     """2SA code failed exception."""
 
-    def __init__(self):
+    def __init__(self, username: str, error: str) -> None:
         """Constructor method."""
-        message = "Two-step authentication failed, retry with a new pass code"
+        message = f"Two-step authentication failed for account: {username}, retry with a new pass code: {error}"
         super().__init__(404, message)
 
 
 class SynologyDSMLogin2SAForcedException(SynologyDSMLoginFailedException):
     """2SA force to setup exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str, error: str) -> None:
         """Constructor method."""
-        message = (
-            f"Two-step authentication forced to be setuped for account: {username}"
-        )
+        message = f"Two-step authentication forced to be setuped for account: {username}: {error}"
         super().__init__(406, message)
