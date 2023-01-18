@@ -12,7 +12,7 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 
-class SynoBackup:
+class SynoHyperBackup:
     """An implementation of Synology HyperBackup."""
 
     API_KEY = "SYNO.Backup.Task"
@@ -27,32 +27,32 @@ class SynoBackup:
         self._data: Dict[int, Dict[str, Any]] = {}
         self._last_backup_times: Dict[int, str] = {}
 
-    def update(self, get_all_target_data=False):
+    async def update(self, get_all_target_data=False):
         """Update backup tasks settings and information from API."""
         prev_data = self._data
         self._data = {}
 
         LOGGER.debug("Executing %s API call for task list", self.API_KEY)
-        task_list = self._dsm.get(self.API_KEY, "list", max_version=1)["data"].get("task_list", [])
+        task_list = (await self._dsm.get(self.API_KEY, "list", max_version=1))["data"].get("task_list", [])
         for task in task_list:
             task_id = task[PROP_TASKID]
 
             LOGGER.debug("Executing %s API call for task status details: %d", self.API_KEY, task_id)
-            backup_status = self._dsm.get(
+            backup_status = (await self._dsm.get(
                 self.API_KEY, "status",
                 {PROP_TASKID: task_id, "additional": json.dumps(self.STATUS_FIELDS)},
                 max_version=1
-            )["data"]
+            ))["data"]
             task = task | backup_status
             task.pop("schedule", None)  # Keep response cleaner (schedule is a large array)
 
-            target_data = self._get_target_data(task_id, task, prev_data, get_all_target_data)
+            target_data = await self._get_target_data(task_id, task, prev_data, get_all_target_data)
             task = task | target_data
 
             self._last_backup_times[task_id] = task[PROP_LAST_BACKUP_TIME]
             self._data[task_id] = task
 
-    def _get_target_data(self, task_id: int, task: Dict, prev_data: Dict, get_all_target_data=False) -> Dict:
+    async def _get_target_data(self, task_id: int, task: Dict, prev_data: Dict, get_all_target_data=False) -> Dict:
         backup_since_last_update = (task_id not in self._last_backup_times) or \
                                    (task[PROP_LAST_BACKUP_TIME] != self._last_backup_times[task_id]) or \
                                    not task[PROP_LAST_BACKUP_TIME]
@@ -61,12 +61,12 @@ class SynoBackup:
         if backup_since_last_update or get_all_target_data:
             try:
                 LOGGER.debug("Making %s API call for task %d", self.API_KEY_TARGET, task_id)
-                target_data = self._dsm.get(
+                target_data = (await self._dsm.get(
                     self.API_KEY_TARGET,
                     "get",
                     {PROP_TASKID: task_id, 'additional': json.dumps(self.TARGET_FIELDS)},
                     max_version=1
-                )["data"]
+                ))["data"]
             except SynologyDSMAPIErrorException:  # Occurs when target is "offline"
                 LOGGER.debug("target call failed for task %d, assuming target is offline", task_id)
                 target_data = {'is_online': False}
