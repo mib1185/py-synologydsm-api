@@ -1,5 +1,5 @@
--r requirements.txt
-
+aiohttp
+async-timeout
 black==22.8.0
 coverage[toml]
 flake8-bandit==4.1.1
@@ -16,5 +16,3 @@ pylint==2.15.10
 pytest-asyncio==0.20.3
 pytest==7.2.0
 reorder-python-imports==3.8.2
-
--e .

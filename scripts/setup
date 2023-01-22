@@ -16,3 +16,6 @@ fi
 
 # install git pre-commit hook
 pre-commit install
+
+# install from source
+pip install -e .
