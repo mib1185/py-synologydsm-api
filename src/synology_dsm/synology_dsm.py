@@ -6,7 +6,6 @@ from urllib.parse import quote
 
 import aiohttp
 import async_timeout
-from requests.exceptions import RequestException
 
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
@@ -319,7 +318,7 @@ class SynologyDSM:
                 return await response.text()
 
             # We got a 400, 401 or 404 ...
-            raise RequestException(response)
+            raise aiohttp.ClientError(response)
 
         except (aiohttp.ClientError, JSONDecodeError) as exp:
             raise SynologyDSMRequestException(exp) from exp
