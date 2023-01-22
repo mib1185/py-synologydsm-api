@@ -2,8 +2,7 @@
 from json import JSONDecodeError
 from urllib.parse import urlencode
 
-from requests.exceptions import ConnectionError as ConnError
-from requests.exceptions import RequestException, SSLError
+import aiohttp
 
 from synology_dsm import SynologyDSM
 from synology_dsm.api.core.security import SynoCoreSecurity
@@ -171,7 +170,7 @@ class SynologyDSMMock(SynologyDSM):
 
         if "no_internet" in url:
             raise SynologyDSMRequestException(
-                ConnError(
+                aiohttp.ClientError(
                     "<urllib3.connection.VerifiedHTTPSConnection object at "
                     "0x106c1f250>: Failed to establish a new connection: "
                     "[Errno 8] nodename nor servname provided, or not known"
@@ -180,7 +179,7 @@ class SynologyDSMMock(SynologyDSM):
 
         if VALID_HOST not in url:
             raise SynologyDSMRequestException(
-                ConnError(
+                aiohttp.ClientError(
                     "<urllib3.connection.HTTPConnection object at 0x10d6f8090>:"
                     " Failed to establish a new connection: [Errno 8] nodename "
                     "nor servname provided, or not known"
@@ -194,13 +193,13 @@ class SynologyDSMMock(SynologyDSM):
 
         if VALID_PORT not in url:
             raise SynologyDSMRequestException(
-                SSLError(
+                aiohttp.ClientError(
                     "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1076)"
                 )
             )
 
         if "https" not in url:
-            raise SynologyDSMRequestException(RequestException("Bad request"))
+            raise SynologyDSMRequestException(aiohttp.ClientError("Bad request"))
 
         if API_INFO in url:
             if self.with_surveillance:
