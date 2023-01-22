@@ -101,7 +101,7 @@ jobs:
           pip install coverage[toml]
 
       - name: Download coverage data
-        uses: actions/download-artifact@v3.0.0
+        uses: actions/download-artifact@v3.0.2
         with:
           name: coverage-data
 
