@@ -1,44 +1,46 @@
 """Synology DSM tests."""
 import pytest
 
-from . import SynologyDSMMock
-from . import VALID_HOST
-from . import VALID_HTTPS
-from . import VALID_OTP
-from . import VALID_PASSWORD
-from . import VALID_PORT
-from . import VALID_USER_2SA
-from . import VALID_VERIFY_SSL
-from .const import DEVICE_TOKEN
-from .const import SESSION_ID
-from .const import SYNO_TOKEN
 from synology_dsm.const import API_AUTH
 from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
+
+from . import (
+    VALID_HOST,
+    VALID_HTTPS,
+    VALID_OTP,
+    VALID_PASSWORD,
+    VALID_PORT,
+    VALID_USER_2SA,
+    SynologyDSMMock,
+)
+from .const import DEVICE_TOKEN, SESSION_ID, SYNO_TOKEN
 
 
 class TestSynologyDSM6:
     """SynologyDSM 6 test cases."""
 
-    def test_login(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_login(self, dsm_6):
         """Test login."""
-        assert dsm_6.login()
+        assert await dsm_6.login()
         assert dsm_6.apis.get(API_AUTH)
         assert dsm_6._session_id == SESSION_ID
         assert dsm_6._syno_token == SYNO_TOKEN
 
-    def test_login_2sa(self):
+    @pytest.mark.asyncio
+    async def test_login_2sa(self):
         """Test login with 2SA."""
         dsm = SynologyDSMMock(
+            None,
             VALID_HOST,
             VALID_PORT,
             VALID_USER_2SA,
             VALID_PASSWORD,
             VALID_HTTPS,
-            VALID_VERIFY_SSL,
         )
 
         with pytest.raises(SynologyDSMLogin2SARequiredException) as error:
-            dsm.login()
+            await dsm.login()
         error_value = error.value.args[0]
         assert error_value["api"] == "SYNO.API.Auth"
         assert error_value["code"] == 403
@@ -48,35 +50,37 @@ class TestSynologyDSM6:
             == "Two-step authentication required for account: valid_user_2sa"
         )
 
-        assert dsm.login(VALID_OTP)
+        assert await dsm.login(VALID_OTP)
 
         assert dsm._session_id == SESSION_ID
         assert dsm._syno_token == SYNO_TOKEN
         assert dsm._device_token == DEVICE_TOKEN
         assert dsm.device_token == DEVICE_TOKEN
 
-    def test_login_2sa_new_session(self):
+    @pytest.mark.asyncio
+    async def test_login_2sa_new_session(self):
         """Test login with 2SA and a new session with granted device."""
         dsm = SynologyDSMMock(
+            None,
             VALID_HOST,
             VALID_PORT,
             VALID_USER_2SA,
             VALID_PASSWORD,
             VALID_HTTPS,
-            VALID_VERIFY_SSL,
             device_token=DEVICE_TOKEN,
         )
-        assert dsm.login()
+        assert await dsm.login()
 
         assert dsm._session_id == SESSION_ID
         assert dsm._syno_token == SYNO_TOKEN
         assert dsm._device_token == DEVICE_TOKEN
         assert dsm.device_token == DEVICE_TOKEN
 
-    def test_information(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_information(self, dsm_6):
         """Test information."""
         assert dsm_6.information
-        dsm_6.information.update()
+        await dsm_6.information.update()
         assert dsm_6.information.model == "DS918+"
         assert dsm_6.information.ram == 4096
         assert dsm_6.information.serial == "1920PDN001501"
@@ -86,10 +90,11 @@ class TestSynologyDSM6:
         assert dsm_6.information.version == "24922"
         assert dsm_6.information.version_string == "DSM 6.2.2-24922 Update 4"
 
-    def test_network(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_network(self, dsm_6):
         """Test network."""
         assert dsm_6.network
-        dsm_6.network.update()
+        await dsm_6.network.update()
         assert dsm_6.network.dns
         assert dsm_6.network.gateway
         assert dsm_6.network.hostname
@@ -99,10 +104,11 @@ class TestSynologyDSM6:
         assert dsm_6.network.macs
         assert dsm_6.network.workgroup
 
-    def test_security(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_security(self, dsm_6):
         """Test security, safe status."""
         assert dsm_6.security
-        dsm_6.security.update()
+        await dsm_6.security.update()
         assert dsm_6.security.checks
         assert dsm_6.security.last_scan_time
         assert not dsm_6.security.start_time  # Finished scan
@@ -117,11 +123,12 @@ class TestSynologyDSM6:
         assert dsm_6.security.status_by_check["update"] == "safe"
         assert dsm_6.security.status_by_check["userInfo"] == "safe"
 
-    def test_security_error(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_security_error(self, dsm_6):
         """Test security, outOfDate status."""
         dsm_6.error = True
         assert dsm_6.security
-        dsm_6.security.update()
+        await dsm_6.security.update()
         assert dsm_6.security.checks
         assert dsm_6.security.last_scan_time
         assert not dsm_6.security.start_time  # Finished scan
@@ -136,10 +143,11 @@ class TestSynologyDSM6:
         assert dsm_6.security.status_by_check["update"] == "outOfDate"
         assert dsm_6.security.status_by_check["userInfo"] == "safe"
 
-    def test_shares(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_shares(self, dsm_6):
         """Test shares."""
         assert dsm_6.share
-        dsm_6.share.update()
+        await dsm_6.share.update()
         assert dsm_6.share.shares
         for share_uuid in dsm_6.share.shares_uuids:
             assert dsm_6.share.share_name(share_uuid)
@@ -168,10 +176,11 @@ class TestSynologyDSM6:
             == "32.9Eb"
         )
 
-    def test_system(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_system(self, dsm_6):
         """Test system."""
         assert dsm_6.system
-        dsm_6.system.update()
+        await dsm_6.system.update()
         assert dsm_6.system.cpu_clock_speed
         assert dsm_6.system.cpu_cores
         assert dsm_6.system.cpu_family
@@ -193,10 +202,11 @@ class TestSynologyDSM6:
             assert usb_dev.get("rev")
             assert usb_dev.get("vid")
 
-    def test_upgrade(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_upgrade(self, dsm_6):
         """Test upgrade."""
         assert dsm_6.upgrade
-        dsm_6.upgrade.update()
+        await dsm_6.upgrade.update()
         assert dsm_6.upgrade.update_available
         assert dsm_6.upgrade.available_version == "DSM 6.2.3-25426 Update 2"
         assert dsm_6.upgrade.reboot_needed == "now"
@@ -210,18 +220,20 @@ class TestSynologyDSM6:
             "os_name": "DSM",
         }
 
-    def test_storage(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_storage(self, dsm_6):
         """Test storage roots."""
         assert dsm_6.storage
-        dsm_6.storage.update()
+        await dsm_6.storage.update()
         assert dsm_6.storage.disks
         assert dsm_6.storage.env
         assert dsm_6.storage.storage_pools
         assert dsm_6.storage.volumes
 
-    def test_storage_raid_volumes(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_storage_raid_volumes(self, dsm_6):
         """Test RAID storage volumes."""
-        dsm_6.storage.update()
+        await dsm_6.storage.update()
         # Basics
         assert dsm_6.storage.volumes_ids
         for volume_id in dsm_6.storage.volumes_ids:
@@ -270,10 +282,11 @@ class TestSynologyDSM6:
         assert dsm_6.storage.volume_disk_temp_avg("test_volume") is None
         assert dsm_6.storage.volume_disk_temp_max("test_volume") is None
 
-    def test_storage_shr_volumes(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_storage_shr_volumes(self, dsm_6):
         """Test SHR storage volumes."""
         dsm_6.disks_redundancy = "SHR1"
-        dsm_6.storage.update()
+        await dsm_6.storage.update()
 
         # Basics
         assert dsm_6.storage.volumes_ids
@@ -337,10 +350,11 @@ class TestSynologyDSM6:
         assert dsm_6.storage.volume_disk_temp_avg("test_volume") is None
         assert dsm_6.storage.volume_disk_temp_max("test_volume") is None
 
-    def test_storage_shr2_volumes(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_storage_shr2_volumes(self, dsm_6):
         """Test SHR2 storage volumes."""
         dsm_6.disks_redundancy = "SHR2"
-        dsm_6.storage.update()
+        await dsm_6.storage.update()
 
         # Basics
         assert dsm_6.storage.volumes_ids
@@ -366,10 +380,11 @@ class TestSynologyDSM6:
         assert dsm_6.storage.volume_disk_temp_avg("volume_1") == 37.0
         assert dsm_6.storage.volume_disk_temp_max("volume_1") == 41
 
-    def test_storage_shr2_expansion_volumes(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_storage_shr2_expansion_volumes(self, dsm_6):
         """Test SHR2 storage with expansion unit volumes."""
         dsm_6.disks_redundancy = "SHR2_EXPANSION"
-        dsm_6.storage.update()
+        await dsm_6.storage.update()
 
         # Basics
         assert dsm_6.storage.volumes_ids
@@ -395,9 +410,10 @@ class TestSynologyDSM6:
         assert dsm_6.storage.volume_disk_temp_avg("volume_1") == 33.0
         assert dsm_6.storage.volume_disk_temp_max("volume_1") == 35
 
-    def test_storage_disks(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_storage_disks(self, dsm_6):
         """Test storage disks."""
-        dsm_6.storage.update()
+        await dsm_6.storage.update()
         # Basics
         assert dsm_6.storage.disks_ids
         for disk_id in dsm_6.storage.disks_ids:
@@ -429,15 +445,18 @@ class TestSynologyDSM6:
         assert dsm_6.storage.disk_below_remain_life_thr("test_disk") is None
         assert dsm_6.storage.disk_temp("test_disk") is None
 
-    def test_download_station(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_download_station(self, dsm_6):
         """Test DownloadStation."""
         assert dsm_6.download_station
         assert not dsm_6.download_station.get_all_tasks()
 
-        assert dsm_6.download_station.get_info()["data"]["version"]
-        assert dsm_6.download_station.get_config()["data"]["default_destination"]
-        assert dsm_6.download_station.get_stat()["data"]["speed_download"]
-        dsm_6.download_station.update()
+        assert (await dsm_6.download_station.get_info())["data"]["version"]
+        assert (await dsm_6.download_station.get_config())["data"][
+            "default_destination"
+        ]
+        assert (await dsm_6.download_station.get_stat())["data"]["speed_download"]
+        await dsm_6.download_station.update()
         assert dsm_6.download_station.get_all_tasks()
         assert len(dsm_6.download_station.get_all_tasks()) == 8
 
@@ -458,23 +477,28 @@ class TestSynologyDSM6:
         )
         assert dsm_6.download_station.get_task("dbid_549").type == "https"
 
-    def test_surveillance_station(self, dsm_6):
+    @pytest.mark.asyncio
+    async def test_surveillance_station(self, dsm_6):
         """Test SurveillanceStation."""
         dsm_6.with_surveillance = True
         assert dsm_6.surveillance_station
         assert not dsm_6.surveillance_station.get_all_cameras()
 
-        dsm_6.surveillance_station.update()
+        await dsm_6.surveillance_station.update()
         assert dsm_6.surveillance_station.get_all_cameras()
         assert dsm_6.surveillance_station.get_camera(1)
         assert dsm_6.surveillance_station.get_camera_live_view_path(1)
         assert dsm_6.surveillance_station.get_camera_live_view_path(1, "rtsp")
 
         # Motion detection
-        assert dsm_6.surveillance_station.enable_motion_detection(1).get("success")
-        assert dsm_6.surveillance_station.disable_motion_detection(1).get("success")
+        assert (await dsm_6.surveillance_station.enable_motion_detection(1)).get(
+            "success"
+        )
+        assert (await dsm_6.surveillance_station.disable_motion_detection(1)).get(
+            "success"
+        )
 
         # Home mode
-        assert dsm_6.surveillance_station.get_home_mode_status()
-        assert dsm_6.surveillance_station.set_home_mode(False)
-        assert dsm_6.surveillance_station.set_home_mode(True)
+        assert await dsm_6.surveillance_station.get_home_mode_status()
+        assert await dsm_6.surveillance_station.set_home_mode(False)
+        assert await dsm_6.surveillance_station.set_home_mode(True)

@@ -4,9 +4,8 @@ import socket
 from json import JSONDecodeError
 from urllib.parse import quote
 
-import urllib3
-from requests import Session
-from requests.exceptions import RequestException
+import aiohttp
+import async_timeout
 
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
@@ -19,19 +18,19 @@ from .api.dsm.network import SynoDSMNetwork
 from .api.photos import SynoPhotos
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
-from .const import API_AUTH
-from .const import API_INFO
-from .const import SENSITIV_PARAMS
-from .exceptions import SynologyDSMAPIErrorException
-from .exceptions import SynologyDSMAPINotExistsException
-from .exceptions import SynologyDSMLogin2SAFailedException
-from .exceptions import SynologyDSMLogin2SAForcedException
-from .exceptions import SynologyDSMLogin2SARequiredException
-from .exceptions import SynologyDSMLoginDisabledAccountException
-from .exceptions import SynologyDSMLoginFailedException
-from .exceptions import SynologyDSMLoginInvalidException
-from .exceptions import SynologyDSMLoginPermissionDeniedException
-from .exceptions import SynologyDSMRequestException
+from .const import API_AUTH, API_INFO, SENSITIV_PARAMS
+from .exceptions import (
+    SynologyDSMAPIErrorException,
+    SynologyDSMAPINotExistsException,
+    SynologyDSMLogin2SAFailedException,
+    SynologyDSMLogin2SAForcedException,
+    SynologyDSMLogin2SARequiredException,
+    SynologyDSMLoginDisabledAccountException,
+    SynologyDSMLoginFailedException,
+    SynologyDSMLoginInvalidException,
+    SynologyDSMLoginPermissionDeniedException,
+    SynologyDSMRequestException,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,26 +44,24 @@ class SynologyDSM:
 
     def __init__(
         self,
+        session: aiohttp.ClientSession,
         dsm_ip: str,
         dsm_port: int,
         username: str,
         password: str,
         use_https: bool = False,
-        verify_ssl: bool = False,
-        timeout: int = None,
+        timeout: int = 10,
         device_token: str = None,
         debugmode: bool = False,
     ):
         """Constructor method."""
         self.username = username
         self._password = password
-        self._timeout = timeout or 10
+        self._timeout = timeout
         self._debugmode = debugmode
-        self._verify = verify_ssl & use_https
 
         # Session
-        self._session = Session()
-        self._session.verify = self._verify
+        self._session = session
 
         # Login
         self._session_id = None
@@ -89,11 +86,6 @@ class SynologyDSM:
 
         # Build variables
         if use_https:
-            if not verify_ssl:
-                # https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings  # noqa: B950
-                # disable SSL warnings due to the auto-genenerated cert
-                urllib3.disable_warnings()
-
             self._base_url = f"https://{dsm_ip}:{dsm_port}"
         else:
             self._base_url = f"http://{dsm_ip}:{dsm_port}"
@@ -127,23 +119,22 @@ class SynologyDSM:
 
         return f"{self._base_url}/webapi/{self.apis[api]['path']}?"
 
-    def discover_apis(self):
+    async def discover_apis(self):
         """Retreives available API infos from the NAS."""
         if self._apis.get(API_AUTH):
             return
-        self._apis = self.get(API_INFO, "query")["data"]
+        data = await self.get(API_INFO, "query")
+        self._apis = data["data"]
 
     @property
     def apis(self):
         """Gets available API infos from the NAS."""
         return self._apis
 
-    def login(self, otp_code: str = None) -> bool:
+    async def login(self, otp_code: str = None) -> bool:
         """Create a logged session."""
         # First reset the session
         self._debuglog("Creating new session")
-        self._session = Session()
-        self._session.verify = self._verify
 
         params = {
             "account": self.username,
@@ -159,7 +150,7 @@ class SynologyDSM:
             params["device_id"] = self._device_token
 
         # Request login
-        result = self.get(API_AUTH, "login", params)
+        result = await self.get(API_AUTH, "login", params)
 
         # Handle errors
         if result.get("error"):
@@ -192,14 +183,13 @@ class SynologyDSM:
 
         if not self._information:
             self._information = SynoDSMInformation(self)
-            self._information.update()
+            await self._information.update()
 
         return result["success"]
 
-    def logout(self) -> bool:
+    async def logout(self) -> bool:
         """Log out of the session."""
-        result = self.get(API_AUTH, "logout")
-        self._session = None
+        result = await self.get(API_AUTH, "logout")
         return result["success"]
 
     @property
@@ -210,65 +200,15 @@ class SynologyDSM:
         """
         return self._device_token
 
-    def get(self, api: str, method: str, params: dict = None, **kwargs):
+    async def get(self, api: str, method: str, params: dict = None, **kwargs):
         """Handles API GET request."""
-        return self._request("GET", api, method, params, **kwargs)
+        return await self._request("GET", api, method, params, **kwargs)
 
-    def post(self, api: str, method: str, params: dict = None, **kwargs):
+    async def post(self, api: str, method: str, params: dict = None, **kwargs):
         """Handles API POST request."""
-        return self._request("POST", api, method, params, **kwargs)
+        return await self._request("POST", api, method, params, **kwargs)
 
-    def get_url(self, api: str, method: str, params: dict = None, **kwargs):
-        """Return the url to handle the request themselves."""
-        return self._build_request(api, method, params, **kwargs)
-
-    def _build_request(
-        self,
-        api: str,
-        method: str,
-        params: dict = None,
-        **kwargs,
-    ):
-        """Build the url for the request."""
-        # Discover existing APIs
-        if api != API_INFO:
-            self.discover_apis()
-
-        # Check if logged
-        if not self._session_id and api not in [API_AUTH, API_INFO]:
-            self.login()
-
-        # Build request params
-        if not params:
-            params = {}
-        params["api"] = api
-        params["version"] = 1
-
-        if not self._is_weird_api_url(api):
-            # Check if API is available
-            if not self.apis.get(api):
-                raise SynologyDSMAPINotExistsException(api)
-            params["version"] = self.apis[api]["maxVersion"]
-            max_version = kwargs.pop("max_version", None)
-            if max_version and params["version"] > max_version:
-                params["version"] = max_version
-
-        params["method"] = method
-
-        if api == SynoStorage.API_KEY:
-            params["action"] = method
-        if self._session_id:
-            params["_sid"] = self._session_id
-        if self._syno_token:
-            params["SynoToken"] = self._syno_token
-
-        url = self._build_url(api)
-        encoded_params = "&".join(
-            f"{key}={quote(str(value))}" for key, value in params.items()
-        )
-        return url + encoded_params
-
-    def _request(
+    async def _request(
         self,
         request_method: str,
         api: str,
@@ -280,11 +220,11 @@ class SynologyDSM:
         """Handles API request."""
         # Discover existing APIs
         if api != API_INFO:
-            self.discover_apis()
+            await self.discover_apis()
 
         # Check if logged
         if not self._session_id and api not in [API_AUTH, API_INFO]:
-            self.login()
+            await self.login()
 
         # Build request params
         if not params:
@@ -315,7 +255,7 @@ class SynologyDSM:
         # Request data
         self._debuglog("API: " + api)
         self._debuglog("Request Method: " + request_method)
-        response = self._execute_request(request_method, url, params, **kwargs)
+        response = await self._execute_request(request_method, url, params, **kwargs)
         self._debuglog("Successful returned data")
         self._debuglog("RESPONSE: " + str(response))
 
@@ -328,24 +268,20 @@ class SynologyDSM:
                 self._session_id = None
                 self._syno_token = None
                 self._device_token = None
-                return self._request(request_method, api, method, params, False)
+                return await self._request(request_method, api, method, params, False)
             raise SynologyDSMAPIErrorException(
                 api, response["error"]["code"], response["error"].get("errors")
             )
 
         return response
 
-    def _execute_request(self, method: str, url: str, params: dict, **kwargs):
+    async def _execute_request(self, method: str, url: str, params: dict, **kwargs):
         """Function to execute and handle a request."""
         # Execute Request
         try:
             if method == "GET":
-                encoded_params = "&".join(
-                    f"{key}={quote(str(value))}" for key, value in params.items()
-                )
-                response = self._session.get(
-                    url, params=encoded_params, timeout=self._timeout, **kwargs
-                )
+                async with async_timeout.timeout(self._timeout):
+                    response = await self._session.get(url, params=params, **kwargs)
             elif method == "POST":
                 data = {}
                 data.update(params)
@@ -354,21 +290,20 @@ class SynologyDSM:
                 kwargs["data"] = data
                 self._debuglog("POST data: " + str(data))
 
-                response = self._session.post(
-                    url, params=params, timeout=self._timeout, **kwargs
-                )
+                async with async_timeout.timeout(self._timeout):
+                    response = await self._session.post(url, params=params, **kwargs)
 
-            response_url = response.url
+            response_url = str(response.url)
             for param in SENSITIV_PARAMS:
                 if params.get(param):
                     response_url = response_url.replace(
                         quote(params[param]), "********"
                     )
             self._debuglog("Request url: " + response_url)
-            self._debuglog("Response status_code: " + str(response.status_code))
-            self._debuglog("Response headers: " + str(response.headers))
+            self._debuglog("Response status_code: " + str(response.status))
+            self._debuglog("Response headers: " + str(dict(response.headers)))
 
-            if response.status_code == 200:
+            if response.status == 200:
                 # We got a DSM response
                 content_type = response.headers.get("Content-Type", "").split(";")[0]
 
@@ -377,47 +312,50 @@ class SynologyDSM:
                     "text/json",
                     "text/plain",  # Can happen with some API
                 ]:
-                    return response.json()
+                    return await response.json(content_type=content_type)
 
-                return response.content
+                if content_type.startswith("image"):
+                    return await response.read()
+
+                return await response.text()
 
             # We got a 400, 401 or 404 ...
-            raise RequestException(response)
+            raise aiohttp.ClientError(response)
 
-        except (RequestException, JSONDecodeError) as exp:
+        except (aiohttp.ClientError, JSONDecodeError) as exp:
             raise SynologyDSMRequestException(exp) from exp
 
-    def update(self, with_information: bool = False, with_network: bool = False):
+    async def update(self, with_information: bool = False, with_network: bool = False):
         """Updates the various instanced modules."""
         if self._download:
-            self._download.update()
+            await self._download.update()
 
         if self._information and with_information:
-            self._information.update()
+            await self._information.update()
 
         if self._network and with_network:
-            self._network.update()
+            await self._network.update()
 
         if self._security:
-            self._security.update()
+            await self._security.update()
 
         if self._utilisation:
-            self._utilisation.update()
+            await self._utilisation.update()
 
         if self._storage:
-            self._storage.update()
+            await self._storage.update()
 
         if self._share:
-            self._share.update()
+            await self._share.update()
 
         if self._surveillance:
-            self._surveillance.update()
+            await self._surveillance.update()
 
         if self._system:
-            self._system.update()
+            await self._system.update()
 
         if self._upgrade:
-            self._upgrade.update()
+            await self._upgrade.update()
 
     def reset(self, api: any) -> bool:
         """Reset an API to avoid fetching in on update."""

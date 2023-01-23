@@ -1,63 +1,39 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "py-synologydsm-api"
-version = "1.0.8"
+version = "2.0.2"
 description = "Python API for communication with Synology DSM"
-authors = ["Michael Brussk (mib1185)", "Quentin POLLET (Quentame)", "FG van Zeelst (ProtoThis)"]
-license = "MIT"
+authors = [
+    {name="Michael Brussk (mib1185)"},
+    {name="Quentin POLLET (Quentame)"},
+    {name="FG van Zeelst (ProtoThis)"}
+]
+license = {text = "MIT"}
 readme = "README.rst"
-homepage = "https://github.com/mib1185/py-synologydsm-api"
-repository = "https://github.com/mib1185/py-synologydsm-api"
-documentation = "https://github.com/mib1185/py-synologydsm-api#readme"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Software Development :: Libraries",
 ]
 keywords=["synology-dsm", "synology"]
-packages = [
-    { include = "synology_dsm", from = "src" },
-]
+requires-python = ">=3.7.0"
+dependencies  = ["aiohttp", "async-timeout"]
 
-[tool.poetry.urls]
+[project.urls]
 Changelog = "https://github.com/mib1185/py-synologydsm-api/releases"
+Repository = "https://github.com/mib1185/py-synologydsm-api"
+Documentation = "https://github.com/mib1185/py-synologydsm-api#readme"
 
-[tool.poetry.dependencies]
-python = "^3.7.0"
-requests = "^2.24.0"
-urllib3 = "^1.25.10"
-
-[tool.poetry.dev-dependencies]
-pytest = "^6.2.4"
-coverage = {extras = ["toml"], version = "^5.3"}
-safety = "^1.10.3"
-mypy = "^0.931"
-typeguard = "^2.12.1"
-xdoctest = {extras = ["colors"], version = "^0.15.10"}
-sphinx = "^4.3.2"
-sphinx-autobuild = "^2021.3.14"
-pre-commit = "^2.14.0"
-flake8 = "^5.0.4"
-black = "^22.8.0"
-flake8-bandit = "^4.1.1"
-flake8-bugbear = "^21.4.3"
-flake8-docstrings = "^1.6.0"
-flake8-rst-docstrings = "^0.2.7"
-pep8-naming = "^0.12.1"
-darglint = "^1.8.1"
-reorder-python-imports = "^3.8.2"
-pre-commit-hooks = "^3.4.0"
-sphinx-rtd-theme = "^1.0.0"
-Pygments = "^2.8.1"
-
-[tool.poetry.scripts]
+[project.scripts]
 synologydsm-api = "synology_dsm.__main__:main"
 
 [tool.coverage.paths]
@@ -71,6 +47,28 @@ source = ["synology_dsm"]
 show_missing = true
 fail_under = 80
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.isort]
+profile = "black"
+src_paths = ["src", "tests"]
+
+[tool.pylint.MAIN]
+ignore = [
+    "tests",
+    "noxfile.py",
+]
+
+[tool.pylint.BASIC]
+class-const-naming-style = "any"
+good-names = [
+    "id",
+]
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    "too-few-public-methods",
+    "too-many-arguments",
+    "too-many-branches",
+    "too-many-instance-attributes",
+    "too-many-public-methods",
+    "too-many-return-statements",
+]

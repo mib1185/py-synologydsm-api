@@ -1,19 +1,15 @@
 """DSM Network data."""
+from synology_dsm.api import SynoBaseApi
 
 
-class SynoDSMNetwork:
+class SynoDSMNetwork(SynoBaseApi):
     """Class containing Network data."""
 
     API_KEY = "SYNO.DSM.Network"
 
-    def __init__(self, dsm):
-        """Constructor method."""
-        self._dsm = dsm
-        self._data = {}
-
-    def update(self):
+    async def update(self):
         """Updates network data."""
-        raw_data = self._dsm.get(self.API_KEY, "list")
+        raw_data = await self._dsm.get(self.API_KEY, "list")
         if raw_data:
             self._data = raw_data["data"]
 

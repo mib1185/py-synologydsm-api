@@ -43,53 +43,23 @@ Request features on the `Issue Tracker`_.
 How to set up your development environment
 ------------------------------------------
 
-You need Python 3.6+ and the following tools:
+This project use a `Visual Studio Code Dev Container`_.
+This approach will create a preconfigured development environment with all the tools you need.
 
-- Poetry_
-- Nox_
-- nox-poetry_
-
-Install the package with development requirements:
-
-.. code:: console
-
-   $ poetry install
-
-You can now run an interactive Python session:
-
-.. code:: console
-
-   $ poetry run python
-
-.. _Poetry: https://python-poetry.org/
-.. _Nox: https://nox.thea.codes/
-.. _nox-poetry: https://nox-poetry.readthedocs.io/
+.. _VS Code dev-container: https://code.visualstudio.com/docs/devcontainers/containers
 
 
 How to test the project
 -----------------------
 
+Unit tests are located in the ``tests`` directory, and are written using the pytest_ testing framework.
 Run the full test suite:
 
 .. code:: console
 
-   $ nox
+   $ pytest tests
 
-List the available Nox sessions:
-
-.. code:: console
-
-   $ nox --list-sessions
-
-You can also run a specific Nox session.
-For example, invoke the unit test suite like this:
-
-.. code:: console
-
-   $ nox --session=tests
-
-Unit tests are located in the ``tests`` directory,
-and are written using the pytest_ testing framework.
+There is also a Visual Studio Code task available to run the full test suite.
 
 .. _pytest: https://pytest.readthedocs.io/
 
@@ -101,17 +71,13 @@ Open a `pull request`_ to submit changes to this project.
 
 Your pull request needs to meet the following guidelines for acceptance:
 
-- The Nox test suite must pass without errors and warnings.
+- The test suite must pass without errors and warnings.
 - Include unit tests. This project maintains 100% code coverage.
 - If your changes add functionality, update the documentation accordingly.
 
 Feel free to submit early, though—we can always iterate on this.
 
-To run linting and code formatting checks before commiting your change, you can install pre-commit as a Git hook by running the following command:
-
-.. code:: console
-
-   $ nox --session=pre-commit -- install
+To run linting and code formatting checks before commiting your change, pre-commit as a Git hook is installed within the `Visual Studio Code Dev Container`_.
 
 It is recommended to open an issue before starting work on anything.
 This will allow a chance to talk it over with the owners and validate your approach.

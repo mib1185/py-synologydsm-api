@@ -1,19 +1,15 @@
 """DSM System data and actions."""
+from synology_dsm.api import SynoBaseApi
 
 
-class SynoCoreSystem:
+class SynoCoreSystem(SynoBaseApi):
     """Class containing System data and actions."""
 
     API_KEY = "SYNO.Core.System"
 
-    def __init__(self, dsm):
-        """Constructor method."""
-        self._dsm = dsm
-        self._data = {}
-
-    def update(self):
+    async def update(self):
         """Updates System data."""
-        raw_data = self._dsm.get(self.API_KEY, "info")
+        raw_data = await self._dsm.get(self.API_KEY, "info")
         if raw_data:
             self._data = raw_data["data"]
 
@@ -103,20 +99,18 @@ class SynoCoreSystem:
     #
     # do system actions
     #
-    def shutdown(self):
+    async def shutdown(self):
         """Shutdown NAS."""
-        res = self._dsm.get(
+        return await self._dsm.get(
             self.API_KEY,
             "shutdown",
             max_version=1,  # shutdown method is only available on api version 1
         )
-        return res
 
-    def reboot(self):
+    async def reboot(self):
         """Reboot NAS."""
-        res = self._dsm.get(
+        return await self._dsm.get(
             self.API_KEY,
             "reboot",
             max_version=1,  # reboot method is only available on api version 1
         )
-        return res

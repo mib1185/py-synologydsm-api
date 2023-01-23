@@ -1,21 +1,17 @@
 """DSM Information data."""
+from synology_dsm.api import SynoBaseApi
 
 
-class SynoDSMInformation:
+class SynoDSMInformation(SynoBaseApi):
     """Class containing Information data."""
 
     API_KEY = "SYNO.DSM.Info"
 
-    def __init__(self, dsm):
-        """Constructor methods."""
-        self._dsm = dsm
-        self._data = {}
-
-    def update(self):
+    async def update(self):
         """Updates information data."""
-        raw_data = self._dsm.get(self.API_KEY, "getinfo")
+        raw_data = await self._dsm.get(self.API_KEY, "getinfo")
         if raw_data:
-            self._data = raw_data["data"]
+            self._data: dict = raw_data["data"]
 
     @property
     def model(self):

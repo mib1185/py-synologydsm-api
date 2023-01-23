@@ -1,12 +1,14 @@
 """Library exceptions."""
-from .const import API_AUTH
-from .const import ERROR_AUTH
-from .const import ERROR_COMMON
-from .const import ERROR_DOWNLOAD_SEARCH
-from .const import ERROR_DOWNLOAD_TASK
-from .const import ERROR_FILE
-from .const import ERROR_SURVEILLANCE
-from .const import ERROR_VIRTUALIZATION
+from .const import (
+    API_AUTH,
+    ERROR_AUTH,
+    ERROR_COMMON,
+    ERROR_DOWNLOAD_SEARCH,
+    ERROR_DOWNLOAD_TASK,
+    ERROR_FILE,
+    ERROR_SURVEILLANCE,
+    ERROR_VIRTUALIZATION,
+)
 
 
 class SynologyDSMException(Exception):

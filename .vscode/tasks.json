@@ -4,31 +4,22 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "NOX - run specific session",
+      "label": "pytest",
       "type": "shell",
-      "command": "nox --session=${input:noxsession}",
+      "command": "pytest tests/",
       "group": {
         "kind": "test",
         "isDefault": true
       }
     },
     {
-      "label": "NOX - run all sessions",
+      "label": "reinstall dependencies",
       "type": "shell",
-      "command": "nox",
+      "command": "pip3 --disable-pip-version-check --no-cache-dir install -r requirements_dev.txt -e .",
       "group": {
-        "kind": "test",
+        "kind": "build",
         "isDefault": true
       }
-    }
-  ],
-  "inputs": [
-    {
-      "id": "noxsession",
-      "type": "pickString",
-      "description": "NOX session?",
-      "options": ["pre-commit", "safety", "tests"],
-      "default": "tests"
     }
   ]
 }

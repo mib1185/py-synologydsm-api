@@ -1,6 +1,6 @@
-===========================
-Python API for Synology DSM
-===========================
+========================================
+Asynchronous Python API for Synology DSM
+========================================
 
 .. image:: https://github.com/mib1185/py-synologydsm-api/workflows/Tests/badge.svg
     :target: https://github.com/mib1185/py-synologydsm-api/actions?query=workflow%3ATests+branch%3Amaster
@@ -33,7 +33,7 @@ Installation
 Usage
 =====
 
-You can import the module as `synology_dsm`.
+You can import the module as ``synology_dsm``.
 
 
 Constructor
@@ -42,16 +42,18 @@ Constructor
 .. code-block:: python
 
     SynologyDSM(
+        session,
         dsm_ip,
         dsm_port,
         username,
         password,
         use_https=False,
-        verify_ssl=False,
-        timeout=None,
+        timeout=10,
         device_token=None,
         debugmode=False,
     )
+
+For ``session`` a valid ``aiohttp.ClientSession`` needs to be provided. If ssl verification should be truned off, configure the session accordingly (eq. ``aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)``)
 
 ``device_token`` should be added when using a two-step authentication account, otherwise DSM will ask to login with a One Time Password (OTP) and requests will fail (see the login section for more details).
 
@@ -79,188 +81,248 @@ The ``SynologyDSM`` class can also ``update()`` all APIs at once.
 
 .. code-block:: python
 
+    import asyncio
+    import aiohttp
     from synology_dsm import SynologyDSM
 
-    print("Creating Valid API")
-    api = SynologyDSM("<IP/DNS>", "<port>", "<username>", "<password>")
+    async def main():
+        print("Creating Valid API")
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(verify_ssl=False)
+        ) as session:
+            await do(session)
 
-    print("=== Information ===")
-    api.information.update()
-    print("Model:           " + str(api.information.model))
-    print("RAM:             " + str(api.information.ram) + " MB")
-    print("Serial number:   " + str(api.information.serial))
-    print("Temperature:     " + str(api.information.temperature) + " °C")
-    print("Temp. warning:   " + str(api.information.temperature_warn))
-    print("Uptime:          " + str(api.information.uptime))
-    print("Full DSM version:" + str(api.information.version_string))
-    print("--")
-
-    print("=== Utilisation ===")
-    api.utilisation.update()
-    print("CPU Load:        " + str(api.utilisation.cpu_total_load) + " %")
-    print("Memory Use:      " + str(api.utilisation.memory_real_usage) + " %")
-    print("Net Up:          " + str(api.utilisation.network_up()))
-    print("Net Down:        " + str(api.utilisation.network_down()))
-    print("--")
-
-    print("=== Storage ===")
-    api.storage.update()
-    for volume_id in api.storage.volumes_ids:
-        print("ID:          " + str(volume_id))
-        print("Status:      " + str(api.storage.volume_status(volume_id)))
-        print("% Used:      " + str(api.storage.volume_percentage_used(volume_id)) + " %")
+    async def do(session: aiohttp.ClientSession):
+        api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+        print("=== Information ===")
+        await api.information.update()
+        print("Model:           " + str(api.information.model))
+        print("RAM:             " + str(api.information.ram) + " MB")
+        print("Serial number:   " + str(api.information.serial))
+        print("Temperature:     " + str(api.information.temperature) + " °C")
+        print("Temp. warning:   " + str(api.information.temperature_warn))
+        print("Uptime:          " + str(api.information.uptime))
+        print("Full DSM version:" + str(api.information.version_string))
         print("--")
 
-    for disk_id in api.storage.disks_ids:
-        print("ID:          " + str(disk_id))
-        print("Name:        " + str(api.storage.disk_name(disk_id)))
-        print("S-Status:    " + str(api.storage.disk_smart_status(disk_id)))
-        print("Status:      " + str(api.storage.disk_status(disk_id)))
-        print("Temp:        " + str(api.storage.disk_temp(disk_id)))
+        print("=== Utilisation ===")
+        await api.utilisation.update()
+        print("CPU Load:        " + str(api.utilisation.cpu_total_load) + " %")
+        print("Memory Use:      " + str(api.utilisation.memory_real_usage) + " %")
+        print("Net Up:          " + str(api.utilisation.network_up()))
+        print("Net Down:        " + str(api.utilisation.network_down()))
         print("--")
 
-    print("=== Shared Folders ===")
-    api.share.update()
-    for share_uuid in api.share.shares_uuids:
-        print("Share name:        " + str(api.share.share_name(share_uuid)))
-        print("Share path:        " + str(api.share.share_path(share_uuid)))
-        print("Space used:        " + str(api.share.share_size(share_uuid, human_readable=True)))
-        print("Recycle Bin Enabled: " + str(api.share.share_recycle_bin(share_uuid)))
-        print("--")
+        print("=== Storage ===")
+        await api.storage.update()
+        for volume_id in api.storage.volumes_ids:
+            print("ID:          " + str(volume_id))
+            print("Status:      " + str(api.storage.volume_status(volume_id)))
+            print("% Used:      " + str(api.storage.volume_percentage_used(volume_id)) + " %")
+            print("--")
 
+        for disk_id in api.storage.disks_ids:
+            print("ID:          " + str(disk_id))
+            print("Name:        " + str(api.storage.disk_name(disk_id)))
+            print("S-Status:    " + str(api.storage.disk_smart_status(disk_id)))
+            print("Status:      " + str(api.storage.disk_status(disk_id)))
+            print("Temp:        " + str(api.storage.disk_temp(disk_id)))
+            print("--")
+
+        print("=== Shared Folders ===")
+        await api.share.update()
+        for share_uuid in api.share.shares_uuids:
+            print("Share name:        " + str(api.share.share_name(share_uuid)))
+            print("Share path:        " + str(api.share.share_path(share_uuid)))
+            print("Space used:        " + str(api.share.share_size(share_uuid, human_readable=True)))
+            print("Recycle Bin Enabled: " + str(api.share.share_recycle_bin(share_uuid)))
+            print("--")
+
+    if __name__ == "__main__":
+        asyncio.run(main())
 
 Download Station usage
 --------------------------
 
 .. code-block:: python
 
+    import asyncio
+    import aiohttp
     from synology_dsm import SynologyDSM
 
-    api = SynologyDSM("<IP/DNS>", "<port>", "<username>", "<password>")
+    async def main():
+        print("Creating Valid API")
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(verify_ssl=False)
+        ) as session:
+            await do(session)
 
-    if "SYNO.DownloadStation.Info" in api.apis:
+    async def do(session: aiohttp.ClientSession):
+        api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
 
-        api.download_station.get_info()
-        api.download_station.get_config()
+        if "SYNO.DownloadStation.Info" in api.apis:
 
-        # The download list will be updated after each of the following functions:
-        # You should have the right on the (default) directory that the download will be saved, or you will get a 403 or 406 error
-        api.download_station.create("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
-        api.download_station.pause("dbid_1")
-        # Like the other function, you can eather pass a str or a list
-        api.download_station.resume(["dbid_1", "dbid_2"])
-        api.download_station.delete("dbid_3")
+            await api.download_station.get_info()
+            await api.download_station.get_config()
 
-        # Manual update
-        api.download_station.update()
+            # The download list will be updated after each of the following functions:
+            # You should have the right on the (default) directory that the download will be saved, or you will get a 403 or 406 error
+            await api.download_station.create("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+            await api.download_station.pause("dbid_1")
+            # Like the other function, you can eather pass a str or a list
+            await api.download_station.resume(["dbid_1", "dbid_2"])
+            await api.download_station.delete("dbid_3")
 
+            # Manual update
+            await api.download_station.update()
+
+    if __name__ == "__main__":
+        asyncio.run(main())
 
 Surveillance Station usage
 --------------------------
 
 .. code-block:: python
 
+    import asyncio
+    import aiohttp
     from synology_dsm import SynologyDSM
 
-    api = SynologyDSM("<IP/DNS>", "<port>", "<username>", "<password>")
-    surveillance = api.surveillance_station
-    surveillance.update() # First update is required
+    async def main():
+        print("Creating Valid API")
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(verify_ssl=False)
+        ) as session:
+            await do(session)
 
-    # Returns a list of cached cameras available
-    cameras = surveillance.get_all_cameras()
+    async def do(session: aiohttp.ClientSession):
+        api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
 
-    # Assuming there's at least one camera, get the first camera_id
-    camera_id = cameras[0].camera_id
+        surveillance = api.surveillance_station
+        await surveillance.update() # First update is required
 
-    # Returns cached camera object by camera_id
-    camera = surveillance.get_camera(camera_id)
+        # Returns a list of cached cameras available
+        cameras = surveillance.get_all_cameras()
 
-    # Returns cached motion detection enabled
-    motion_setting = camera.is_motion_detection_enabled
+        # Assuming there's at least one camera, get the first camera_id
+        camera_id = cameras[0].camera_id
 
-    # Return bytes of camera image
-    surveillance.get_camera_image(camera_id)
+        # Returns cached camera object by camera_id
+        camera = surveillance.get_camera(camera_id)
 
-    # Updates all cameras/motion settings and cahce them
-    surveillance.update()
+        # Returns cached motion detection enabled
+        motion_setting = camera.is_motion_detection_enabled
 
-    # Gets Home Mode status
-    home_mode_status =  surveillance.get_home_mode_status()
+        # Return bytes of camera image
+        await surveillance.get_camera_image(camera_id)
 
-    # Sets home mode - true is on, false is off
-    surveillance.set_home_mode(True)
+        # Updates all cameras/motion settings and cahce them
+        await surveillance.update()
 
+        # Gets Home Mode status
+        home_mode_status = await surveillance.get_home_mode_status()
+
+        # Sets home mode - true is on, false is off
+        await surveillance.set_home_mode(True)
+
+    if __name__ == "__main__":
+        asyncio.run(main())
 
 System usage
 --------------------------
 
 .. code-block:: python
 
+    import asyncio
+    import aiohttp
     from synology_dsm import SynologyDSM
 
-    api = SynologyDSM("<IP/DNS>", "<port>", "<username>", "<password>")
-    system = api.system
+    async def main():
+        print("Creating Valid API")
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(verify_ssl=False)
+        ) as session:
+            await do(session)
 
-    # Reboot NAS
-    system.reboot()
+    async def do(session: aiohttp.ClientSession):
+        api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
 
-    # Shutdown NAS
-    system.shutdown()
+        system = api.system
 
-    # Manual update system information
-    system.update()
+        # Reboot NAS
+        await system.reboot()
 
-    # Get CPU information
-    system.cpu_clock_speed
-    system.cpu_cores
-    system.cpu_family
-    system.cpu_series
+        # Shutdown NAS
+        await system.shutdown()
 
-    # Get NTP settings
-    system.enabled_ntp
-    system.ntp_server
+        # Manual update system information
+        await system.update()
 
-    # Get system information
-    system.firmware_ver
-    system.model
-    system.ram_size
-    system.serial
-    system.sys_temp
-    system.time
-    system.time_zone
-    system.time_zone_desc
-    system.up_time
+        # Get CPU information
+        system.cpu_clock_speed
+        system.cpu_cores
+        system.cpu_family
+        system.cpu_series
 
-    # Get list of all connected USB devices
-    system.usb_dev
+        # Get NTP settings
+        system.enabled_ntp
+        system.ntp_server
 
+        # Get system information
+        system.firmware_ver
+        system.model
+        system.ram_size
+        system.serial
+        system.sys_temp
+        system.time
+        system.time_zone
+        system.time_zone_desc
+        system.up_time
+
+        # Get list of all connected USB devices
+        system.usb_dev
+
+    if __name__ == "__main__":
+        asyncio.run(main())
 
 Upgrade usage
 --------------------------
 
 .. code-block:: python
 
+    import asyncio
+    import aiohttp
     from synology_dsm import SynologyDSM
 
-    api = SynologyDSM("<IP/DNS>", "<port>", "<username>", "<password>")
-    upgrade = api.upgrade
+    async def main():
+        print("Creating Valid API")
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(verify_ssl=False)
+        ) as session:
+            await do(session)
 
-    # Manual update upgrade information
-    upgrade.update()
+    async def do(session: aiohttp.ClientSession):
+        api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+        upgrade = api.upgrade
 
-    # check if DSM update is available
-    if upgrade.update_available:
-        do something ...
+        # Manual update upgrade information
+        await upgrade.update()
 
-    # get available version string (return None if no update available)
-    upgrade.available_version
+        # check if DSM update is available
+        if upgrade.update_available:
+            do something ...
 
-    # get need of reboot (return None if no update available)
-    upgrade.reboot_needed
+        # get available version string (return None if no update available)
+        upgrade.available_version
 
-    # get need of service restarts (return None if no update available)
-    upgrade.service_restarts
+        # get need of reboot (return None if no update available)
+        upgrade.reboot_needed
 
+        # get need of service restarts (return None if no update available)
+        upgrade.service_restarts
+
+    if __name__ == "__main__":
+        asyncio.run(main())
 
 Photos usage
 --------------------------

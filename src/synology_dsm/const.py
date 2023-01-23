@@ -90,7 +90,7 @@ ERROR_FILE = {
     1001: "Failed to move files/folders. More information in <errors> object",
     1002: "An error occurred at the destination. More information in <errors> object",
     1003: "Cannot overwrite or skip the existing file because no overwrite parameter is given",
-    1004: "File cannot overwrite a folder with the same name, or folder cannot overwrite a file with the same name",
+    1004: "File cannot overwrite a folder with the same name, or folder cannot overwrite a file with the same name",  # pylint: disable=line-too-long
     1006: "Cannot copy/move file/folder with special characters to a FAT32 file system",
     1007: "Cannot copy/move a file bigger than 4G to a FAT32 file system",
     1100: "Failed to create a folder. More information in <errors> object",
@@ -104,8 +104,8 @@ ERROR_FILE = {
     1404: "Failed to get the file and dir list in an archive",
     1405: "Failed to find the item ID in an archive file",
     1200: "Failed to rename it. More information in <errors> object",
-    1800: "There is no Content-Length information in the HTTP header or the received size doesn’t match the value of Content-Length information in the HTTP header",
-    1801: "Wait too long, no date can be received from client (Default maximum wait time is 3600 seconds)",
+    1800: "There is no Content-Length information in the HTTP header or the received size doesn’t match the value of Content-Length information in the HTTP header",  # pylint: disable=line-too-long
+    1801: "Wait too long, no date can be received from client (Default maximum wait time is 3600 seconds)",  # pylint: disable=line-too-long
     1802: "No filename information in the last part of file content",
     1803: "Upload connection is cancelled",
     1804: "Failed to upload too big file to FAT file system",
@@ -146,7 +146,7 @@ ERROR_VIRTUALIZATION = {
     404: "The number of iSCSI LUNs has reached the system limit",
     500: "Note: vdisk is based on iSCSI LUN, which is also limited by the system",
     501: "The cluster is frozen. More than half of the hosts are offline",
-    600: "The cluster is in the incompatible mode. Please upgrade to a compatible DSM version and try again",
+    600: "The cluster is in the incompatible mode. Please upgrade to a compatible DSM version and try again",  # pylint: disable=line-too-long
     601: "The cluster is not ready",
     700: "The host is offline",
     900: "The storage is in invalid",
@@ -158,11 +158,11 @@ ERROR_VIRTUALIZATION = {
     906: "MAC conflict",
     907: "Failed to create virtual machine because the selected image is not found",
     908: "The status of virtual machine is offline",
-    909: "Failed to power on a virtual machine due to insufficient CPU threads for reservation on the host",
-    910: "Failed to power on the virtual machine because there is no corresponding networking on the host",
-    911: "Only the VirtIO hard disk controller can be used to boot the virtual machine remotely. Virtual machines with UEFI enabled cannot be powered on remotely",
+    909: "Failed to power on a virtual machine due to insufficient CPU threads for reservation on the host",  # pylint: disable=line-too-long
+    910: "Failed to power on the virtual machine because there is no corresponding networking on the host",  # pylint: disable=line-too-long
+    911: "Only the VirtIO hard disk controller can be used to boot the virtual machine remotely. Virtual machines with UEFI enabled cannot be powered on remotely",  # pylint: disable=line-too-long
     1000: "Cannot find task_id",
     1001: "Need Virtual Machine Manager Pro",
     1400: "The result of image creating is partial success",
-    1600: "The virtual machine has been successfully edited. However, errors occurred while reserving the memory or CPU on the HA hosts",
+    1600: "The virtual machine has been successfully edited. However, errors occurred while reserving the memory or CPU on the HA hosts",  # pylint: disable=line-too-long
 }
