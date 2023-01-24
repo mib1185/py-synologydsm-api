@@ -365,9 +365,6 @@ class SynologyDSM:
             if hasattr(self, "_" + api):
                 setattr(self, "_" + api, None)
                 return True
-            if api == SynoPhotos.API_KEY:
-                self._photos = None
-                return True
             if api == SynoCoreSecurity.API_KEY:
                 self._security = None
                 return True
@@ -386,15 +383,15 @@ class SynologyDSM:
             if api == SynoDownloadStation.API_KEY:
                 self._download = None
                 return True
+            if api == SynoPhotos.API_KEY:
+                self._photos = None
+                return True
             if api == SynoStorage.API_KEY:
                 self._storage = None
                 return True
             if api == SynoSurveillanceStation.API_KEY:
                 self._surveillance = None
                 return True
-        if isinstance(api, SynoPhotos):
-            self._photos = None
-            return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
             return True
@@ -412,6 +409,9 @@ class SynologyDSM:
             return True
         if isinstance(api, SynoDownloadStation):
             self._download = None
+            return True
+        if isinstance(api, SynoPhotos):
+            self._photos = None
             return True
         if isinstance(api, SynoStorage):
             self._storage = None
