@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.3.0
         with:
           fetch-depth: 2
 
       - name: Set up Python
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: "3.10"
 
@@ -34,7 +34,7 @@ jobs:
       - name: Detect and tag new version
         id: check-version
         if: steps.check-parent-commit.outputs.sha
-        uses: salsify/action-detect-and-tag-new-version@v2.0.1
+        uses: salsify/action-detect-and-tag-new-version@v2.0.3
         with:
           version-command: |
             sed -n 's/version = \"\(.*\)\"/\1/p' pyproject.toml
@@ -50,14 +50,14 @@ jobs:
 
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
-        uses: pypa/gh-action-pypi-publish@v1.5.1
+        uses: pypa/gh-action-pypi-publish@v1.6.4
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
 
       - name: Publish package on TestPyPI
         if: "! steps.check-version.outputs.tag"
-        uses: pypa/gh-action-pypi-publish@v1.5.1
+        uses: pypa/gh-action-pypi-publish@v1.6.4
         with:
           user: __token__
           password: ${{ secrets.TEST_PYPI_TOKEN }}
@@ -86,7 +86,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.3.0
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL

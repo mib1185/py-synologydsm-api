@@ -127,7 +127,7 @@ class TestSynologyDSM:
         assert error_value["code"] == -1
         assert error_value["reason"] == "Unknown"
         assert (
-            "ConnectionError = <urllib3.connection.VerifiedHTTPSConnection "
+            "ClientError = <urllib3.connection.VerifiedHTTPSConnection "
             in error_value["details"]
         )
 
@@ -151,7 +151,7 @@ class TestSynologyDSM:
         assert error_value["code"] == -1
         assert error_value["reason"] == "Unknown"
         assert (
-            "ConnectionError = <urllib3.connection.HTTPConnection "
+            "ClientError = <urllib3.connection.HTTPConnection "
             in error_value["details"]
         )
 
@@ -175,7 +175,7 @@ class TestSynologyDSM:
         assert error_value["code"] == -1
         assert error_value["reason"] == "Unknown"
         assert error_value["details"] == (
-            "SSLError = [SSL: WRONG_VERSION_NUMBER] "
+            "ClientError = [SSL: WRONG_VERSION_NUMBER] "
             "wrong version number (_ssl.c:1076)"
         )
 
@@ -198,7 +198,7 @@ class TestSynologyDSM:
         assert not error_value["api"]
         assert error_value["code"] == -1
         assert error_value["reason"] == "Unknown"
-        assert error_value["details"] == "RequestException = Bad request"
+        assert error_value["details"] == "ClientError = Bad request"
 
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
