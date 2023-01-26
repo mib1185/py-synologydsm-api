@@ -6,6 +6,7 @@ from urllib.parse import quote
 
 import aiohttp
 import async_timeout
+from yarl import URL
 
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
@@ -208,16 +209,24 @@ class SynologyDSM:
         """Handles API POST request."""
         return await self._request("POST", api, method, params, **kwargs)
 
-    async def _request(
+    async def generate_url(
         self,
-        request_method: str,
         api: str,
         method: str,
         params: dict = None,
-        retry_once: bool = True,
+    ):
+        """Generate an url for external usage."""
+        url, params = await self._prepare_request(api, method, params)
+        return str(URL(url).update_query(params))
+
+    async def _prepare_request(
+        self,
+        api: str,
+        method: str,
+        params: dict = None,
         **kwargs,
     ):
-        """Handles API request."""
+        """Prepare the url and parameters for a request."""
         # Discover existing APIs
         if api != API_INFO:
             await self.discover_apis()
@@ -251,6 +260,20 @@ class SynologyDSM:
             params["SynoToken"] = self._syno_token
 
         url = self._build_url(api)
+
+        return (url, params)
+
+    async def _request(
+        self,
+        request_method: str,
+        api: str,
+        method: str,
+        params: dict = None,
+        retry_once: bool = True,
+        **kwargs,
+    ):
+        """Handles API request."""
+        url, params = await self._prepare_request(api, method, params, **kwargs)
 
         # Request data
         self._debuglog("API: " + api)

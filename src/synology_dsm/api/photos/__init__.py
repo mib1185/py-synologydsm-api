@@ -134,3 +134,16 @@ class SynoPhotos(SynoBaseApi):
                 },
             )
         )
+
+    async def get_item_thumbnail_url(self, item: SynoPhotosItem) -> str:
+        """Get the url of given items thumbnail."""
+        return await self._dsm.generate_url(
+            self.THUMBNAIL_API_KEY,
+            "get",
+            {
+                "id": item.item_id,
+                "cache_key": item.thumbnail_cache_key,
+                "size": item.thumbnail_size,
+                "type": "unit",
+            },
+        )
