@@ -94,3 +94,40 @@ class TestSynologyDSM7:
             "nano": 3,
             "os_name": "DSM",
         }
+
+    @pytest.mark.asyncio
+    async def test_photos(self, dsm_7):
+        """Test photos."""
+        assert dsm_7.photos
+        albums = await dsm_7.photos.get_albums()
+
+        assert albums
+        assert len(albums) == 2
+        assert albums[0].album_id == 4
+        assert albums[0].name == "Album1"
+        assert albums[0].item_count == 3
+        assert albums[1].album_id == 1
+        assert albums[1].name == "Album2"
+        assert albums[1].item_count == 1
+
+        items = await dsm_7.photos.get_items_from_album(albums[0])
+        assert items
+        assert len(items) == 3
+        assert items[0].file_name == "20221115_185642.jpg"
+        assert items[0].thumbnail_cache_key == "29807_1668560967"
+        assert items[0].thumbnail_size == "xl"
+        assert items[1].file_name == "20221115_185643.jpg"
+        assert items[1].thumbnail_cache_key == "29808_1668560967"
+        assert items[1].thumbnail_size == "m"
+        assert items[2].file_name == "20221115_185644.jpg"
+        assert items[2].thumbnail_cache_key == "29809_1668560967"
+        assert items[2].thumbnail_size == "sm"
+
+        thumb_url = await dsm_7.photos.get_item_thumbnail_url(items[0])
+        assert thumb_url
+        assert thumb_url == (
+            "https://nas.mywebsite.me:443/webapi/entry.cgi?"
+            "id=29807&cache_key=29807_1668560967&size=xl&type=unit"
+            "&api=SYNO.Foto.Thumbnail&version=2&method=get"
+            "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
+        )

@@ -13,6 +13,7 @@ from synology_dsm.api.core.utilization import SynoCoreUtilization
 from synology_dsm.api.download_station import SynoDownloadStation
 from synology_dsm.api.dsm.information import SynoDSMInformation
 from synology_dsm.api.dsm.network import SynoDSMNetwork
+from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.const import API_AUTH, API_INFO
@@ -65,6 +66,8 @@ from .api_data.dsm_7 import (
     DSM_7_AUTH_LOGIN_2SA_OTP,
     DSM_7_CORE_UPGRADE_TRUE,
     DSM_7_DSM_INFORMATION,
+    DSM_7_FOTO_ALBUMS,
+    DSM_7_FOTO_ITEMS,
 )
 from .const import (
     DEVICE_TOKEN,
@@ -113,6 +116,8 @@ API_SWITCHER = {
         "AUTH_LOGIN_2SA_OTP": DSM_7_AUTH_LOGIN_2SA_OTP,
         "CORE_UPGRADE": DSM_7_CORE_UPGRADE_TRUE,
         "DSM_INFORMATION": DSM_7_DSM_INFORMATION,
+        "FOTO_ALBUMS": DSM_7_FOTO_ALBUMS,
+        "FOTO_ITEMS": DSM_7_FOTO_ITEMS,
     },
 }
 
@@ -266,6 +271,12 @@ class SynologyDSMMock(SynologyDSM):
             if SynoDownloadStation.TASK_API_KEY in url:
                 if "List" in url:
                     return DSM_6_DOWNLOAD_STATION_TASK_LIST
+
+            if SynoPhotos.BROWSE_ALBUMS_API_KEY in url:
+                return DSM_7_FOTO_ALBUMS
+
+            if SynoPhotos.BROWSE_ITEM_API_KEY in url:
+                return DSM_7_FOTO_ITEMS
 
             if SynoStorage.API_KEY in url:
                 return API_SWITCHER[self.dsm_version]["STORAGE_STORAGE"][
