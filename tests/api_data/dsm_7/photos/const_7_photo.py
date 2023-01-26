@@ -110,3 +110,51 @@ DSM_7_FOTO_ITEMS = {
         ]
     },
 }
+
+DSM_7_FOTO_ITEMS_SEARCHED = {
+    "success": True,
+    "data": {
+        "list": [
+            {
+                "id": 12340,
+                "filename": "search_1.jpg",
+                "filesize": 2644859,
+                "time": 1668538602,
+                "indexed_time": 1668564550862,
+                "owner_user_id": 1,
+                "folder_id": 597,
+                "type": "photo",
+                "additional": {
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "12340_1668560967",
+                        "unit_id": 12340,
+                    }
+                },
+            },
+            {
+                "id": 12341,
+                "filename": "search_2.jpg",
+                "filesize": 2644859,
+                "time": 1668538602,
+                "indexed_time": 1668564550862,
+                "owner_user_id": 1,
+                "folder_id": 597,
+                "type": "photo",
+                "additional": {
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "12341_1668560967",
+                        "unit_id": 12341,
+                    }
+                },
+            },
+        ]
+    },
+}
