@@ -8,6 +8,7 @@ from synology_dsm.api.core.upgrade import SynoCoreUpgrade
 from synology_dsm.api.core.utilization import SynoCoreUtilization
 from synology_dsm.api.download_station import SynoDownloadStation
 from synology_dsm.api.dsm.information import SynoDSMInformation
+from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.const import API_AUTH, API_INFO
@@ -380,6 +381,12 @@ class TestSynologyDSM:
         assert dsm.reset("download")
         assert not dsm._download
 
+        assert not dsm._photos
+        assert dsm.photos
+        assert dsm._photos
+        assert dsm.reset("photos")
+        assert not dsm._photos
+
         assert not dsm._storage
         assert dsm.storage
         assert dsm._storage
@@ -430,6 +437,12 @@ class TestSynologyDSM:
         assert dsm.reset(SynoDownloadStation.API_KEY)
         assert not dsm._download
 
+        assert not dsm._photos
+        assert dsm.photos
+        assert dsm._photos
+        assert dsm.reset(SynoPhotos.API_KEY)
+        assert not dsm._photos
+
         assert not dsm._storage
         assert dsm.storage
         assert dsm._storage
@@ -479,6 +492,12 @@ class TestSynologyDSM:
         assert dsm._download
         assert dsm.reset(dsm.download_station)
         assert not dsm._download
+
+        assert not dsm._photos
+        assert dsm.photos
+        assert dsm._photos
+        assert dsm.reset(dsm.photos)
+        assert not dsm._photos
 
         assert not dsm._storage
         assert dsm.storage

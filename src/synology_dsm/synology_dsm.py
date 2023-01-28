@@ -6,6 +6,7 @@ from urllib.parse import quote
 
 import aiohttp
 import async_timeout
+from yarl import URL
 
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
@@ -15,6 +16,7 @@ from .api.core.utilization import SynoCoreUtilization
 from .api.download_station import SynoDownloadStation
 from .api.dsm.information import SynoDSMInformation
 from .api.dsm.network import SynoDSMNetwork
+from .api.photos import SynoPhotos
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
 from .const import API_AUTH, API_INFO, SENSITIV_PARAMS
@@ -74,6 +76,7 @@ class SynologyDSM:
         self._download = None
         self._information = None
         self._network = None
+        self._photos = None
         self._security = None
         self._share = None
         self._storage = None
@@ -206,16 +209,24 @@ class SynologyDSM:
         """Handles API POST request."""
         return await self._request("POST", api, method, params, **kwargs)
 
-    async def _request(
+    async def generate_url(
         self,
-        request_method: str,
         api: str,
         method: str,
         params: dict = None,
-        retry_once: bool = True,
+    ):
+        """Generate an url for external usage."""
+        url, params = await self._prepare_request(api, method, params)
+        return str(URL(url).update_query(params))
+
+    async def _prepare_request(
+        self,
+        api: str,
+        method: str,
+        params: dict = None,
         **kwargs,
     ):
-        """Handles API request."""
+        """Prepare the url and parameters for a request."""
         # Discover existing APIs
         if api != API_INFO:
             await self.discover_apis()
@@ -249,6 +260,20 @@ class SynologyDSM:
             params["SynoToken"] = self._syno_token
 
         url = self._build_url(api)
+
+        return (url, params)
+
+    async def _request(
+        self,
+        request_method: str,
+        api: str,
+        method: str,
+        params: dict = None,
+        retry_once: bool = True,
+        **kwargs,
+    ):
+        """Handles API request."""
+        url, params = await self._prepare_request(api, method, params, **kwargs)
 
         # Request data
         self._debuglog("API: " + api)
@@ -381,6 +406,9 @@ class SynologyDSM:
             if api == SynoDownloadStation.API_KEY:
                 self._download = None
                 return True
+            if api == SynoPhotos.API_KEY:
+                self._photos = None
+                return True
             if api == SynoStorage.API_KEY:
                 self._storage = None
                 return True
@@ -404,6 +432,9 @@ class SynologyDSM:
             return True
         if isinstance(api, SynoDownloadStation):
             self._download = None
+            return True
+        if isinstance(api, SynoPhotos):
+            self._photos = None
             return True
         if isinstance(api, SynoStorage):
             self._storage = None
@@ -433,6 +464,13 @@ class SynologyDSM:
         if not self._network:
             self._network = SynoDSMNetwork(self)
         return self._network
+
+    @property
+    def photos(self) -> SynoPhotos:
+        """Gets NAS photos."""
+        if not self._photos:
+            self._photos = SynoPhotos(self)
+        return self._photos
 
     @property
     def security(self) -> SynoCoreSecurity:

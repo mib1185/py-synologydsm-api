@@ -179,6 +179,46 @@ Download Station usage
     if __name__ == "__main__":
         asyncio.run(main())
 
+Photos usage
+--------------------------
+
+.. code-block:: python
+
+    import asyncio
+    import aiohttp
+    from synology_dsm import SynologyDSM
+
+    async def main():
+        print("Creating Valid API")
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(verify_ssl=False)
+        ) as session:
+            await do(session)
+
+    async def do(session: aiohttp.ClientSession):
+        api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+
+        albums = await api.photos.get_albums()
+
+        # download each item of each album
+        for album in albums:
+            print(f"'{album.name}' has {album.item_count} items")
+
+            items = await api.photos.get_items_from_album(album)
+            for item in items:
+                print(f"{item.file_name}")
+                with open(item.file_name, "wb") as fh:
+                    fh.write(await api.photos.download_item(item))
+
+        # search for items and download them
+        items = await api.photos.get_items_from_search("pinky and the brain")
+        for item in items:
+            with open(item.file_name, "wb") as fh:
+                fh.write(await api.photos.download_item(item))
+
+    if __name__ == "__main__":
+        asyncio.run(main())
+
 Surveillance Station usage
 --------------------------
 
@@ -334,6 +374,7 @@ Credits / Special Thanks
 - https://github.com/snjoetw    (Surveillance Station library)
 - https://github.com/shenxn     (Surveillance Station tests)
 - https://github.com/Gestas     (Shared Folders)
+- https://github.com/lodesmets  (Synology Photos)
 
 Found Synology API "documentation" on this repo : https://github.com/kwent/syno/tree/master/definitions
 
