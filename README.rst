@@ -325,6 +325,43 @@ System usage
     if __name__ == "__main__":
         asyncio.run(main())
 
+Hyperbackup usage (with SSL)
+--------------------------
+
+.. code-block:: python
+    import asyncio
+    import aiohttp
+    from synology_dsm import SynologyDSM
+
+    async def main():
+        print("Creating Valid API")
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(ssl=True)
+        ) as session:
+            await do(session)
+
+    async def do(session: aiohttp.ClientSession):
+        api = SynologyDSM(session, "<ip_or_domain>", "443", "<username>", "<password>", use_https=True)
+
+        await api.hyperbackup.update()
+        for task_id in api.hyperbackup.task_ids:
+            print("ID:               " + str(task_id))
+            print("Name:             " + api.hyperbackup.name(task_id))
+            print("Status:           " + api.hyperbackup.status(task_id))
+            print("Next Backup time: " + str(api.hyperbackup.next_backup_time(task_id)))
+            print("Size:             " + human_size(api.hyperbackup.used_size(task_id)))
+            print("--")
+
+    def human_size(bytes, units=['KB','MB','GB','TB', 'PB', 'EB']):
+        """ Returns a human readable string representation of bytes """
+        if bytes is None:
+            return "N/A"
+        return str(bytes) + units[0] if bytes < 1024 else human_size(bytes>>10, units[1:])
+
+    if __name__ == "__main__":
+        asyncio.run(main())
+
+
 Upgrade usage
 --------------------------
 
