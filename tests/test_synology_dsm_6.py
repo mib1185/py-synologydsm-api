@@ -462,6 +462,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_external_usb(self, dsm_6):
         """Test external USB storage devices."""
+        assert await dsm_6.login()
         assert dsm_6.external_usb
         await dsm_6.external_usb.update()
         assert dsm_6.external_usb.devices
