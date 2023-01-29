@@ -42,8 +42,8 @@ class SynoFormatHelper:
         return round(var_tb, 1)
 
     @staticmethod
-    def megabytes_to_bytes(num: int | float) -> float:
+    def megabytes_to_bytes(num: int | float) -> int:
         """Converts megabytes to bytes."""
         var_bytes = num * 1024.0 * 1024.0
 
-        return round(var_bytes, 1)
+        return int(round(var_bytes, 0))
