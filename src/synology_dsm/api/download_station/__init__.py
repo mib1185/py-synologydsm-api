@@ -1,10 +1,12 @@
 """Synology DownloadStation API wrapper."""
+from __future__ import annotations
+
 from synology_dsm.api import SynoBaseApi
 
 from .task import SynoDownloadTask
 
 
-class SynoDownloadStation(SynoBaseApi):
+class SynoDownloadStation(SynoBaseApi["dict[str, SynoDownloadTask]"]):
     """An implementation of a Synology DownloadStation."""
 
     API_KEY = "SYNO.DownloadStation.*"
@@ -15,42 +17,58 @@ class SynoDownloadStation(SynoBaseApi):
         "additional": "detail,file"
     }  # Can contain: detail, transfer, file, tracker, peer
 
-    async def update(self):
+    async def update(self) -> None:
         """Update tasks from API."""
         self._data = {}
         raw_data = await self._dsm.get(self.TASK_API_KEY, "List", self.REQUEST_DATA)
-        list_data = raw_data["data"]
-        for task_data in list_data["tasks"]:
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return
+
+        for task_data in data["tasks"]:
             if task_data["id"] in self._data:
                 self._data[task_data["id"]].update(task_data)
             else:
                 self._data[task_data["id"]] = SynoDownloadTask(task_data)
 
     # Global
-    async def get_info(self):
+    async def get_info(self) -> dict | None:
         """Return general informations about the Download Station instance."""
-        return await self._dsm.get(self.INFO_API_KEY, "GetInfo")
+        raw_data = await self._dsm.get(self.INFO_API_KEY, "GetInfo")
+        if isinstance(raw_data, dict):
+            return raw_data
+        return None
 
-    async def get_config(self):
+    async def get_config(self) -> dict | None:
         """Return configuration about the Download Station instance."""
-        return await self._dsm.get(self.INFO_API_KEY, "GetConfig")
+        raw_data = await self._dsm.get(self.INFO_API_KEY, "GetConfig")
+        if isinstance(raw_data, dict):
+            return raw_data
+        return None
 
-    async def get_stat(self):
+    async def get_stat(self) -> dict | None:
         """Return statistic about the Download Station instance."""
-        return await self._dsm.get(self.STAT_API_KEY, "GetInfo")
+        raw_data = await self._dsm.get(self.STAT_API_KEY, "GetInfo")
+        if isinstance(raw_data, dict):
+            return raw_data
+        return None
 
     # Downloads
-    def get_all_tasks(self):
+    def get_all_tasks(self) -> list[SynoDownloadTask]:
         """Return a list of tasks."""
-        return self._data.values()
+        return list(self._data.values())
 
-    def get_task(self, task_id):
+    def get_task(self, task_id: str) -> SynoDownloadTask | None:
         """Return task matching task_id."""
-        return self._data[task_id]
+        return self._data.get(task_id)
 
-    def create(self, uri, unzip_password=None, destination=None):
+    async def create(
+        self,
+        uri: str | list[str],
+        unzip_password: str | None = None,
+        destination: str | None = None,
+    ) -> dict | None:
         """Create a new task (uri accepts HTTP/FTP/magnet/ED2K links)."""
-        res = self._dsm.post(
+        res = await self._dsm.post(
             self.TASK_API_KEY,
             "Create",
             {
@@ -59,10 +77,12 @@ class SynoDownloadStation(SynoBaseApi):
                 "destination": destination,
             },
         )
-        self.update()
-        return res
+        await self.update()
+        if isinstance(res, dict):
+            return res
+        return None
 
-    async def pause(self, task_id):
+    async def pause(self, task_id: str | list[str]) -> dict | None:
         """Pause a download task."""
         res = await self._dsm.get(
             self.TASK_API_KEY,
@@ -70,9 +90,11 @@ class SynoDownloadStation(SynoBaseApi):
             {"id": ",".join(task_id) if isinstance(task_id, list) else task_id},
         )
         await self.update()
-        return res
+        if isinstance(res, dict):
+            return res
+        return None
 
-    async def resume(self, task_id):
+    async def resume(self, task_id: str | list[str]) -> dict | None:
         """Resume a paused download task."""
         res = await self._dsm.get(
             self.TASK_API_KEY,
@@ -80,9 +102,13 @@ class SynoDownloadStation(SynoBaseApi):
             {"id": ",".join(task_id) if isinstance(task_id, list) else task_id},
         )
         await self.update()
-        return res
+        if isinstance(res, dict):
+            return res
+        return None
 
-    async def delete(self, task_id, force_complete=False):
+    async def delete(
+        self, task_id: str | list[str], force_complete: bool = False
+    ) -> dict | None:
         """Delete a download task."""
         res = await self._dsm.get(
             self.TASK_API_KEY,
@@ -93,4 +119,6 @@ class SynoDownloadStation(SynoBaseApi):
             },
         )
         await self.update()
-        return res
+        if isinstance(res, dict):
+            return res
+        return None
