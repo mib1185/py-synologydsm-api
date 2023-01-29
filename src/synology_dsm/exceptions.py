@@ -38,6 +38,14 @@ class SynologyDSMException(Exception):
         super().__init__(error_message)
 
 
+class SynologyDSMNotLoggedInException(SynologyDSMException):
+    """Not logged in exception."""
+
+    def __init__(self):
+        """Constructor method."""
+        super().__init__(None, -1, "Not logged in. You have to do login() first.")
+
+
 # Request
 class SynologyDSMRequestException(SynologyDSMException):
     """Request exception."""

@@ -1,4 +1,5 @@
 """Synology DSM tests."""
+# pylint: disable=protected-access
 import pytest
 
 from synology_dsm.const import API_AUTH
@@ -79,6 +80,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_information(self, dsm_6):
         """Test information."""
+        assert await dsm_6.login()
         assert dsm_6.information
         await dsm_6.information.update()
         assert dsm_6.information.model == "DS918+"
@@ -93,6 +95,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_network(self, dsm_6):
         """Test network."""
+        assert await dsm_6.login()
         assert dsm_6.network
         await dsm_6.network.update()
         assert dsm_6.network.dns
@@ -107,6 +110,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_security(self, dsm_6):
         """Test security, safe status."""
+        assert await dsm_6.login()
         assert dsm_6.security
         await dsm_6.security.update()
         assert dsm_6.security.checks
@@ -126,6 +130,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_security_error(self, dsm_6):
         """Test security, outOfDate status."""
+        assert await dsm_6.login()
         dsm_6.error = True
         assert dsm_6.security
         await dsm_6.security.update()
@@ -146,6 +151,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_shares(self, dsm_6):
         """Test shares."""
+        assert await dsm_6.login()
         assert dsm_6.share
         await dsm_6.share.update()
         assert dsm_6.share.shares
@@ -179,6 +185,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_system(self, dsm_6):
         """Test system."""
+        assert await dsm_6.login()
         assert dsm_6.system
         await dsm_6.system.update()
         assert dsm_6.system.cpu_clock_speed
@@ -205,6 +212,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_upgrade(self, dsm_6):
         """Test upgrade."""
+        assert await dsm_6.login()
         assert dsm_6.upgrade
         await dsm_6.upgrade.update()
         assert dsm_6.upgrade.update_available
@@ -223,6 +231,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_storage(self, dsm_6):
         """Test storage roots."""
+        assert await dsm_6.login()
         assert dsm_6.storage
         await dsm_6.storage.update()
         assert dsm_6.storage.disks
@@ -233,6 +242,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_storage_raid_volumes(self, dsm_6):
         """Test RAID storage volumes."""
+        assert await dsm_6.login()
         await dsm_6.storage.update()
         # Basics
         assert dsm_6.storage.volumes_ids
@@ -285,6 +295,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_storage_shr_volumes(self, dsm_6):
         """Test SHR storage volumes."""
+        assert await dsm_6.login()
         dsm_6.disks_redundancy = "SHR1"
         await dsm_6.storage.update()
 
@@ -353,6 +364,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_storage_shr2_volumes(self, dsm_6):
         """Test SHR2 storage volumes."""
+        assert await dsm_6.login()
         dsm_6.disks_redundancy = "SHR2"
         await dsm_6.storage.update()
 
@@ -383,6 +395,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_storage_shr2_expansion_volumes(self, dsm_6):
         """Test SHR2 storage with expansion unit volumes."""
+        assert await dsm_6.login()
         dsm_6.disks_redundancy = "SHR2_EXPANSION"
         await dsm_6.storage.update()
 
@@ -413,6 +426,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_storage_disks(self, dsm_6):
         """Test storage disks."""
+        assert await dsm_6.login()
         await dsm_6.storage.update()
         # Basics
         assert dsm_6.storage.disks_ids
@@ -448,6 +462,7 @@ class TestSynologyDSM6:
     @pytest.mark.asyncio
     async def test_download_station(self, dsm_6):
         """Test DownloadStation."""
+        assert await dsm_6.login()
         assert dsm_6.download_station
         assert not dsm_6.download_station.get_all_tasks()
 
@@ -481,6 +496,7 @@ class TestSynologyDSM6:
     async def test_surveillance_station(self, dsm_6):
         """Test SurveillanceStation."""
         dsm_6.with_surveillance = True
+        assert await dsm_6.login()
         assert dsm_6.surveillance_station
         assert not dsm_6.surveillance_station.get_all_cameras()
 

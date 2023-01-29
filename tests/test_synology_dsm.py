@@ -1,4 +1,5 @@
 """Synology DSM tests."""
+# pylint: disable=protected-access
 import pytest
 
 from synology_dsm.api.core.security import SynoCoreSecurity
@@ -19,6 +20,7 @@ from synology_dsm.exceptions import (
     SynologyDSMLogin2SARequiredException,
     SynologyDSMLoginFailedException,
     SynologyDSMLoginInvalidException,
+    SynologyDSMNotLoggedInException,
     SynologyDSMRequestException,
 )
 
@@ -44,6 +46,28 @@ class TestSynologyDSM:
         assert dsm._timeout == 10
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
+
+    @pytest.mark.parametrize("version", [5, 6, 7])
+    @pytest.mark.asyncio
+    async def test_login_neccessary(self, version):
+        """Test login is neccessary."""
+        dsm = SynologyDSMMock(
+            None,
+            VALID_HOST,
+            VALID_PORT,
+            USER_MAX_TRY,
+            VALID_PASSWORD,
+            VALID_HTTPS,
+        )
+        dsm.dsm_version = version
+
+        with pytest.raises(SynologyDSMNotLoggedInException) as error:
+            await dsm.utilisation.update()
+        error_value = error.value.args[0]
+        assert error_value["api"] is None
+        assert error_value["code"] == -1
+        assert error_value["reason"] == "Unknown"
+        assert error_value["details"] == "Not logged in. You have to do login() first."
 
     @pytest.mark.parametrize("version", [5, 6, 7])
     @pytest.mark.asyncio
@@ -269,6 +293,7 @@ class TestSynologyDSM:
     @pytest.mark.asyncio
     async def test_request_get(self, dsm):
         """Test get request."""
+        await dsm.login()
         assert await dsm.get(API_INFO, "query")
         assert await dsm.get(API_AUTH, "login")
         assert await dsm.get("SYNO.DownloadStation2.Task", "list")
@@ -277,6 +302,7 @@ class TestSynologyDSM:
     @pytest.mark.asyncio
     async def test_request_get_failed(self, dsm):
         """Test failed get request."""
+        await dsm.login()
         with pytest.raises(SynologyDSMAPINotExistsException) as error:
             await dsm.get("SYNO.Virtualization.API.Task.Info", "list")
         error_value = error.value.args[0]
@@ -291,6 +317,7 @@ class TestSynologyDSM:
     @pytest.mark.asyncio
     async def test_request_post(self, dsm):
         """Test post request."""
+        await dsm.login()
         assert await dsm.post(
             "SYNO.FileStation.Upload",
             "upload",
@@ -311,6 +338,7 @@ class TestSynologyDSM:
     @pytest.mark.asyncio
     async def test_request_post_failed(self, dsm):
         """Test failed post request."""
+        await dsm.login()
         with pytest.raises(SynologyDSMAPIErrorException) as error:
             await dsm.post(
                 "SYNO.FileStation.Upload",
@@ -538,12 +566,14 @@ class TestSynologyDSM:
     @pytest.mark.asyncio
     async def test_utilisation(self, dsm):
         """Test utilisation."""
+        await dsm.login()
         assert dsm.utilisation
         await dsm.utilisation.update()
 
     @pytest.mark.asyncio
     async def test_utilisation_cpu(self, dsm):
         """Test utilisation CPU."""
+        await dsm.login()
         await dsm.utilisation.update()
         assert dsm.utilisation.cpu
         assert dsm.utilisation.cpu_other_load
@@ -558,6 +588,7 @@ class TestSynologyDSM:
     async def test_utilisation_error(self, dsm):
         """Test utilisation error."""
         dsm.error = True
+        await dsm.login()
         with pytest.raises(SynologyDSMAPIErrorException) as error:
             await dsm.utilisation.update()
         error_value = error.value.args[0]
@@ -574,6 +605,7 @@ class TestSynologyDSM:
     @pytest.mark.asyncio
     async def test_utilisation_memory(self, dsm):
         """Test utilisation memory."""
+        await dsm.login()
         await dsm.utilisation.update()
         assert dsm.utilisation.memory
         assert dsm.utilisation.memory_real_usage
@@ -593,6 +625,7 @@ class TestSynologyDSM:
     @pytest.mark.asyncio
     async def test_utilisation_network(self, dsm):
         """Test utilisation network."""
+        await dsm.login()
         await dsm.utilisation.update()
         assert dsm.utilisation.network
         assert dsm.utilisation.network_up()
