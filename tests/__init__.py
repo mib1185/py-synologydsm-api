@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 import aiohttp
 
 from synology_dsm import SynologyDSM
+from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -35,6 +36,7 @@ from .api_data.dsm_6 import (
     DSM_6_AUTH_LOGIN,
     DSM_6_AUTH_LOGIN_2SA,
     DSM_6_AUTH_LOGIN_2SA_OTP,
+    DSM_6_CORE_EXTERNAL_USB_DS1821_PLUS_6USB,
     DSM_6_CORE_SECURITY,
     DSM_6_CORE_SECURITY_UPDATE_OUTOFDATE,
     DSM_6_CORE_SHARE,
@@ -98,6 +100,7 @@ API_SWITCHER = {
         "AUTH_LOGIN_2SA_OTP": DSM_6_AUTH_LOGIN_2SA_OTP,
         "DSM_INFORMATION": DSM_6_DSM_INFORMATION,
         "DSM_NETWORK": DSM_6_DSM_NETWORK_2LAN_1PPPOE,
+        "CORE_EXTERNAL_USB": DSM_6_CORE_EXTERNAL_USB_DS1821_PLUS_6USB,
         "CORE_SECURITY": DSM_6_CORE_SECURITY,
         "CORE_SHARE": DSM_6_CORE_SHARE,
         "CORE_SYSTEM": DSM_6_CORE_SYSTEM_DS918_PLUS,
@@ -236,6 +239,9 @@ class SynologyDSMMock(SynologyDSM):
         if self.API_URI in url:
             if not self._session_id:
                 return ERROR_INSUFFICIENT_USER_PRIVILEGE
+
+            if SynoCoreExternalUSB.API_KEY in url:
+                return DSM_6_CORE_EXTERNAL_USB_DS1821_PLUS_6USB
 
             if SynoCoreSecurity.API_KEY in url:
                 if self.error:

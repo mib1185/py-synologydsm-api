@@ -8,6 +8,7 @@ import aiohttp
 import async_timeout
 from yarl import URL
 
+from .api.core.external_usb import SynoCoreExternalUSB
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
 from .api.core.system import SynoCoreSystem
@@ -75,6 +76,7 @@ class SynologyDSM:
             "SYNO.API.Info": {"maxVersion": 1, "minVersion": 1, "path": "query.cgi"}
         }
         self._download = None
+        self._external_usb = None
         self._information = None
         self._network = None
         self._photos = None
@@ -354,6 +356,9 @@ class SynologyDSM:
         if self._download:
             await self._download.update()
 
+        if self._external_usb:
+            await self._external_usb.update()
+
         if self._information and with_information:
             await self._information.update()
 
@@ -389,6 +394,9 @@ class SynologyDSM:
             if hasattr(self, "_" + api):
                 setattr(self, "_" + api, None)
                 return True
+            if api == SynoCoreExternalUSB.API_KEY:
+                self._external_usb = None
+                return True
             if api == SynoCoreSecurity.API_KEY:
                 self._security = None
                 return True
@@ -416,6 +424,9 @@ class SynologyDSM:
             if api == SynoSurveillanceStation.API_KEY:
                 self._surveillance = None
                 return True
+        if isinstance(api, SynoCoreExternalUSB):
+            self._external_usb = None
+            return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
             return True
@@ -444,6 +455,13 @@ class SynologyDSM:
             self._surveillance = None
             return True
         return False
+
+    @property
+    def external_usb(self) -> SynoCoreExternalUSB:
+        """Gets NAS external USB storage information."""
+        if not self._external_usb:
+            self._external_usb = SynoCoreExternalUSB(self)
+        return self._external_usb
 
     @property
     def download_station(self) -> SynoDownloadStation:

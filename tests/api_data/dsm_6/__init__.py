@@ -5,6 +5,7 @@ from .const_6_api_auth import (
     DSM_6_AUTH_LOGIN_2SA_OTP,
 )
 from .const_6_api_info import DSM_6_API_INFO
+from .core.const_6_core_external_usb import DSM_6_CORE_EXTERNAL_USB_DS1821_PLUS_6USB
 from .core.const_6_core_security import (
     DSM_6_CORE_SECURITY,
     DSM_6_CORE_SECURITY_UPDATE_OUTOFDATE,
@@ -56,6 +57,7 @@ __all__ = [
     "DSM_6_AUTH_LOGIN_2SA",
     "DSM_6_AUTH_LOGIN_2SA_OTP",
     "DSM_6_API_INFO",
+    "DSM_6_CORE_EXTERNAL_USB_DS1821_PLUS_6USB",
     "DSM_6_CORE_SECURITY",
     "DSM_6_CORE_SECURITY_UPDATE_OUTOFDATE",
     "DSM_6_CORE_SHARE",

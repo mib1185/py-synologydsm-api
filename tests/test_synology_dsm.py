@@ -2,6 +2,7 @@
 # pylint: disable=protected-access
 import pytest
 
+from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -373,6 +374,12 @@ class TestSynologyDSM:
 
     def test_reset_str_attr(self, dsm):
         """Test reset with string attr."""
+        assert not dsm._external_usb
+        assert dsm.external_usb
+        assert dsm._external_usb
+        assert dsm.reset("external_usb")
+        assert not dsm._external_usb
+
         assert not dsm._security
         assert dsm.security
         assert dsm._security
@@ -429,6 +436,12 @@ class TestSynologyDSM:
 
     def test_reset_str_key(self, dsm):
         """Test reset with string API key."""
+        assert not dsm._external_usb
+        assert dsm.external_usb
+        assert dsm._external_usb
+        assert dsm.reset(SynoCoreExternalUSB.API_KEY)
+        assert not dsm._external_usb
+
         assert not dsm._security
         assert dsm.security
         assert dsm._security
@@ -485,6 +498,12 @@ class TestSynologyDSM:
 
     def test_reset_object(self, dsm):
         """Test reset with object."""
+        assert not dsm._external_usb
+        assert dsm.external_usb
+        assert dsm._external_usb
+        assert dsm.reset(dsm.external_usb)
+        assert not dsm._external_usb
+
         assert not dsm._security
         assert dsm.security
         assert dsm._security
