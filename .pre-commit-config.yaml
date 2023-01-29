@@ -46,12 +46,12 @@ repos:
         types: [python]
         files: ^src/.+\.py$
         args: ["-sn"]
-      # - id: mypy
-      #   name: mypy
-      #   entry: mypy
-      #   language: system
-      #   types: [python]
-      #   files: ^src/.+\.py$
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types: [python]
+        files: ^src/.+\.py$
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.2.1
     hooks:
