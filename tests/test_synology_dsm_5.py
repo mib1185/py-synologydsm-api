@@ -1,4 +1,5 @@
 """Synology DSM tests."""
+# pylint: disable=protected-access
 import pytest
 
 from synology_dsm.const import API_AUTH
@@ -71,6 +72,7 @@ class TestSynologyDSM5:
     @pytest.mark.asyncio
     async def test_information(self, dsm_5):
         """Test information."""
+        assert await dsm_5.login()
         assert dsm_5.information
         await dsm_5.information.update()
         assert dsm_5.information.model == "DS3615xs"
@@ -85,6 +87,7 @@ class TestSynologyDSM5:
     @pytest.mark.asyncio
     async def test_network(self, dsm_5):
         """Test network."""
+        assert await dsm_5.login()
         assert dsm_5.network
         await dsm_5.network.update()
         assert dsm_5.network.dns
@@ -99,6 +102,7 @@ class TestSynologyDSM5:
     @pytest.mark.asyncio
     async def test_storage(self, dsm_5):
         """Test storage roots."""
+        assert await dsm_5.login()
         assert dsm_5.storage
         await dsm_5.storage.update()
         assert dsm_5.storage.disks
@@ -109,6 +113,7 @@ class TestSynologyDSM5:
     @pytest.mark.asyncio
     async def test_storage_volumes(self, dsm_5):
         """Test storage volumes."""
+        assert await dsm_5.login()
         await dsm_5.storage.update()
         # Basics
         assert dsm_5.storage.volumes_ids
@@ -169,6 +174,7 @@ class TestSynologyDSM5:
     @pytest.mark.asyncio
     async def test_storage_disks(self, dsm_5):
         """Test storage disks."""
+        assert await dsm_5.login()
         await dsm_5.storage.update()
         # Basics
         assert dsm_5.storage.disks_ids

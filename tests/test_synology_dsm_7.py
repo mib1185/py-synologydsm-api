@@ -1,4 +1,5 @@
 """Synology DSM tests."""
+# pylint: disable=protected-access
 import pytest
 
 from synology_dsm.const import API_AUTH
@@ -80,6 +81,7 @@ class TestSynologyDSM7:
     @pytest.mark.asyncio
     async def test_upgrade(self, dsm_7):
         """Test upgrade."""
+        assert await dsm_7.login()
         assert dsm_7.upgrade
         await dsm_7.upgrade.update()
         assert dsm_7.upgrade.update_available
@@ -98,6 +100,7 @@ class TestSynologyDSM7:
     @pytest.mark.asyncio
     async def test_photos(self, dsm_7):
         """Test photos."""
+        assert await dsm_7.login()
         assert dsm_7.photos
         albums = await dsm_7.photos.get_albums()
 

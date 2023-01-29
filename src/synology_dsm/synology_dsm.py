@@ -30,6 +30,7 @@ from .exceptions import (
     SynologyDSMLoginFailedException,
     SynologyDSMLoginInvalidException,
     SynologyDSMLoginPermissionDeniedException,
+    SynologyDSMNotLoggedInException,
     SynologyDSMRequestException,
 )
 
@@ -233,7 +234,7 @@ class SynologyDSM:
 
         # Check if logged
         if not self._session_id and api not in [API_AUTH, API_INFO]:
-            await self.login()
+            raise SynologyDSMNotLoggedInException
 
         # Build request params
         if not params:
