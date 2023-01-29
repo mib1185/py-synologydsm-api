@@ -12,7 +12,7 @@ authors = [
     {name="FG van Zeelst (ProtoThis)"}
 ]
 license = {text = "MIT"}
-readme = "README.rst"
+readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -51,10 +51,7 @@ profile = "black"
 src_paths = ["src", "tests"]
 
 [tool.pylint.MAIN]
-ignore = [
-    "tests",
-    "noxfile.py",
-]
+ignore = ["tests"]
 
 [tool.pylint.BASIC]
 class-const-naming-style = "any"
