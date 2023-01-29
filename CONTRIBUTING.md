@@ -43,7 +43,7 @@ Run the full test suite:
 $ pytest tests
 ```
 
-There is also a Visual Studio Code task available to run the full test suite.
+There is also a Visual Studio Code task available to run the full test suite or you can use the testing feature from Visual Studio Code.
 
 ## How to submit changes
 
