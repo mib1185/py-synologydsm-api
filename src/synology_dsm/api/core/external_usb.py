@@ -1,16 +1,19 @@
-"""DSM Storage data."""
+"""DSM external USB device data."""
+
+from __future__ import annotations
+
 from synology_dsm.api import SynoBaseApi
 from synology_dsm.helpers import SynoFormatHelper
 
 
 class SynoCoreExternalUSB(SynoBaseApi):
-    """Class containing external USB storage data."""
+    """Class for external USB storage devices."""
 
     API_KEY = "SYNO.Core.ExternalDevice.Storage.USB"
     REQUEST_DATA = {"additional": '["all"]'}
 
     async def update(self):
-        """Updates external USB storage data."""
+        """Updates external USB storage device data."""
         raw_data = await self._dsm.post(self.API_KEY, "list", data=self.REQUEST_DATA)
         if raw_data:
             self._data = raw_data
@@ -33,22 +36,22 @@ class SynoCoreExternalUSB(SynoBaseApi):
         return devices
 
     def get_device(self, device_id):
-        """Returns a specific device."""
+        """Returns a specific external USB storage device."""
         for device in self.devices:
             if device["dev_id"] == device_id:
                 return device
         return {}
 
     def device_name(self, device_id):
-        """The title of this device."""
+        """The title of theexternal USB storage device."""
         return self.get_device(device_id).get("dev_title")
 
     def device_type(self, device_id):
-        """The type of this device."""
+        """The type of theexternal USB storage device."""
         return self.get_device(device_id).get("dev_type")
 
-    def device_total_size(self, device_id, human_readable=False):
-        """Total size of the device."""
+    def device_size_total(self, device_id, human_readable=False):
+        """Total size of theexternal USB storage device."""
         return_data = int(self.get_device(device_id).get("total_size_mb"))
         return_data = SynoFormatHelper.megabytes_to_bytes(return_data)
         if human_readable:
@@ -56,36 +59,36 @@ class SynoCoreExternalUSB(SynoBaseApi):
         return return_data
 
     def device_status(self, device_id):
-        """The status of this device."""
+        """The status of the external USB storage device."""
         return self.get_device(device_id).get("status")
 
     def device_formatable(self, device_id):
-        """Whether the device is able to be formatted."""
+        """Whether the external USB storage device can be formatted."""
         return self.get_device(device_id).get("formatable")
 
     def device_progress(self, device_id):
-        """The progress this device."""
+        """The progress the external USB storage device."""
         return self.get_device(device_id).get("progress")
 
     def product_name(self, device_id):
-        """The product name of this device."""
+        """The product name of the external USB storage device."""
         return self.get_device(device_id).get("product")
 
     def producer(self, device_id):
-        """The producer name of this device."""
+        """The producer name of the external USB storage device."""
         return self.get_device(device_id).get("producer")
 
     # Partition
-    def device_partitions(self, device_id):
-        """Returns partitions of a device."""
+    def device_partitions(self, device_id) -> list[SynoUSBStoragePartition]:
+        """Returns all partitions of the external USB storage device."""
         partitions = self.get_device(device_id).get("partitions", [])
-        device_partitions = []
+        device_partitions: list[SynoUSBStoragePartition] = []
         for partition in partitions:
-            device_partitions.append((partition))
+            device_partitions.append(SynoUSBStoragePartition(partition))
         return device_partitions
 
     def device_partition_ids(self, device_id):
-        """Returns partition ids of a device."""
+        """Returns partition ids of the external USB storage device."""
         partitions = self.get_device(device_id).get("partitions", [])
         partition_ids = []
         for partition in partitions:
@@ -93,50 +96,47 @@ class SynoCoreExternalUSB(SynoBaseApi):
         return partition_ids
 
     def device_partition(self, device_id, partition_id):
-        """Partition of a device."""
-        # partitions = self.device_partitions(device_id)
+        """Returns a partition of the external USB storage device."""
         for partition in self.device_partitions(device_id):
-            if partition["name_id"] == partition_id:
-                return SynoUSBStoragePartition(partition)
+            if partition.name_id == partition_id:
+                return partition
         return None
 
-    def partitions_size_total(self, device_id, human_readable=False):
-        """Total size of all parititions."""
+    def partitions_all_size_total(self, device_id, human_readable=False):
+        """Total size of all parititions of the external USB storage device."""
         partitions = self.device_partitions(device_id)
         if partitions:
-            total_size = 0
+            size_total = 0
 
             for partition in partitions:
-                partition = SynoUSBStoragePartition(partition)
-                total_size += partition.partition_size_total(False)
+                size_total += partition.partition_size_total(False)
 
             if human_readable:
-                return SynoFormatHelper.bytes_to_readable(total_size)
-            return total_size
+                return SynoFormatHelper.bytes_to_readable(size_total)
+            return size_total
         return None
 
-    def partitions_used_total(self, device_id, human_readable=False):
-        """Total used size of all partitions."""
+    def partitions_all_size_used(self, device_id, human_readable=False):
+        """Total size used of all partitions of the external USB storage device."""
         partitions = self.device_partitions(device_id)
         if partitions:
-            total_used = 0
+            size_used = 0
 
             for partition in partitions:
-                partition = SynoUSBStoragePartition(partition)
-                total_used += partition.partition_size_used(False)
+                size_used += partition.partition_size_used(False)
 
             if human_readable:
-                return SynoFormatHelper.bytes_to_readable(total_used)
-            return total_used
+                return SynoFormatHelper.bytes_to_readable(size_used)
+            return size_used
         return None
 
-    def partitions_percentage_used_total(self, device_id):
-        """Used size in percentage for all partitions."""
-        total = self.partitions_size_total(device_id, human_readable=False)
-        used = self.partitions_used_total(device_id, human_readable=False)
+    def partitions_all_percentage_used(self, device_id):
+        """Used size in percentage for all partitions of the USB storage device."""
+        size_total = self.partitions_all_size_total(device_id, human_readable=False)
+        size_used = self.partitions_all_size_used(device_id, human_readable=False)
 
-        if used >= 0 and total and total > 0:
-            return round((float(used) / float(total)) * 100.0, 1)
+        if size_used >= 0 and size_total and size_total > 0:
+            return round((float(size_used) / float(size_total)) * 100.0, 1)
         return None
 
 
@@ -179,26 +179,26 @@ class SynoUSBStoragePartition:
 
     def partition_size_total(self, human_readable=False):
         """Total size of the partition."""
-        return_data = int(self._data["total_size_mb"])
-        return_data = SynoFormatHelper.megabytes_to_bytes(return_data)
+        size_total = int(self._data["total_size_mb"])
+        size_total = SynoFormatHelper.megabytes_to_bytes(size_total)
         if human_readable:
-            return SynoFormatHelper.bytes_to_readable(return_data)
-        return return_data
+            return SynoFormatHelper.bytes_to_readable(size_total)
+        return size_total
 
     def partition_size_used(self, human_readable=False):
         """Used size of the partition."""
-        return_data = int(self._data["used_size_mb"])
-        return_data = SynoFormatHelper.megabytes_to_bytes(return_data)
+        size_used = int(self._data["used_size_mb"])
+        size_used = SynoFormatHelper.megabytes_to_bytes(size_used)
         if human_readable:
-            return SynoFormatHelper.bytes_to_readable(return_data)
-        return return_data
+            return SynoFormatHelper.bytes_to_readable(size_used)
+        return size_used
 
     @property
     def partition_percentage_used(self):
         """Used size in percentage of the partition."""
-        total = self.partition_size_total()
-        used = self.partition_size_used()
+        size_total = self.partition_size_total()
+        size_used = self.partition_size_used()
 
-        if used >= 0 and total and total > 0:
-            return round((float(used) / float(total)) * 100.0, 1)
+        if size_used >= 0 and size_total and size_total > 0:
+            return round((float(size_used) / float(size_total)) * 100.0, 1)
         return None
