@@ -120,7 +120,6 @@ class SynologyDSM:
         return (
             api in self.DSM_5_WEIRD_URL_API
             and self._information is not None
-            and self._information.version
             and int(self._information.version) < 7321  # < DSM 6
         )
 
