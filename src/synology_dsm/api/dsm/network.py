@@ -76,7 +76,8 @@ class SynoDSMNetwork(SynoBaseApi[DsmNetworkDataType]):
         """List of MACs of the NAS."""
         macs: list[str] = []
         for interface in self.interfaces:
-            macs.append(interface["mac"])
+            if (mac := interface.get("mac")) is not None:
+                macs.append(mac)
         return macs
 
     @property

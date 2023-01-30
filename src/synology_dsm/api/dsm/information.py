@@ -53,7 +53,8 @@ class SynoDSMInformation(SynoBaseApi[DsmInformationDataType]):
     @property
     def temperature_warn(self) -> bool:
         """Temperature warning of the NAS."""
-        return self._data["temperature_warn"]
+        # some very old nas may not provide this attribute
+        return self._data.get("temperature_warn", False)
 
     @property
     def uptime(self) -> int:
