@@ -153,6 +153,44 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## External USB storage usage
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    await api.external_usb.update()
+    for device_id in api.external_usb.device_ids:
+        print("Name:                   " + str(api.external_usb.device_name(device_id)))
+        print("Size:                   " + str(api.external_usb.device_total_size(device_id, human_readable=True)) + " (" + str(api.external_usb.device_total_size(device_id, human_readable=False)) + ")")
+        print("Partitions size total:  " + str(api.external_usb.partitions_size_total(device_id, human_readable=True)))
+        print("Partitions size used:   " + str(api.external_usb.partitions_used_total(device_id, human_readable=True)))
+        print("Partitions % Used:      " + str(api.external_usb.partitions_percentage_used_total(device_id)) + " %")        print("    === Partitions ===")
+        for part in api.external_usb.device_partitions(device_id):
+            print("    Share name:             " + str(part.share_name))
+            print("    Filesystem:             " + str(part.filesystem))
+            print("    Size:                   " + str(part.partition_size_total(human_readable=True)))
+            print("    Used:                   " + str(part.partition_size_used(human_readable=True)))
+            print("    % Used:                 " + str(part.partition_percentage_used) + " %")
+
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## Photos usage
 
 ```python
