@@ -17,39 +17,42 @@ class SynoPhotos(SynoBaseApi):
     SEARCH_API_KEY = "SYNO.Foto.Search.Search"
     THUMBNAIL_API_KEY = "SYNO.Foto.Thumbnail"
 
-    async def get_albums(self, offset=0, limit=100) -> list[SynoPhotosAlbum]:
+    async def get_albums(
+        self, offset: int = 0, limit: int = 100
+    ) -> list[SynoPhotosAlbum] | None:
         """Get a list of all albums."""
         albums: list[SynoPhotosAlbum] = []
-        res = (
-            await self._dsm.get(
-                self.BROWSE_ALBUMS_API_KEY, "list", {"offset": offset, "limit": limit}
-            )
-        )["data"]["list"]
-        for album in res:
+        raw_data = await self._dsm.get(
+            self.BROWSE_ALBUMS_API_KEY, "list", {"offset": offset, "limit": limit}
+        )
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return None
+
+        for album in data["list"]:
             albums.append(
                 SynoPhotosAlbum(album["id"], album["name"], album["item_count"])
             )
         return albums
 
     async def get_items_from_album(
-        self, album: SynoPhotosAlbum, offset=0, limit=100
-    ) -> list[SynoPhotosItem]:
+        self, album: SynoPhotosAlbum, offset: int = 0, limit: int = 100
+    ) -> list[SynoPhotosItem] | None:
         """Get a list of all items from given album."""
         items: list[SynoPhotosItem] = []
-        res = (
-            await self._dsm.get(
-                self.BROWSE_ITEM_API_KEY,
-                "list",
-                {
-                    "album_id": album.album_id,
-                    "offset": offset,
-                    "limit": limit,
-                    "additional": '["thumbnail"]',
-                },
-            )
-        )["data"]["list"]
+        raw_data = await self._dsm.get(
+            self.BROWSE_ITEM_API_KEY,
+            "list",
+            {
+                "album_id": album.album_id,
+                "offset": offset,
+                "limit": limit,
+                "additional": '["thumbnail"]',
+            },
+        )
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return None
 
-        for item in res:
+        for item in data["list"]:
             if item["additional"]["thumbnail"]["xl"] == "ready":
                 size = "xl"
             elif item["additional"]["thumbnail"]["m"] == "ready":
@@ -70,24 +73,24 @@ class SynoPhotos(SynoBaseApi):
         return items
 
     async def get_items_from_search(
-        self, search_string: str, offset=0, limit=100
-    ) -> list[SynoPhotosItem]:
+        self, search_string: str, offset: int = 0, limit: int = 100
+    ) -> list[SynoPhotosItem] | None:
         """Get a list of all items matching the keyword."""
         items: list[SynoPhotosItem] = []
-        res = (
-            await self._dsm.get(
-                self.SEARCH_API_KEY,
-                "list_item",
-                {
-                    "keyword": search_string,
-                    "offset": offset,
-                    "limit": limit,
-                    "additional": '["thumbnail"]',
-                },
-            )
-        )["data"]["list"]
+        raw_data = await self._dsm.get(
+            self.SEARCH_API_KEY,
+            "list_item",
+            {
+                "keyword": search_string,
+                "offset": offset,
+                "limit": limit,
+                "additional": '["thumbnail"]',
+            },
+        )
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return None
 
-        for item in res:
+        for item in data["list"]:
             if item["additional"]["thumbnail"]["xl"] == "ready":
                 size = "xl"
             elif item["additional"]["thumbnail"]["m"] == "ready":
@@ -107,33 +110,35 @@ class SynoPhotos(SynoBaseApi):
             )
         return items
 
-    async def download_item(self, item: SynoPhotosItem) -> bytearray:
+    async def download_item(self, item: SynoPhotosItem) -> bytes | None:
         """Download the given item."""
-        return bytearray(
-            await self._dsm.get(
-                self.DOWNLOAD_API_KEY,
-                "download",
-                {
-                    "unit_id": f"[{item.item_id}]",
-                    "cache_key": item.thumbnail_cache_key,
-                },
-            )
+        raw_data = await self._dsm.get(
+            self.DOWNLOAD_API_KEY,
+            "download",
+            {
+                "unit_id": f"[{item.item_id}]",
+                "cache_key": item.thumbnail_cache_key,
+            },
         )
+        if isinstance(raw_data, bytes):
+            return raw_data
+        return None
 
-    async def download_item_thumbnail(self, item: SynoPhotosItem) -> bytearray:
+    async def download_item_thumbnail(self, item: SynoPhotosItem) -> bytes | None:
         """Download the given items thumbnail."""
-        return bytearray(
-            await self._dsm.get(
-                self.THUMBNAIL_API_KEY,
-                "get",
-                {
-                    "id": item.item_id,
-                    "cache_key": item.thumbnail_cache_key,
-                    "size": item.thumbnail_size,
-                    "type": "unit",
-                },
-            )
+        raw_data = await self._dsm.get(
+            self.THUMBNAIL_API_KEY,
+            "get",
+            {
+                "id": item.item_id,
+                "cache_key": item.thumbnail_cache_key,
+                "size": item.thumbnail_size,
+                "type": "unit",
+            },
         )
+        if isinstance(raw_data, bytes):
+            return raw_data
+        return None
 
     async def get_item_thumbnail_url(self, item: SynoPhotosItem) -> str:
         """Get the url of given items thumbnail."""
