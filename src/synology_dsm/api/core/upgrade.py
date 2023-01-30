@@ -6,7 +6,7 @@ from typing import TypedDict
 from synology_dsm.api import SynoBaseApi
 
 
-class DataType(TypedDict, total=False):
+class UpgradeDataType(TypedDict, total=False):
     """Data type."""
 
     available: bool
@@ -16,7 +16,7 @@ class DataType(TypedDict, total=False):
     restart: str
 
 
-class SynoCoreUpgrade(SynoBaseApi[DataType]):
+class SynoCoreUpgrade(SynoBaseApi[UpgradeDataType]):
     """Class containing upgrade data and actions."""
 
     API_KEY = "SYNO.Core.Upgrade"

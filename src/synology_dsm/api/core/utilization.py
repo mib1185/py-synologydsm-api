@@ -47,7 +47,7 @@ NetworkUtilization = TypedDict(
 )
 
 
-class DataType(TypedDict, total=False):
+class UtilizationDataType(TypedDict, total=False):
     """Data type."""
 
     cpu: CpuUtilization
@@ -55,7 +55,7 @@ class DataType(TypedDict, total=False):
     network: list[NetworkUtilization]
 
 
-class SynoCoreUtilization(SynoBaseApi[DataType]):
+class SynoCoreUtilization(SynoBaseApi[UtilizationDataType]):
     """Class containing Utilization data."""
 
     API_KEY = "SYNO.Core.System.Utilization"

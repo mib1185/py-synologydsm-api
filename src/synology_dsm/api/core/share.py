@@ -19,13 +19,13 @@ Share = TypedDict(
 )
 
 
-class DataType(TypedDict):
+class ShareDataType(TypedDict):
     """Data type."""
 
     shares: list[Share]
 
 
-class SynoCoreShare(SynoBaseApi[DataType]):
+class SynoCoreShare(SynoBaseApi[ShareDataType]):
     """Class containing Share data."""
 
     API_KEY = "SYNO.Core.Share"

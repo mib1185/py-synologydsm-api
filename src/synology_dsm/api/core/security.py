@@ -19,7 +19,7 @@ SecurityCategory = TypedDict(
 )
 
 
-class DataType(TypedDict):
+class SecurityDataType(TypedDict):
     """Data type."""
 
     items: dict[str, SecurityCategory]
@@ -30,7 +30,7 @@ class DataType(TypedDict):
     sysStatus: str  # noqa: N815
 
 
-class SynoCoreSecurity(SynoBaseApi[DataType]):
+class SynoCoreSecurity(SynoBaseApi[SecurityDataType]):
     """Class containing Security data."""
 
     API_KEY = "SYNO.Core.SecurityScan.Status"

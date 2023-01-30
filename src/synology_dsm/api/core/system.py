@@ -6,7 +6,7 @@ from typing import Any, TypedDict
 from synology_dsm.api import SynoBaseApi
 
 
-class DataType(TypedDict):
+class SystemDataType(TypedDict):
     """Data type."""
 
     cpu_clock_speed: int
@@ -27,7 +27,7 @@ class DataType(TypedDict):
     usb_dev: list[dict[str, Any]]
 
 
-class SynoCoreSystem(SynoBaseApi[DataType]):
+class SynoCoreSystem(SynoBaseApi[SystemDataType]):
     """Class containing System data and actions."""
 
     API_KEY = "SYNO.Core.System"
