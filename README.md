@@ -68,6 +68,8 @@ async def main():
 
 async def do(session: aiohttp.ClientSession):
     api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
     print("=== Information ===")
     await api.information.update()
     print("Model:           " + str(api.information.model))
@@ -132,6 +134,7 @@ async def main():
 
 async def do(session: aiohttp.ClientSession):
     api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
 
     if "SYNO.DownloadStation.Info" in api.apis:
 
@@ -207,6 +210,7 @@ async def main():
 
 async def do(session: aiohttp.ClientSession):
     api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
 
     albums = await api.photos.get_albums()
 
@@ -246,6 +250,7 @@ async def main():
 
 async def do(session: aiohttp.ClientSession):
     api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
 
     surveillance = api.surveillance_station
     await surveillance.update() # First update is required
@@ -294,6 +299,7 @@ async def main():
 
 async def do(session: aiohttp.ClientSession):
     api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
 
     system = api.system
 
@@ -350,6 +356,7 @@ async def main():
 
 async def do(session: aiohttp.ClientSession):
     api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
     upgrade = api.upgrade
 
     # Manual update upgrade information
