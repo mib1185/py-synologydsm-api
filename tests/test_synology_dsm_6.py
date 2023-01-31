@@ -470,13 +470,12 @@ class TestSynologyDSM6:
             assert dsm_6.external_usb.device_name(device_id)
             assert dsm_6.external_usb.device_type(device_id)
             assert dsm_6.external_usb.device_status(device_id)
-            assert dsm_6.external_usb.device_total_size(device_id, human_readable=True)
+            assert dsm_6.external_usb.device_size_total(device_id, human_readable=True)
             assert dsm_6.external_usb.producer(device_id)
             assert dsm_6.external_usb.product_name(device_id)
             assert dsm_6.external_usb.device_formatable(device_id)
             assert not dsm_6.external_usb.device_progress(device_id)
-            for partition_id in dsm_6.external_usb.device_partition_ids(device_id):
-                partition = dsm_6.external_usb.device_partition(device_id, partition_id)
+            for partition in dsm_6.external_usb.device_partitions(device_id):
                 assert partition.name_id
                 assert partition.partition_title
                 assert partition.share_name
@@ -488,8 +487,8 @@ class TestSynologyDSM6:
 
         assert dsm_6.external_usb.producer("usb1") == "PNY"
         assert dsm_6.external_usb.product_name("usb1") == "Flash Drive"
-        assert dsm_6.external_usb.device_total_size("usb1") == 127999672320.0
-        assert dsm_6.external_usb.device_total_size("usb1", True) == "119.2Gb"
+        assert dsm_6.external_usb.device_size_total("usb1") == 127999672320.0
+        assert dsm_6.external_usb.device_size_total("usb1", True) == "119.2Gb"
 
         assert dsm_6.external_usb.device_name("usb1") == "USB Disk 1"
         assert dsm_6.external_usb.device_type("usb1") == "usbDisk"
