@@ -457,18 +457,18 @@ class SynologyDSM:
         return False
 
     @property
-    def external_usb(self) -> SynoCoreExternalUSB:
-        """Gets NAS external USB storage information."""
-        if not self._external_usb:
-            self._external_usb = SynoCoreExternalUSB(self)
-        return self._external_usb
-
-    @property
     def download_station(self) -> SynoDownloadStation:
         """Gets NAS DownloadStation."""
         if not self._download:
             self._download = SynoDownloadStation(self)
         return self._download
+
+    @property
+    def external_usb(self) -> SynoCoreExternalUSB:
+        """Gets NAS external USB storage information."""
+        if not self._external_usb:
+            self._external_usb = SynoCoreExternalUSB(self)
+        return self._external_usb
 
     @property
     def information(self) -> SynoDSMInformation:

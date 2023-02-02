@@ -460,54 +460,6 @@ class TestSynologyDSM6:
         assert dsm_6.storage.disk_temp("test_disk") is None
 
     @pytest.mark.asyncio
-    async def test_external_usb(self, dsm_6):
-        """Test external USB storage devices."""
-        assert await dsm_6.login()
-        assert dsm_6.external_usb
-        await dsm_6.external_usb.update()
-        assert dsm_6.external_usb.devices
-        for device_id in dsm_6.external_usb.device_ids:
-            assert dsm_6.external_usb.device_name(device_id)
-            assert dsm_6.external_usb.device_type(device_id)
-            assert dsm_6.external_usb.device_status(device_id)
-            assert dsm_6.external_usb.device_size_total(device_id, human_readable=True)
-            assert dsm_6.external_usb.producer(device_id)
-            assert dsm_6.external_usb.product_name(device_id)
-            assert dsm_6.external_usb.device_formatable(device_id)
-            assert not dsm_6.external_usb.device_progress(device_id)
-            for partition in dsm_6.external_usb.device_partitions(device_id):
-                assert partition.name_id
-                assert partition.partition_title
-                assert partition.share_name
-                assert partition.filesystem
-                assert partition.fstype
-                assert partition.status
-                assert partition.partition_size_total(human_readable=True)
-                assert partition.partition_size_used(human_readable=True)
-
-        assert dsm_6.external_usb.producer("usb1") == "PNY"
-        assert dsm_6.external_usb.product_name("usb1") == "Flash Drive"
-        assert dsm_6.external_usb.device_size_total("usb1") == 127999672320.0
-        assert dsm_6.external_usb.device_size_total("usb1", True) == "119.2Gb"
-
-        assert dsm_6.external_usb.device_name("usb1") == "USB Disk 1"
-        assert dsm_6.external_usb.device_type("usb1") == "usbDisk"
-        assert (
-            dsm_6.external_usb.device_partition("usb1", "usb1p1").share_name
-            == "usbshare1-1"
-        )
-        assert (
-            dsm_6.external_usb.device_partition("usb1", "usb1p1").filesystem == "ntfs"
-        )
-        assert (
-            dsm_6.external_usb.device_partition("usb1", "usb1p2").share_name
-            == "usbshare1-2"
-        )
-        assert (
-            dsm_6.external_usb.device_partition("usb1", "usb1p2").filesystem == "FAT32"
-        )
-
-    @pytest.mark.asyncio
     async def test_download_station(self, dsm_6):
         """Test DownloadStation."""
         assert await dsm_6.login()

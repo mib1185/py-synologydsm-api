@@ -1,6 +1,6 @@
 """DSM 6 SYNO.Core.ExternalDevice.Storage.USB data."""
 
-DSM_6_CORE_EXTERNAL_USB_DS1821_PLUS_6USB = {
+DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_6USB = {
     "data": {
         "devices": [
             {
