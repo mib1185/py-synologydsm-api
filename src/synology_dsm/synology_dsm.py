@@ -1,4 +1,5 @@
 """Class to interact with Synology DSM."""
+import asyncio
 import logging
 import socket
 from json import JSONDecodeError
@@ -346,7 +347,7 @@ class SynologyDSM:
             # We got a 400, 401 or 404 ...
             raise aiohttp.ClientError(response)
 
-        except (aiohttp.ClientError, JSONDecodeError) as exp:
+        except (aiohttp.ClientError, asyncio.TimeoutError, JSONDecodeError) as exp:
             raise SynologyDSMRequestException(exp) from exp
 
     async def update(self, with_information: bool = False, with_network: bool = False):
