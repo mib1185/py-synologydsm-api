@@ -218,7 +218,7 @@ class SynologyDSM:
         params: dict = None,
     ):
         """Generate an url for external usage."""
-        url, params = await self._prepare_request(api, method, params)
+        url, params, _ = await self._prepare_request(api, method, params)
         return str(URL(url).update_query(params))
 
     async def _prepare_request(
@@ -263,7 +263,7 @@ class SynologyDSM:
 
         url = self._build_url(api)
 
-        return (url, params)
+        return (url, params, kwargs)
 
     async def _request(
         self,
@@ -275,7 +275,7 @@ class SynologyDSM:
         **kwargs,
     ):
         """Handles API request."""
-        url, params = await self._prepare_request(api, method, params, **kwargs)
+        url, params, kwargs = await self._prepare_request(api, method, params, **kwargs)
 
         # Request data
         self._debuglog("API: " + api)
