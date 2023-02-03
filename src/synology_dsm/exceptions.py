@@ -45,6 +45,9 @@ class SynologyDSMRequestException(SynologyDSMException):
     def __init__(self, exception):
         """Constructor method."""
         ex_class = exception.__class__.__name__
+        if not exception.args:
+            super().__init__(None, -1, ex_class)
+            return
         ex_reason = exception.args[0]
         if hasattr(exception.args[0], "reason"):
             ex_reason = exception.args[0].reason
