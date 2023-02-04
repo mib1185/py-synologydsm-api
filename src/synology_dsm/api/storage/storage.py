@@ -142,7 +142,6 @@ class SynoStorage(SynoBaseApi):
         """Returns a list of disk for a specific volume."""
         disks = []
         for pool in self.storage_pools:
-
             if pool.get("deploy_path") == volume_id:
                 # RAID disk redundancy
                 for disk_id in pool["disks"]:
