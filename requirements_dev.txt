@@ -9,7 +9,7 @@ flake8-rst-docstrings==0.3.0
 flake8==5.0.4
 mypy==0.931
 pep8-naming==0.12.1
-pre-commit-hooks==3.4.0
+pre-commit-hooks==4.4.0
 pre-commit==2.14.0
 Pygments==2.8.1
 pylint==2.15.10
