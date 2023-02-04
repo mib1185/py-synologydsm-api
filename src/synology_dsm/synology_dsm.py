@@ -250,7 +250,7 @@ class SynologyDSM:
         method: str,
         params: dict | None = None,
         **kwargs: Any,
-    ) -> tuple[str, dict]:
+    ) -> tuple[str, dict, dict]:
         """Prepare the url and parameters for a request."""
         # Discover existing APIs
         if api != API_INFO:
