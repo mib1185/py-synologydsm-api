@@ -3,7 +3,7 @@ async-timeout
 black==22.8.0
 coverage[toml]
 flake8-bandit==4.1.1
-flake8-bugbear==22.10.27
+flake8-bugbear==23.1.20
 flake8-docstrings==1.6.0
 flake8-rst-docstrings==0.3.0
 flake8==5.0.4
