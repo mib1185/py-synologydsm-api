@@ -11,7 +11,7 @@ mypy==0.931
 pep8-naming==0.12.1
 pre-commit-hooks==4.4.0
 pre-commit==2.14.0
-Pygments==2.8.1
+Pygments==2.14.0
 pylint==2.15.10
 pytest-asyncio==0.20.3
 pytest==7.2.0
