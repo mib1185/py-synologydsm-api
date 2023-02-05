@@ -77,14 +77,15 @@ class TestSynologyDSM7:
             assert dsm_7.external_usb.get_device(device).device_formatable
             assert not dsm_7.external_usb.get_device(device).device_progress
             for partition in dsm_7.external_usb.get_device(device).device_partitions:
-                assert partition.name_id
-                assert partition.partition_title
-                assert partition.share_name
-                assert partition.filesystem
-                assert partition.fstype
-                assert partition.status
-                assert partition.partition_size_total(human_readable=True)
-                assert partition.partition_size_used(human_readable=True)
+                if partition.is_formatted():
+                    assert partition.name_id
+                    assert partition.partition_title
+                    assert partition.share_name
+                    assert partition.filesystem
+                    assert partition.fstype
+                    assert partition.status
+                    assert partition.partition_size_total(human_readable=True)
+                    assert partition.partition_size_used(human_readable=True)
 
         assert dsm_7.external_usb.get_device("usb1").device_manufacturer == "PNY"
         assert (
@@ -126,6 +127,38 @@ class TestSynologyDSM7:
             .get_device_partition("usb1p2")
             .filesystem
             == "FAT32"
+        )
+        assert (
+            dsm_7.external_usb.get_device("usb1")
+            .get_device_partition("usb1p2")
+            .partition_size_total(False)
+            == 1073741824.0
+        )
+
+        # Unformatted device partition
+        assert (
+            dsm_7.external_usb.get_device("usb8")
+            .get_device_partition("usb8")
+            .is_formatted()
+            is False
+        )
+        assert (
+            dsm_7.external_usb.get_device("usb8")
+            .get_device_partition("usb8")
+            .partition_size_total(False)
+            is None
+        )
+        assert (
+            dsm_7.external_usb.get_device("usb8")
+            .get_device_partition("usb8")
+            .partition_size_used(False)
+            is None
+        )
+        assert (
+            dsm_7.external_usb.get_device("usb8")
+            .get_device_partition("usb8")
+            .partition_percentage_used
+            is None
         )
 
     @pytest.mark.asyncio

@@ -1,6 +1,6 @@
 """DSM 6 SYNO.Core.ExternalDevice.Storage.USB data."""
 
-DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_6USB = {
+DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB = {
     "data": {
         "devices": [
             {
@@ -50,7 +50,7 @@ DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_6USB = {
                         "share_name": "usbshare2",
                         "status": "normal",
                         "total_size_mb": 15138295,
-                        "used_size_mb": 9824667,
+                        "used_size_mb": 10899326,
                     }
                 ],
                 "producer": "Western Digital Technologies, Inc.",
@@ -66,15 +66,25 @@ DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_6USB = {
                 "formatable": True,
                 "partitions": [
                     {
-                        "dev_fstype": "exfat",
-                        "filesystem": "exfat",
+                        "dev_fstype": "vfat",
+                        "filesystem": "FAT32",
                         "name_id": "usb3p1",
                         "partition_title": "USB Disk 3 Partition 1",
-                        "share_name": "usbshare3",
+                        "share_name": "usbshare3-1",
                         "status": "normal",
-                        "total_size_mb": 117338,
-                        "used_size_mb": 0,
-                    }
+                        "total_size_mb": 197,
+                        "used_size_mb": 10,
+                    },
+                    {
+                        "dev_fstype": "hfsplus",
+                        "filesystem": "hfsplus",
+                        "name_id": "usb3p2",
+                        "partition_title": "USB Disk 3 Partition 2",
+                        "share_name": "usbshare3-2",
+                        "status": "normal",
+                        "total_size_mb": 117020,
+                        "used_size_mb": 13965,
+                    },
                 ],
                 "producer": "SanDisk Corp.",
                 "product": " SanDisk 3.2Gen1",
@@ -160,6 +170,28 @@ DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_6USB = {
                 "progress": "",
                 "status": "normal",
                 "total_size_mb": 715372,
+            },
+            {
+                "dev_id": "usb8",
+                "dev_title": "USB Disk 8",
+                "dev_type": "usbDisk",
+                "formatable": True,
+                "partitions": [
+                    {
+                        "dev_fstype": "unknown",
+                        "filesystem": "",
+                        "name_id": "usb8",
+                        "partition_title": "USB Disk 8",
+                        "share_name": "",
+                        "status": "normal",
+                        "total_size_mb": "",
+                    }
+                ],
+                "producer": "Genesys Logic, Inc.",
+                "product": "All-in-One Cardreader",
+                "progress": "",
+                "status": "normal",
+                "total_size_mb": 29,
             },
         ]
     },

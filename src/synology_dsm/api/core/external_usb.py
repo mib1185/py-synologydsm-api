@@ -67,7 +67,7 @@ class SynoCoreExternalUSBDevice:
         return self._data["dev_type"]
 
     def device_size_total(self, human_readable=False):
-        """Total size of theexternal USB storage device."""
+        """Total size of the external USB storage device."""
         return_data = int(self._data["total_size_mb"])
         return_data = SynoFormatHelper.megabytes_to_bytes(return_data)
         if human_readable:
@@ -125,30 +125,36 @@ class SynoCoreExternalUSBDevice:
     def partitions_all_size_total(self, human_readable=False):
         """Total size of all parititions of the external USB storage device."""
         partitions = self.device_partitions
-        if partitions:
-            size_total = 0
+        if not partitions:
+            return None
 
-            for partition in partitions:
+        size_total = 0
+        for partition in partitions:
+            partition_size = partition.partition_size_total(False)
+            # Partitions may be reported without a size
+            if partition_size:
                 size_total += partition.partition_size_total(False)
 
-            if human_readable:
-                return SynoFormatHelper.bytes_to_readable(size_total)
-            return size_total
-        return None
+        if human_readable:
+            return SynoFormatHelper.bytes_to_readable(size_total)
+        return size_total
 
     def partitions_all_size_used(self, human_readable=False):
         """Total size used of all partitions of the external USB storage device."""
         partitions = self.device_partitions
-        if partitions:
-            size_used = 0
+        if not partitions:
+            return None
 
-            for partition in partitions:
+        size_used = 0
+        for partition in partitions:
+            partition_used = partition.partition_size_used(False)
+            # Partitions may be reported without a size
+            if partition_used:
                 size_used += partition.partition_size_used(False)
 
-            if human_readable:
-                return SynoFormatHelper.bytes_to_readable(size_used)
-            return size_used
-        return None
+        if human_readable:
+            return SynoFormatHelper.bytes_to_readable(size_used)
+        return size_used
 
     @property
     def partitions_all_percentage_used(self):
@@ -200,16 +206,24 @@ class SynoUSBStoragePartition:
 
     def partition_size_total(self, human_readable=False):
         """Total size of the partition."""
-        size_total = int(self._data["total_size_mb"])
-        size_total = SynoFormatHelper.megabytes_to_bytes(size_total)
+        # API returns property as empty string if a partition has no size
+        size_total = self._data["total_size_mb"]
+        if size_total == "":
+            return None
+        size_total = SynoFormatHelper.megabytes_to_bytes(int(size_total))
         if human_readable:
             return SynoFormatHelper.bytes_to_readable(size_total)
         return size_total
 
     def partition_size_used(self, human_readable=False):
         """Used size of the partition."""
-        size_used = int(self._data["used_size_mb"])
-        size_used = SynoFormatHelper.megabytes_to_bytes(size_used)
+        # API does not return property if a partition has no size
+        if "used_size_mb" not in self._data:
+            return None
+        size_used = self._data["used_size_mb"]
+        if size_used == "":
+            return None
+        size_used = SynoFormatHelper.megabytes_to_bytes(int(size_used))
         if human_readable:
             return SynoFormatHelper.bytes_to_readable(size_used)
         return size_used
@@ -219,7 +233,13 @@ class SynoUSBStoragePartition:
         """Used size in percentage of the partition."""
         size_total = self.partition_size_total()
         size_used = self.partition_size_used()
+        if size_total is None or size_used is None:
+            return None
 
         if size_used >= 0 and size_total and size_total > 0:
             return round((float(size_used) / float(size_total)) * 100.0, 1)
         return None
+
+    def is_formatted(self):
+        """Is the partition formatted."""
+        return self._data["total_size_mb"] != ""
