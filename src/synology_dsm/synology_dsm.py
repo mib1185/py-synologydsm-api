@@ -3,6 +3,7 @@ import asyncio
 import logging
 import socket
 from json import JSONDecodeError
+from urllib.parse import quote, urlencode
 
 import aiohttp
 import async_timeout
@@ -304,15 +305,10 @@ class SynologyDSM:
         if params:
             # special handling for spaces in parameters
             # because yarl.URL does encode a space as + instead of %20
-            params.update(
-                {
-                    k: v.replace(" ", "%20")
-                    for k, v in params.items()
-                    if isinstance(v, str)
-                }
-            )
-            url_encoded = URL(url, encoded=True).update_query(params)
-            url_encoded = URL(str(url_encoded).replace("%2520", "%20"))
+            # safe extracted from yarl.URL._QUERY_PART_QUOTER
+            safe = "?/:@-._~!$'()*,"
+            query = urlencode(params, safe=safe, quote_via=quote)
+            url_encoded = URL(str(URL(url)) + "?" + query, encoded=True)
         else:
             url_encoded = URL(url)
 
