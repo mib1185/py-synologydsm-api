@@ -3,7 +3,6 @@ import asyncio
 import logging
 import socket
 from json import JSONDecodeError
-from urllib.parse import quote
 
 import aiohttp
 import async_timeout
@@ -302,11 +301,25 @@ class SynologyDSM:
 
     async def _execute_request(self, method: str, url: str, params: dict, **kwargs):
         """Function to execute and handle a request."""
-        # Execute Request
+        if params:
+            # special handling for spaces in parameters
+            # because yarl.URL does encode a space as + instead of %20
+            params.update(
+                {
+                    k: v.replace(" ", "%20")
+                    for k, v in params.items()
+                    if isinstance(v, str)
+                }
+            )
+            url_encoded = URL(url, encoded=True).update_query(params)
+            url_encoded = URL(str(url_encoded).replace("%2520", "%20"))
+        else:
+            url_encoded = URL(url)
+
         try:
             if method == "GET":
                 async with async_timeout.timeout(self._timeout):
-                    response = await self._session.get(url, params=params, **kwargs)
+                    response = await self._session.get(url_encoded, **kwargs)
             elif method == "POST":
                 data = {}
                 data.update(params)
@@ -316,15 +329,14 @@ class SynologyDSM:
                 self._debuglog("POST data: " + str(data))
 
                 async with async_timeout.timeout(self._timeout):
-                    response = await self._session.post(url, params=params, **kwargs)
+                    response = await self._session.post(url_encoded, **kwargs)
 
-            response_url = str(response.url)
+            # mask sesitiv parameters
+            response_url = response.url
             for param in SENSITIV_PARAMS:
                 if params.get(param):
-                    response_url = response_url.replace(
-                        quote(params[param]), "********"
-                    )
-            self._debuglog("Request url: " + response_url)
+                    response_url = response_url.update_query({param: "*********"})
+            self._debuglog("Request url: " + str(response_url))
             self._debuglog("Response status_code: " + str(response.status))
             self._debuglog("Response headers: " + str(dict(response.headers)))
 
