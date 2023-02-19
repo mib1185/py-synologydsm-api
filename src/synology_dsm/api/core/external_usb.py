@@ -26,15 +26,6 @@ class SynoCoreExternalUSB(SynoBaseApi):
         """Gets all external USB storage devices."""
         return self._data
 
-    # Device
-    @property
-    def device_ids(self):
-        """Returns external USB storage device ids."""
-        devices = []
-        for device in self.get_devices:
-            devices.append(device)
-        return devices
-
     def get_device(self, device_id) -> SynoCoreExternalUSBDevice:
         """Returns a specific external USB storage device."""
         return self._data[device_id]
@@ -108,15 +99,6 @@ class SynoCoreExternalUSBDevice:
         for partition in partitions:
             device_partitions.append(SynoUSBStoragePartition(partition))
         return device_partitions
-
-    @property
-    def device_partition_ids(self):
-        """Returns partition ids of the external USB storage device."""
-        partitions = self._data["partitions", []]
-        partition_ids = []
-        for partition in partitions:
-            partition_ids.append(partition["name_id"])
-        return partition_ids
 
     def get_device_partition(self, partition_id) -> SynoUSBStoragePartition:
         """Returns a partition of the external USB storage device."""
