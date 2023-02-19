@@ -356,7 +356,7 @@ class SynologyDSM:
             # mask sesitiv parameters
             response_url = response.url
             for param in SENSITIV_PARAMS:
-                if params.get(param):
+                if params is not None and params.get(param):
                     response_url = response_url.update_query({param: "*********"})
             self._debuglog("Request url: " + str(response_url))
             self._debuglog("Response status_code: " + str(response.status))

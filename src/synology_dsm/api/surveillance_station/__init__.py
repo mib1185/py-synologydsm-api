@@ -1,7 +1,7 @@
 """Synology SurveillanceStation API wrapper."""
 from __future__ import annotations
 
-from typing import cast, TypedDict
+from typing import TypedDict, cast
 
 from synology_dsm.api import SynoBaseApi
 
@@ -10,8 +10,6 @@ from .const import (
     MOTION_DETECTION_BY_SURVEILLANCE,
     MOTION_DETECTION_DISABLED,
     SNAPSHOT_PROFILE_BALANCED,
-    SNAPSHOT_SIZE_FULL,
-    SNAPSHOT_SIZE_ICON,
 )
 
 SurveillanceStationInfoData = TypedDict(
