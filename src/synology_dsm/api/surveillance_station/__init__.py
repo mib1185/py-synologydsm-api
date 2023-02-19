@@ -1,15 +1,72 @@
 """Synology SurveillanceStation API wrapper."""
+from __future__ import annotations
+
+from typing import cast, TypedDict
+
 from synology_dsm.api import SynoBaseApi
 
-from .camera import SynoCamera
+from .camera import SynoCamera, SynoCameraLiveView
 from .const import (
     MOTION_DETECTION_BY_SURVEILLANCE,
     MOTION_DETECTION_DISABLED,
     SNAPSHOT_PROFILE_BALANCED,
+    SNAPSHOT_SIZE_FULL,
+    SNAPSHOT_SIZE_ICON,
+)
+
+SurveillanceStationInfoData = TypedDict(
+    "SurveillanceStationInfoData",
+    {
+        "CMSMinVersion": str,
+        "DSModelName": str,
+        "SvsClientMinVersion": str,
+        "VS360HDLoginMinVersion": str,
+        "VS960HDMinVersion": str,
+        "cameraNumber": int,
+        "defaultWallpaperCount": int,
+        "enableVideoRelay": bool,
+        "hostname": str,
+        "inaAdvancedPriv": int,
+        "isBeta": bool,
+        "isLicenseEnough": int,
+        "is_beta": bool,
+        "liscenseNumber": int,
+        "maxCameraSupport": int,
+        "maxlanport": str,
+        "path": str,
+        "pluginHelperVersion": str,
+        "productName": str,
+        "remindQuickconnectTunnel": bool,
+        "reportURL": str,
+        "serial": str,
+        "serviceVolSize": float,
+        "strInaAdvancedPriv": str,
+        "timezone": str,
+        "timezoneTZDB": str,
+        "uid": int,
+        "unique": str,
+        "userPriv": int,
+        "version": dict,
+        "webPluginVersion": str,
+    },
+    total=False,
+)
+
+SurveillanceStationInfo = TypedDict(
+    "SurveillanceStationInfo", {"data": SurveillanceStationInfoData, "success": bool}
+)
+
+SurveillanceStationTakeSnapshotDataType = TypedDict(
+    "SurveillanceStationTakeSnapshotDataType", {"id": int}
+)
+
+SurveillanceStationTakeSnapshotType = TypedDict(
+    "SurveillanceStationTakeSnapshotType",
+    {"data": SurveillanceStationTakeSnapshotDataType, "success": bool},
 )
 
 
-class SynoSurveillanceStation(SynoBaseApi):
+class SynoSurveillanceStation(SynoBaseApi["dict[int, SynoCamera]"]):
     """An implementation of a Synology SurveillanceStation."""
 
     API_KEY = "SYNO.SurveillanceStation.*"
@@ -19,12 +76,14 @@ class SynoSurveillanceStation(SynoBaseApi):
     HOME_MODE_API_KEY = "SYNO.SurveillanceStation.HomeMode"
     SNAPSHOT_API_KEY = "SYNO.SurveillanceStation.SnapShot"
 
-    async def update(self):
+    async def update(self) -> None:
         """Update cameras and motion settings with latest from API."""
-        self._data = {}
+        self._data: dict[int, SynoCamera] = {}
         raw_data = await self._dsm.get(self.CAMERA_API_KEY, "List", max_version=7)
-        list_data = raw_data["data"]
-        for camera_data in list_data["cameras"]:
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return
+
+        for camera_data in data["cameras"]:
             if camera_data["id"] in self._data:
                 self._data[camera_data["id"]].update(camera_data)
             else:
@@ -34,45 +93,62 @@ class SynoSurveillanceStation(SynoBaseApi):
             motion_raw_data = await self._dsm.get(
                 self.CAMERA_EVENT_API_KEY, "MotionEnum", {"camId": camera_id}
             )
-            camera.update_motion_detection(motion_raw_data["data"])
+            if (
+                isinstance(motion_raw_data, dict)
+                and (motion_data := motion_raw_data.get("data")) is not None
+            ):
+                camera.update_motion_detection(motion_data)
 
         if not self._data:
             return
 
-        live_view_datas = await self._dsm.get(
+        live_view_raw_datas = await self._dsm.get(
             self.CAMERA_API_KEY,
             "GetLiveViewPath",
             {"idList": ",".join(str(k) for k in self._data)},
         )
-        for live_view_data in live_view_datas["data"]:
-            self._data[live_view_data["id"]].live_view.update(live_view_data)
+        if (
+            isinstance(live_view_raw_datas, dict)
+            and (live_view_datas := live_view_raw_datas.get("data")) is not None
+        ):
+            for live_view_data in live_view_datas:
+                self._data[live_view_data["id"]].live_view.update(live_view_data)
 
     # Global
-    async def get_info(self):
+    async def get_info(self) -> SurveillanceStationInfo | None:
         """Return general informations about the Surveillance Station instance."""
-        return await self._dsm.get(self.INFO_API_KEY, "GetInfo")
+        raw_data = await self._dsm.get(self.INFO_API_KEY, "GetInfo")
+        if isinstance(raw_data, dict) and raw_data.get("success"):
+            return cast(SurveillanceStationInfo, raw_data)
+        return None
 
     # Camera
-    def get_all_cameras(self):
+    def get_all_cameras(self) -> list[SynoCamera]:
         """Return a list of cameras."""
-        return self._data.values()
+        return list(self._data.values())
 
-    def get_camera(self, camera_id):
+    def get_camera(self, camera_id: int) -> SynoCamera | None:
         """Return camera matching camera_id."""
-        return self._data[camera_id]
+        return self._data.get(camera_id)
 
-    def get_camera_live_view_path(self, camera_id, video_format=None):
+    def get_camera_live_view_path(
+        self, camera_id: int, video_format: str | None = None
+    ) -> SynoCameraLiveView | str | None:
         """Return camera live view path matching camera_id.
 
         Args:
             camera_id: ID of the camera we want to get the live view path.
             video_format: mjpeg_http | multicast | mxpeg_http |  rtsp_http | rtsp.
         """
+        if (camera := self._data.get(camera_id)) is None:
+            return None
         if video_format:
-            return getattr(self._data[camera_id].live_view, video_format)
-        return self._data[camera_id].live_view
+            return getattr(camera.live_view, video_format, None)
+        return camera.live_view
 
-    async def get_camera_image(self, camera_id, profile=SNAPSHOT_PROFILE_BALANCED):
+    async def get_camera_image(
+        self, camera_id: int, profile: int = SNAPSHOT_PROFILE_BALANCED
+    ) -> bytes:
         """Return bytes of camera image for camera matching camera_id.
 
         Args:
@@ -81,30 +157,45 @@ class SynoSurveillanceStation(SynoBaseApi):
                      SNAPSHOT_PROFILE_BALANCED |
                      SNAPSHOT_PROFILE_LOW_BANDWIDTH
         """
-        return await self._dsm.get(
-            self.CAMERA_API_KEY,
-            "GetSnapshot",
-            {"id": camera_id, "cameraId": camera_id, "profileType": profile},
+        return cast(
+            bytes,
+            await self._dsm.get(
+                self.CAMERA_API_KEY,
+                "GetSnapshot",
+                {"id": camera_id, "cameraId": camera_id, "profileType": profile},
+            ),
         )
 
-    async def enable_camera(self, camera_id):
+    async def enable_camera(self, camera_ids: str) -> bool | None:
         """Enable camera(s) - multiple ID or single ex 1 or 1,2,3."""
         raw_data = await self._dsm.get(
-            self.CAMERA_API_KEY, "Enable", {"idList": camera_id}
+            self.CAMERA_API_KEY, "Enable", {"idList": camera_ids}
         )
-        return raw_data["success"]
+        if (
+            isinstance(raw_data, dict)
+            and (result := raw_data.get("success")) is not None
+        ):
+            return bool(result)
+        return None
 
-    async def disable_camera(self, camera_id):
+    async def disable_camera(self, camera_ids: str) -> bool | None:
         """Disable camera(s) - multiple ID or single ex 1 or 1,2,3."""
         raw_data = await self._dsm.get(
-            self.CAMERA_API_KEY, "Disable", {"idList": camera_id}
+            self.CAMERA_API_KEY, "Disable", {"idList": camera_ids}
         )
-        return raw_data["success"]
+        if (
+            isinstance(raw_data, dict)
+            and (result := raw_data.get("success")) is not None
+        ):
+            return bool(result)
+        return None
 
     # Snapshot
-    async def capture_camera_image(self, camera_id, save=True):
+    async def capture_camera_image(
+        self, camera_id: int, save: bool = True
+    ) -> SurveillanceStationTakeSnapshotType | None:
         """Capture a snapshot for camera matching camera_id."""
-        return await self._dsm.get(
+        raw_data = await self._dsm.get(
             self.SNAPSHOT_API_KEY,
             "TakeSnapshot",
             {
@@ -112,50 +203,75 @@ class SynoSurveillanceStation(SynoBaseApi):
                 "blSave": int(save),  # API requires an integer instead of a boolean
             },
         )
+        if isinstance(raw_data, dict):
+            return cast(SurveillanceStationTakeSnapshotType, raw_data)
+        return None
 
-    async def download_snapshot(self, snapshot_id, snapshot_size):
+    async def download_snapshot(
+        self, snapshot_id: int, snapshot_size: int
+    ) -> bytes | None:
         """Download snapshot image binary for a givent snapshot_id.
 
         Args:
             snapshot_id: ID of the snapshot we want to download.
             snapshot_size: SNAPSHOT_SIZE_ICON | SNAPSHOT_SIZE_FULL.
         """
-        return await self._dsm.get(
+        raw_data = await self._dsm.get(
             self.SNAPSHOT_API_KEY,
             "LoadSnapshot",
             {"id": snapshot_id, "imgSize": snapshot_size},
         )
+        if isinstance(raw_data, bytes):
+            return raw_data
+        return None
 
     # Motion
-    def is_motion_detection_enabled(self, camera_id):
+    def is_motion_detection_enabled(self, camera_id: int) -> bool:
         """Return motion setting matching camera_id."""
-        return self._data[camera_id].is_motion_detection_enabled
+        return bool(self._data[camera_id].is_motion_detection_enabled)
 
-    async def enable_motion_detection(self, camera_id):
+    async def enable_motion_detection(self, camera_id: int) -> dict | None:
         """Enable motion detection for camera matching camera_id."""
-        return await self._dsm.get(
+        raw_data = await self._dsm.get(
             self.CAMERA_EVENT_API_KEY,
             "MDParamSave",
             {"camId": camera_id, "source": MOTION_DETECTION_BY_SURVEILLANCE},
         )
+        if isinstance(raw_data, dict):
+            return raw_data
+        return None
 
-    async def disable_motion_detection(self, camera_id):
+    async def disable_motion_detection(self, camera_id: int) -> dict | None:
         """Disable motion detection for camera matching camera_id."""
-        return await self._dsm.get(
+        raw_data = await self._dsm.get(
             self.CAMERA_EVENT_API_KEY,
             "MDParamSave",
             {"camId": camera_id, "source": MOTION_DETECTION_DISABLED},
         )
+        if isinstance(raw_data, dict):
+            return raw_data
+        return None
 
     # Home mode
-    async def get_home_mode_status(self):
+    async def get_home_mode_status(self) -> bool | None:
         """Get the state of Home Mode."""
         raw_data = await self._dsm.get(self.HOME_MODE_API_KEY, "GetInfo")
-        return raw_data["data"]["on"]
+        if (
+            isinstance(raw_data, dict)
+            and raw_data.get("data")
+            and (status := raw_data["data"].get("on")) is not None
+        ):
+            return bool(status)
+        return None
 
-    async def set_home_mode(self, state):
+    async def set_home_mode(self, state: bool) -> bool | None:
         """Set the state of Home Mode (state: bool)."""
         raw_data = await self._dsm.get(
             self.HOME_MODE_API_KEY, "Switch", {"on": str(state).lower()}
         )
-        return raw_data["success"]
+        if (
+            isinstance(raw_data, dict)
+            and (result := raw_data.get("success")) is not None
+        ):
+            return bool(result)
+        return None
