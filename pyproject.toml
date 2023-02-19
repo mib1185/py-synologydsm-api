@@ -35,6 +35,9 @@ Documentation = "https://github.com/mib1185/py-synologydsm-api#readme"
 [project.scripts]
 synologydsm-api = "synology_dsm.__main__:main"
 
+[tool.setuptools.package-data]
+synology_dsm = ["py.typed", "*.py", "**/*.py"]
+
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
 
