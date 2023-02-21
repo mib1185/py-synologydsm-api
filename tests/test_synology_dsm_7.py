@@ -76,16 +76,19 @@ class TestSynologyDSM7:
             assert dsm_7.external_usb.get_device(device).device_product_name
             assert dsm_7.external_usb.get_device(device).device_formatable
             assert not dsm_7.external_usb.get_device(device).device_progress
-            for partition in dsm_7.external_usb.get_device(device).device_partitions:
-                if partition.is_formatted():
-                    assert partition.name_id
-                    assert partition.partition_title
+            for partition in dsm_7.external_usb.get_device(
+                device
+            ).device_partitions.values():
+                assert partition.name_id
+                assert partition.partition_title
+                assert partition.fstype
+                assert partition.status
+                if partition.is_mounted():
                     assert partition.share_name
+                if partition.is_supported():
                     assert partition.filesystem
-                    assert partition.fstype
-                    assert partition.status
-                    assert partition.partition_size_total(human_readable=True)
                     assert partition.partition_size_used(human_readable=True)
+                    assert partition.partition_size_total(human_readable=True)
 
         assert dsm_7.external_usb.get_device("usb1").device_manufacturer == "PNY"
         assert (
@@ -139,7 +142,13 @@ class TestSynologyDSM7:
         assert (
             dsm_7.external_usb.get_device("usb8")
             .get_device_partition("usb8")
-            .is_formatted()
+            .is_mounted()
+            is False
+        )
+        assert (
+            dsm_7.external_usb.get_device("usb8")
+            .get_device_partition("usb8")
+            .is_supported()
             is False
         )
         assert (
