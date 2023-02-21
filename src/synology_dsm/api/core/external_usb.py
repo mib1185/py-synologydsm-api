@@ -26,15 +26,6 @@ class SynoCoreExternalUSB(SynoBaseApi):
         """Gets all external USB storage devices."""
         return self._data
 
-    # # Device
-    # @property
-    # def device_ids(self):
-    #     """Returns external USB storage device ids."""
-    #     devices = []
-    #     for device in self.get_devices:
-    #         devices.append(device)
-    #     return devices
-
     def get_device(self, device_id) -> SynoCoreExternalUSBDevice:
         """Returns a specific external USB storage device."""
         return self._data.get(device_id)
@@ -45,11 +36,10 @@ class SynoCoreExternalUSBDevice:
 
     def __init__(self, data):
         """Initialize a external USB device."""
-        self._data = data
-        for partition_data in data["partitions"]:
-            self._data[partition_data["name_id"]] = SynoUSBStoragePartition(
-                partition_data
-            )
+        partitions: dict[str, SynoUSBStoragePartition] = {}
+        for partition in data["partitions"]:
+            partitions[partition["name_id"]] = SynoUSBStoragePartition(partition)
+        self._data = {**data, "partitions": partitions}
 
     @property
     def device_id(self):
@@ -104,33 +94,20 @@ class SynoCoreExternalUSBDevice:
     @property
     def device_partitions(self) -> list[SynoUSBStoragePartition]:
         """Returns all partitions of the external USB storage device."""
-        partitions = self._data["partitions"]
-        device_partitions: list[SynoUSBStoragePartition] = []
-        for partition in partitions:
-            device_partitions.append(SynoUSBStoragePartition(partition))
-        return device_partitions
-
-        # @property
-        # def device_partition_ids(self):
-        #     """Returns partition ids of the external USB storage device."""
-        #     partitions = self._data["partitions", []]
-        #     partition_ids = []
-        #     for partition in partitions:
-        #         partition_ids.append(partition["name_id"])
-        # return partition_ids
+        return self._data["partitions"]
 
     def get_device_partition(self, partition_id) -> SynoUSBStoragePartition:
         """Returns a partition of the external USB storage device."""
-        return self._data[partition_id]
+        return self._data["partitions"].get(partition_id)
 
     def partitions_all_size_total(self, human_readable=False):
         """Total size of all parititions of the external USB storage device."""
-        partitions = self.device_partitions
+        partitions = self._data.get("partitions")
         if not partitions:
             return None
 
         size_total = 0
-        for partition in partitions:
+        for partition in partitions.values():
             partition_size = partition.partition_size_total()
             # Partitions may be reported without a size
             if partition_size:
@@ -142,12 +119,12 @@ class SynoCoreExternalUSBDevice:
 
     def partitions_all_size_used(self, human_readable=False):
         """Total size used of all partitions of the external USB storage device."""
-        partitions = self.device_partitions
+        partitions = self._data.get("partitions")
         if not partitions:
             return None
 
         size_used = 0
-        for partition in partitions:
+        for partition in partitions.values():
             partition_used = partition.partition_size_used()
             # Partitions may be reported without a size
             if partition_used:
@@ -239,6 +216,10 @@ class SynoUSBStoragePartition:
             return round((float(size_used) / float(size_total)) * 100.0, 1)
         return None
 
-    def is_formatted(self):
+    def is_mounted(self):
         """Is the partition formatted."""
-        return self._data["total_size_mb"] != ""
+        return self._data.get("share_name") != ""
+
+    def is_supported(self):
+        """Is the partition formatted."""
+        return self._data.get("filesystem") != ""
