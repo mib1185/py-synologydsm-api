@@ -1,4 +1,6 @@
 """Library exceptions."""
+from __future__ import annotations
+
 from .const import (
     API_AUTH,
     ERROR_AUTH,
@@ -14,7 +16,7 @@ from .const import (
 class SynologyDSMException(Exception):
     """Generic Synology DSM exception."""
 
-    def __init__(self, api, code, details=None):
+    def __init__(self, api: str | None, code: int, details: str | None = None) -> None:
         """Constructor method."""
         reason = ERROR_COMMON.get(code)
         if api and not reason:
@@ -41,7 +43,7 @@ class SynologyDSMException(Exception):
 class SynologyDSMNotLoggedInException(SynologyDSMException):
     """Not logged in exception."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor method."""
         super().__init__(None, -1, "Not logged in. You have to do login() first.")
 
@@ -50,9 +52,12 @@ class SynologyDSMNotLoggedInException(SynologyDSMException):
 class SynologyDSMRequestException(SynologyDSMException):
     """Request exception."""
 
-    def __init__(self, exception):
+    def __init__(self, exception: Exception) -> None:
         """Constructor method."""
         ex_class = exception.__class__.__name__
+        if not exception.args:
+            super().__init__(None, -1, ex_class)
+            return
         ex_reason = exception.args[0]
         if hasattr(exception.args[0], "reason"):
             ex_reason = exception.args[0].reason
@@ -63,7 +68,7 @@ class SynologyDSMRequestException(SynologyDSMException):
 class SynologyDSMAPINotExistsException(SynologyDSMException):
     """API not exists exception."""
 
-    def __init__(self, api):
+    def __init__(self, api: str) -> None:
         """Constructor method."""
         super().__init__(api, -2, f"API {api} does not exists")
 
@@ -71,7 +76,7 @@ class SynologyDSMAPINotExistsException(SynologyDSMException):
 class SynologyDSMAPIErrorException(SynologyDSMException):
     """API returns an error exception."""
 
-    def __init__(self, api, code, details):
+    def __init__(self, api: str, code: int, details: str) -> None:
         """Constructor method."""
         super().__init__(api, code, details)
 
@@ -80,7 +85,7 @@ class SynologyDSMAPIErrorException(SynologyDSMException):
 class SynologyDSMLoginFailedException(SynologyDSMException):
     """Failed to login exception."""
 
-    def __init__(self, code, details=None):
+    def __init__(self, code: int, details: str | None = None) -> None:
         """Constructor method."""
         super().__init__(API_AUTH, code, details)
 
@@ -88,7 +93,7 @@ class SynologyDSMLoginFailedException(SynologyDSMException):
 class SynologyDSMLoginInvalidException(SynologyDSMLoginFailedException):
     """Invalid password & not admin account exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str) -> None:
         """Constructor method."""
         message = f"Invalid password or not admin account: {username}"
         super().__init__(400, message)
@@ -97,7 +102,7 @@ class SynologyDSMLoginInvalidException(SynologyDSMLoginFailedException):
 class SynologyDSMLoginDisabledAccountException(SynologyDSMLoginFailedException):
     """Guest & disabled account exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str) -> None:
         """Constructor method."""
         message = f"Guest or disabled account: {username}"
         super().__init__(401, message)
@@ -106,7 +111,7 @@ class SynologyDSMLoginDisabledAccountException(SynologyDSMLoginFailedException):
 class SynologyDSMLoginPermissionDeniedException(SynologyDSMLoginFailedException):
     """No access to login exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str) -> None:
         """Constructor method."""
         message = f"Permission denied for account: {username}"
         super().__init__(402, message)
@@ -115,7 +120,7 @@ class SynologyDSMLoginPermissionDeniedException(SynologyDSMLoginFailedException)
 class SynologyDSMLogin2SARequiredException(SynologyDSMLoginFailedException):
     """2SA required to login exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str) -> None:
         """Constructor method."""
         message = f"Two-step authentication required for account: {username}"
         super().__init__(403, message)
@@ -124,7 +129,7 @@ class SynologyDSMLogin2SARequiredException(SynologyDSMLoginFailedException):
 class SynologyDSMLogin2SAFailedException(SynologyDSMLoginFailedException):
     """2SA code failed exception."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor method."""
         message = "Two-step authentication failed, retry with a new pass code"
         super().__init__(404, message)
@@ -133,7 +138,7 @@ class SynologyDSMLogin2SAFailedException(SynologyDSMLoginFailedException):
 class SynologyDSMLogin2SAForcedException(SynologyDSMLoginFailedException):
     """2SA force to setup exception."""
 
-    def __init__(self, username):
+    def __init__(self, username: str) -> None:
         """Constructor method."""
         message = (
             f"Two-step authentication forced to be setuped for account: {username}"

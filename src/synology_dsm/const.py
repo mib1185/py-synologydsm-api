@@ -1,13 +1,15 @@
 """Library constants."""
+from typing import Final
+
 # APIs
-API_INFO = "SYNO.API.Info"
-API_AUTH = "SYNO.API.Auth"
+API_INFO: Final = "SYNO.API.Info"
+API_AUTH: Final = "SYNO.API.Auth"
 
 # Parameters to be masked on debug output
-SENSITIV_PARAMS = ["account", "passwd", "_sid", "SynoToken", "device_id"]
+SENSITIV_PARAMS: Final = ["account", "passwd", "_sid", "SynoToken", "device_id"]
 
 # SYNO.*
-ERROR_COMMON = {
+ERROR_COMMON: Final = {
     100: "Unknown error",
     101: "No parameter API, method, or version",
     102: "API does not exist",
@@ -23,7 +25,7 @@ ERROR_COMMON = {
 }
 
 # SYNO.API.Auth
-ERROR_AUTH = {
+ERROR_AUTH: Final = {
     400: "Invalid credentials",
     401: "Guest or disabled account",
     402: "Permission denied",
@@ -39,7 +41,7 @@ ERROR_AUTH = {
 }
 
 # SYNO.DownloadStation[2].BTSearch
-ERROR_DOWNLOAD_SEARCH = {
+ERROR_DOWNLOAD_SEARCH: Final = {
     400: "Unknown error",
     401: "Invalid parameter",
     402: "Parse the user setting failed",
@@ -48,7 +50,7 @@ ERROR_DOWNLOAD_SEARCH = {
     405: "Get the user setting failed",
 }
 # SYNO.DownloadStation[2].Task
-ERROR_DOWNLOAD_TASK = {
+ERROR_DOWNLOAD_TASK: Final = {
     400: "File upload failed",
     401: "Max number of tasks reached",
     402: "Destination denied",
@@ -61,7 +63,7 @@ ERROR_DOWNLOAD_TASK = {
 }
 
 # SYNO.FileStation.*
-ERROR_FILE = {
+ERROR_FILE: Final = {
     400: "Invalid parameter of file operation",
     401: "Unknown error of file operation",
     402: "System is too busy",
@@ -116,7 +118,7 @@ ERROR_FILE = {
 }
 
 # SYNO.SurveillanceStation.*
-ERROR_SURVEILLANCE = {
+ERROR_SURVEILLANCE: Final = {
     400: "Execution failed",
     401: "Invalid parameter",
     402: "Camera disabled",
@@ -138,7 +140,7 @@ ERROR_SURVEILLANCE = {
 }
 
 # SYNO.Virtualization.*
-ERROR_VIRTUALIZATION = {
+ERROR_VIRTUALIZATION: Final = {
     400: "Unknown error",
     401: "Bad parameter",
     402: "Operation failed",
