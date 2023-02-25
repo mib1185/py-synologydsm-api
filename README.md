@@ -177,10 +177,11 @@ async def do(session: aiohttp.ClientSession):
     await api.external_usb.update()
     for device in api.external_usb.get_devices.values():
         print("Name:                   " + str(device.device_name))
-        print("Size:                   " + str(device.device_size_total(human_readable=True)) + " (" + str(device.device_size_total()) + ")")
+        print("Size:                   " + str(device.device_size_total(human_readable=True))
+        print("Size in mb:             " + str(device.device_size_total())
         print("Partitions size total:  " + str(device.partitions_all_size_total(human_readable=True)))
         print("Partitions size used:   " + str(device.partitions_all_size_used(human_readable=True)))
-        print("Partitions % Used:      " + str(device.partitions_all_percentage_used )+ " %")
+        print("Partitions % Used:      " + str(device.partitions_all_percentage_used ) + " %")
         print("    === Partitions ===")
         for part in device.device_partitions.values():
             print("    Share name:             " + str(part.share_name))
@@ -188,8 +189,6 @@ async def do(session: aiohttp.ClientSession):
             print("    Size:                   " + str(part.partition_size_total(human_readable=True)))
             print("    Used:                   " + str(part.partition_size_used(human_readable=True)))
             print("    % Used:                 " + str(part.partition_percentage_used) + " %")
-
-
 
 if __name__ == "__main__":
     asyncio.run(main())
