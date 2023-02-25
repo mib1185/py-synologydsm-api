@@ -244,6 +244,7 @@ class SynoUSBStoragePartition:
             return SynoFormatHelper.bytes_to_readable(size_used)
         return size_used
 
+    @property
     def partition_percentage_used(self) -> float | None:
         """Used size in percentage of the partition."""
         size_total = self.partition_size_total()
@@ -257,10 +258,12 @@ class SynoUSBStoragePartition:
             return round((float(size_used) / float(size_total)) * 100.0, 1)
         return None
 
+    @property
     def is_mounted(self) -> bool:
         """Is the partition formatted."""
         return self._data["share_name"] != ""
 
+    @property
     def is_supported(self) -> bool:
         """Is the partition formatted."""
         return self._data["filesystem"] != ""
