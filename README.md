@@ -175,13 +175,14 @@ async def do(session: aiohttp.ClientSession):
     await api.login()
 
     await api.external_usb.update()
-    for device_id in api.external_usb.device_ids:
-        print("Name:                   " + str(api.external_usb.device_name(device_id)))
-        print("Size:                   " + str(api.external_usb.device_total_size(device_id, human_readable=True)) + " (" + str(api.external_usb.device_total_size(device_id, human_readable=False)) + ")")
-        print("Partitions size total:  " + str(api.external_usb.partitions_size_total(device_id, human_readable=True)))
-        print("Partitions size used:   " + str(api.external_usb.partitions_used_total(device_id, human_readable=True)))
-        print("Partitions % Used:      " + str(api.external_usb.partitions_percentage_used_total(device_id)) + " %")        print("    === Partitions ===")
-        for part in api.external_usb.device_partitions(device_id):
+    for device in api.external_usb.get_devices.values():
+        print("Name:                   " + str(device.device_name))
+        print("Size:                   " + str(device.device_size_total(human_readable=True)) + " (" + str(device.device_size_total()) + ")")
+        print("Partitions size total:  " + str(device.partitions_all_size_total(human_readable=True)))
+        print("Partitions size used:   " + str(device.partitions_all_size_used(human_readable=True)))
+        print("Partitions % Used:      " + str(device.partitions_all_percentage_used )+ " %")
+        print("    === Partitions ===")
+        for part in device.device_partitions.values():
             print("    Share name:             " + str(part.share_name))
             print("    Filesystem:             " + str(part.filesystem))
             print("    Size:                   " + str(part.partition_size_total(human_readable=True)))
