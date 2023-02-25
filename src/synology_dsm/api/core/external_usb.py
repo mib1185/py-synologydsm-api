@@ -236,7 +236,7 @@ class SynoUSBStoragePartition:
     def partition_size_used(self, human_readable: bool = False) -> int | str | None:
         """Used size of the partition."""
         # API does not return property if a partition has no size
-        size_used = self._data["used_size_mb"]
+        size_used = self._data.get("used_size_mb")
         if not isinstance(size_used, int):
             return None
         size_used = SynoFormatHelper.megabytes_to_bytes(size_used)
