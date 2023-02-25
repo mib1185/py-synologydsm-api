@@ -64,111 +64,72 @@ class TestSynologyDSM7:
         assert await dsm_7.login()
         assert dsm_7.external_usb
         await dsm_7.external_usb.update()
-        assert dsm_7.external_usb.get_devices
-        for device in dsm_7.external_usb.get_devices:
-            assert dsm_7.external_usb.get_device(device).device_name
-            assert dsm_7.external_usb.get_device(device).device_type
-            assert dsm_7.external_usb.get_device(device).device_status
-            assert dsm_7.external_usb.get_device(device).device_size_total(
-                human_readable=True
-            )
-            assert dsm_7.external_usb.get_device(device).device_manufacturer
-            assert dsm_7.external_usb.get_device(device).device_product_name
-            assert dsm_7.external_usb.get_device(device).device_formatable
-            assert not dsm_7.external_usb.get_device(device).device_progress
-            for partition in dsm_7.external_usb.get_device(
-                device
-            ).device_partitions.values():
+
+        devices = dsm_7.external_usb.get_devices
+        assert len(devices) == 7
+
+        for device in dsm_7.external_usb.get_devices.values():
+            assert device.device_name
+            assert device.device_type
+            assert device.device_status
+            assert device.device_size_total()
+            assert device.device_size_total(True)
+            assert device.device_manufacturer
+            assert device.device_product_name
+            assert device.device_formatable
+            assert not device.device_progress
+            for partition in device.device_partitions.values():
                 assert partition.name_id
                 assert partition.partition_title
                 assert partition.fstype
                 assert partition.status
-                if partition.is_mounted():
+                if partition.is_mounted:
                     assert partition.share_name
-                if partition.is_supported():
+                if partition.is_supported:
                     assert partition.filesystem
-                    assert partition.partition_size_used(human_readable=True)
-                    assert partition.partition_size_total(human_readable=True)
+                    assert partition.partition_size_used(True)
+                    assert partition.partition_size_total(True)
 
-        assert dsm_7.external_usb.get_device("usb1").device_manufacturer == "PNY"
-        assert (
-            dsm_7.external_usb.get_device("usb1").device_product_name == "Flash Drive"
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb1").device_size_total(
-                human_readable=False
-            )
-            == 127999672320.0
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb1").device_size_total(human_readable=True)
-            == "119.2Gb"
-        )
+        device = dsm_7.external_usb.get_device("usb1")
+        assert device.device_name == "USB Disk 1"
+        assert device.device_type == "usbDisk"
+        assert device.device_status == "normal"
+        assert device.device_size_total() == 127999672320
+        assert device.device_size_total(True) == "119.2Gb"
+        assert device.device_manufacturer == "PNY"
+        assert device.device_product_name == "Flash Drive"
+        assert device.device_formatable
+        assert device.device_progress == ""
 
-        assert dsm_7.external_usb.get_device("usb1").device_name == "USB Disk 1"
-        assert dsm_7.external_usb.get_device("usb1").device_type == "usbDisk"
-        assert (
-            dsm_7.external_usb.get_device("usb1")
-            .get_device_partition("usb1p1")
-            .share_name
-            == "usbshare1-1"
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb1")
-            .get_device_partition("usb1p1")
-            .filesystem
-            == "ntfs"
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb1")
-            .get_device_partition("usb1p2")
-            .share_name
-            == "usbshare1-2"
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb1")
-            .get_device_partition("usb1p2")
-            .filesystem
-            == "FAT32"
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb1")
-            .get_device_partition("usb1p2")
-            .partition_size_total(False)
-            == 1073741824.0
-        )
+        for partition in device.device_partitions.values():
+            assert partition.name_id
+            assert partition.partition_title
+            assert partition.fstype
+            assert partition.status
+            if partition.is_mounted:
+                assert partition.share_name
+            if partition.is_supported:
+                assert partition.filesystem
+                assert partition.partition_size_used(human_readable=True)
+                assert partition.partition_size_total(human_readable=True)
+
+        partition = device.get_device_partition("usb1p1")
+        assert partition.share_name == "usbshare1-1"
+        assert partition.filesystem == "ntfs"
+
+        partition = device.get_device_partition("usb1p2")
+        assert partition.share_name == "usbshare1-2"
+        assert partition.filesystem == "FAT32"
+        assert partition.partition_size_total(False) == 1073741824.0
 
         # Unformatted device partition
-        assert (
-            dsm_7.external_usb.get_device("usb8")
-            .get_device_partition("usb8")
-            .is_mounted()
-            is False
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb8")
-            .get_device_partition("usb8")
-            .is_supported()
-            is False
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb8")
-            .get_device_partition("usb8")
-            .partition_size_total(False)
-            is None
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb8")
-            .get_device_partition("usb8")
-            .partition_size_used(False)
-            is None
-        )
-        assert (
-            dsm_7.external_usb.get_device("usb8")
-            .get_device_partition("usb8")
-            .partition_percentage_used
-            is None
-        )
+        partition = dsm_7.external_usb.get_device("usb8").get_device_partition("usb8")
+        assert partition
+        assert not partition.is_mounted
+        assert not partition.is_supported
+        assert partition.partition_size_total(False) is None
+        assert partition.partition_size_used(False) is None
+        assert partition.partition_percentage_used is None
 
     @pytest.mark.asyncio
     async def test_login_2sa_new_session(self):
