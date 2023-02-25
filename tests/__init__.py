@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 import aiohttp
 
 from synology_dsm import SynologyDSM
+from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -64,6 +65,7 @@ from .api_data.dsm_7 import (
     DSM_7_AUTH_LOGIN,
     DSM_7_AUTH_LOGIN_2SA,
     DSM_7_AUTH_LOGIN_2SA_OTP,
+    DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB,
     DSM_7_CORE_UPGRADE_TRUE,
     DSM_7_DSM_INFORMATION,
     DSM_7_FOTO_ALBUMS,
@@ -236,6 +238,9 @@ class SynologyDSMMock(SynologyDSM):
         if self.API_URI in url:
             if not self._session_id:
                 return ERROR_INSUFFICIENT_USER_PRIVILEGE
+
+            if SynoCoreExternalUSB.API_KEY in url:
+                return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB
 
             if SynoCoreSecurity.API_KEY in url:
                 if self.error:
