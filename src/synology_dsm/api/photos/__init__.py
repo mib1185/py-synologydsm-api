@@ -115,7 +115,9 @@ class SynoPhotos(SynoBaseApi):
     async def download_item(self, item: SynoPhotosItem) -> bytes | None:
         """Download the given item."""
         raw_data = await self._dsm.get(
-            self.DOWNLOAD_FOTOTEAM_API_KEY if item.owner_user_id == 0 else self.DOWNLOAD_API_KEY,
+            self.DOWNLOAD_FOTOTEAM_API_KEY
+            if item.owner_user_id == 0
+            else self.DOWNLOAD_API_KEY,
             "download",
             {
                 "unit_id": f"[{item.item_id}]",
@@ -129,7 +131,9 @@ class SynoPhotos(SynoBaseApi):
     async def download_item_thumbnail(self, item: SynoPhotosItem) -> bytes | None:
         """Download the given items thumbnail."""
         raw_data = await self._dsm.get(
-            self.THUMBNAIL_FOTOTEAM_API_KEY if item.owner_user_id == 0 else self.THUMBNAIL_API_KEY,
+            self.THUMBNAIL_FOTOTEAM_API_KEY
+            if item.owner_user_id == 0
+            else self.THUMBNAIL_API_KEY,
             "get",
             {
                 "id": item.item_id,
@@ -145,7 +149,9 @@ class SynoPhotos(SynoBaseApi):
     async def get_item_thumbnail_url(self, item: SynoPhotosItem) -> str:
         """Get the url of given items thumbnail."""
         return await self._dsm.generate_url(
-            self.THUMBNAIL_FOTOTEAM_API_KEY if item.owner_user_id == 0 else self.THUMBNAIL_API_KEY,
+            self.THUMBNAIL_FOTOTEAM_API_KEY
+            if item.owner_user_id == 0
+            else self.THUMBNAIL_API_KEY,
             "get",
             {
                 "id": item.item_id,
