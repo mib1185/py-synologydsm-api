@@ -109,6 +109,7 @@ class SynoPhotos(SynoBaseApi):
                     item["filesize"],
                     item["additional"]["thumbnail"]["cache_key"],
                     size,
+                    item["owner_user_id"],
                 )
             )
         return items
