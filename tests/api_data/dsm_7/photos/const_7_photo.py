@@ -73,7 +73,7 @@ DSM_7_FOTO_ITEMS = {
                 "filesize": 2644859,
                 "time": 1668538602,
                 "indexed_time": 1668564550862,
-                "owner_user_id": 1,
+                "owner_user_id": 0,
                 "folder_id": 597,
                 "type": "photo",
                 "additional": {

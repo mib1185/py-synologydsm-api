@@ -212,7 +212,7 @@ class TestSynologyDSM7:
         assert thumb_url
         assert thumb_url == (
             "https://nas.mywebsite.me:443/webapi/entry.cgi?"
-            "id=29808&cache_key=29808_1668560967&size=xl&type=unit"
+            "id=29808&cache_key=29808_1668560967&size=m&type=unit"
             "&api=SYNO.FotoTeam.Thumbnail&version=2&method=get"
             "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
         )
