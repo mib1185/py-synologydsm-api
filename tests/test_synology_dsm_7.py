@@ -208,14 +208,6 @@ class TestSynologyDSM7:
             "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
         )
 
-        items = await dsm_7.photos.get_items_from_search(albums[0])
-        assert items
-        assert len(items) == 2
-        assert items[0].file_name == "search_1.jpg"
-        assert items[0].thumbnail_cache_key == "12340_1668560967"
-        assert items[1].file_name == "search_2.jpg"
-        assert items[1].thumbnail_cache_key == "12341_1668560967"
-
         thumb_url = await dsm_7.photos.get_item_thumbnail_url(items[1])
         assert thumb_url
         assert thumb_url == (
@@ -224,3 +216,13 @@ class TestSynologyDSM7:
             "&api=SYNO.FotoTeam.Thumbnail&version=2&method=get"
             "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
         )
+
+        items = await dsm_7.photos.get_items_from_search(albums[0])
+        assert items
+        assert len(items) == 2
+        assert items[0].file_name == "search_1.jpg"
+        assert items[0].thumbnail_cache_key == "12340_1668560967"
+        assert items[1].file_name == "search_2.jpg"
+        assert items[1].thumbnail_cache_key == "12341_1668560967"
+
+        
