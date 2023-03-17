@@ -223,6 +223,4 @@ class TestSynologyDSM7:
         assert items[0].file_name == "search_1.jpg"
         assert items[0].thumbnail_cache_key == "12340_1668560967"
         assert items[1].file_name == "search_2.jpg"
-        assert items[1].thumbnail_cache_key == "12341_1668560967"
-
-        
+        assert items[1].thumbnail_cache_key == "12341_1668560967"        
