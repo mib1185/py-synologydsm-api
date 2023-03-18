@@ -208,6 +208,15 @@ class TestSynologyDSM7:
             "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
         )
 
+        thumb_url = await dsm_7.photos.get_item_thumbnail_url(items[1])
+        assert thumb_url
+        assert thumb_url == (
+            "https://nas.mywebsite.me:443/webapi/entry.cgi?"
+            "id=29808&cache_key=29808_1668560967&size=m&type=unit"
+            "&api=SYNO.FotoTeam.Thumbnail&version=2&method=get"
+            "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
+        )
+
         items = await dsm_7.photos.get_items_from_search(albums[0])
         assert items
         assert len(items) == 2

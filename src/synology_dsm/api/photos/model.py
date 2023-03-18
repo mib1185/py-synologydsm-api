@@ -21,3 +21,4 @@ class SynoPhotosItem:
     file_size: str
     thumbnail_cache_key: str
     thumbnail_size: str
+    is_shared: bool
