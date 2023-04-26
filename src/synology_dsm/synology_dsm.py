@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import socket
+from ipaddress import IPv6Address
 from json import JSONDecodeError
 from typing import Any, TypedDict
 from urllib.parse import quote, urlencode
@@ -100,6 +101,12 @@ class SynologyDSM:
         self._system: SynoCoreSystem | None = None
         self._utilisation: SynoCoreUtilization | None = None
         self._upgrade: SynoCoreUpgrade | None = None
+
+        try:
+            IPv6Address(dsm_ip)
+            dsm_ip = f"[{dsm_ip}]"
+        except ValueError:
+            pass
 
         # Build variables
         if use_https:
