@@ -1,6 +1,6 @@
 aiohttp
 async-timeout
-black==23.1.0
+black==23.3.0
 coverage[toml]
 flake8-bandit==4.1.1
 flake8-bugbear==23.1.20
