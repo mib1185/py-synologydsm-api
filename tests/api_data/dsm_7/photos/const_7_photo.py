@@ -111,6 +111,74 @@ DSM_7_FOTO_ITEMS = {
     },
 }
 
+DSM_7_FOTO_SHARED_ITEMS = {
+    "success": True,
+    "data": {
+        "list": [
+            {
+                "id": 77,
+                "filename": "shared_1.jpg",
+                "filesize": 1404758,
+                "time": 1627062628,
+                "indexed_time": 1628329471168,
+                "owner_user_id": 0,
+                "folder_id": 17,
+                "type": "photo",
+                "additional": {
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "77_1628323785",
+                        "unit_id": 77,
+                    }
+                },
+            },
+            {
+                "id": 490,
+                "filename": "shared_2.jpg",
+                "filesize": 888192,
+                "time": 1627062618,
+                "indexed_time": 1628329516646,
+                "owner_user_id": 0,
+                "folder_id": 37,
+                "type": "photo",
+                "additional": {
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "490_1628323817",
+                        "unit_id": 490,
+                    }
+                },
+            },
+            {
+                "id": 96,
+                "filename": "shared_3.jpg",
+                "filesize": 4903571,
+                "time": 1626987559,
+                "indexed_time": 1628329472531,
+                "owner_user_id": 0,
+                "folder_id": 18,
+                "type": "photo",
+                "additional": {
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "96_1628323786",
+                        "unit_id": 96,
+                    }
+                },
+            },
+        ]
+    },
+}
+
 DSM_7_FOTO_ITEMS_SEARCHED = {
     "success": True,
     "data": {

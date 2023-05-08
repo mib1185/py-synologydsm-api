@@ -224,3 +224,13 @@ class TestSynologyDSM7:
         assert items[0].thumbnail_cache_key == "12340_1668560967"
         assert items[1].file_name == "search_2.jpg"
         assert items[1].thumbnail_cache_key == "12341_1668560967"
+
+        items = await dsm_7.photos.get_items_from_shared_space()
+        assert items
+        assert len(items) == 3
+        assert items[0].file_name == "shared_1.jpg"
+        assert items[0].thumbnail_cache_key == "77_1628323785"
+        assert items[1].file_name == "shared_2.jpg"
+        assert items[1].thumbnail_cache_key == "490_1628323817"
+        assert items[2].file_name == "shared_3.jpg"
+        assert items[2].thumbnail_cache_key == "96_1628323786"

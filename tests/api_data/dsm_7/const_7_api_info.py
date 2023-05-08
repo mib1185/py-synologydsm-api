@@ -2914,6 +2914,12 @@ DSM_7_API_INFO = {
             "path": "entry.cgi",
             "requestFormat": "JSON",
         },
+        "SYNO.FotoTeam.Browse.Item": {
+            "maxVersion": 1,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON",
+        },
         "SYNO.FotoTeam.Download": {
             "maxVersion": 1,
             "minVersion": 1,
