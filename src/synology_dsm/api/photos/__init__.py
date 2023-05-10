@@ -18,7 +18,7 @@ class SynoPhotos(SynoBaseApi):
     SEARCH_API_KEY = "SYNO.Foto.Search.Search"
     THUMBNAIL_API_KEY = "SYNO.Foto.Thumbnail"
     THUMBNAIL_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Thumbnail"
-    THUMBNAIL_FOTOTEAM_BROWSE_ITEM_KEY = "SYNO.FotoTeam.Browse.Item"
+    BROWSE_ITEM_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Browse.Item"
 
     async def get_albums(
         self, offset: int = 0, limit: int = 100
@@ -82,7 +82,7 @@ class SynoPhotos(SynoBaseApi):
         """Get a list of all items from the shared space."""
         items: list[SynoPhotosItem] = []
         raw_data = await self._dsm.get(
-            self.THUMBNAIL_FOTOTEAM_BROWSE_ITEM_KEY,
+            self.BROWSE_ITEM_FOTOTEAM_API_KEY,
             "list",
             {
                 "offset": offset,

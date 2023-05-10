@@ -288,7 +288,7 @@ class SynologyDSMMock(SynologyDSM):
             if SynoPhotos.SEARCH_API_KEY in url:
                 return DSM_7_FOTO_ITEMS_SEARCHED
 
-            if SynoPhotos.THUMBNAIL_FOTOTEAM_BROWSE_ITEM_KEY in url:
+            if SynoPhotos.BROWSE_ITEM_FOTOTEAM_API_KEY in url:
                 return DSM_7_FOTO_SHARED_ITEMS
 
             if SynoStorage.API_KEY in url:
