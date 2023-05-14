@@ -18,6 +18,7 @@ class SynoPhotos(SynoBaseApi):
     SEARCH_API_KEY = "SYNO.Foto.Search.Search"
     THUMBNAIL_API_KEY = "SYNO.Foto.Thumbnail"
     THUMBNAIL_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Thumbnail"
+    BROWSE_ITEM_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Browse.Item"
 
     async def get_albums(
         self, offset: int = 0, limit: int = 100
@@ -36,11 +37,39 @@ class SynoPhotos(SynoBaseApi):
             )
         return albums
 
+    def _raw_data_to_items(
+        self, raw_data: bytes | dict | str
+    ) -> list[SynoPhotosItem] | None:
+        """Parse the raw data response to a list of photo items."""
+        items: list[SynoPhotosItem] = []
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return None
+
+        for item in data["list"]:
+            if item["additional"]["thumbnail"]["xl"] == "ready":
+                size = "xl"
+            elif item["additional"]["thumbnail"]["m"] == "ready":
+                size = "m"
+            else:
+                size = "sm"
+
+            items.append(
+                SynoPhotosItem(
+                    item["id"],
+                    item["type"],
+                    item["filename"],
+                    item["filesize"],
+                    item["additional"]["thumbnail"]["cache_key"],
+                    size,
+                    item["owner_user_id"] == 0,
+                )
+            )
+        return items
+
     async def get_items_from_album(
         self, album: SynoPhotosAlbum, offset: int = 0, limit: int = 100
     ) -> list[SynoPhotosItem] | None:
         """Get a list of all items from given album."""
-        items: list[SynoPhotosItem] = []
         raw_data = await self._dsm.get(
             self.BROWSE_ITEM_API_KEY,
             "list",
@@ -51,35 +80,27 @@ class SynoPhotos(SynoBaseApi):
                 "additional": '["thumbnail"]',
             },
         )
-        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
-            return None
+        return self._raw_data_to_items(raw_data)
 
-        for item in data["list"]:
-            if item["additional"]["thumbnail"]["xl"] == "ready":
-                size = "xl"
-            elif item["additional"]["thumbnail"]["m"] == "ready":
-                size = "m"
-            else:
-                size = "sm"
-
-            items.append(
-                SynoPhotosItem(
-                    item["id"],
-                    item["type"],
-                    item["filename"],
-                    item["filesize"],
-                    item["additional"]["thumbnail"]["cache_key"],
-                    size,
-                    item["owner_user_id"] == 0,
-                )
-            )
-        return items
+    async def get_items_from_shared_space(
+        self, offset: int = 0, limit: int = 100
+    ) -> list[SynoPhotosItem] | None:
+        """Get a list of all items from the shared space."""
+        raw_data = await self._dsm.get(
+            self.BROWSE_ITEM_FOTOTEAM_API_KEY,
+            "list",
+            {
+                "offset": offset,
+                "limit": limit,
+                "additional": '["thumbnail"]',
+            },
+        )
+        return self._raw_data_to_items(raw_data)
 
     async def get_items_from_search(
         self, search_string: str, offset: int = 0, limit: int = 100
     ) -> list[SynoPhotosItem] | None:
         """Get a list of all items matching the keyword."""
-        items: list[SynoPhotosItem] = []
         raw_data = await self._dsm.get(
             self.SEARCH_API_KEY,
             "list_item",
@@ -90,29 +111,7 @@ class SynoPhotos(SynoBaseApi):
                 "additional": '["thumbnail"]',
             },
         )
-        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
-            return None
-
-        for item in data["list"]:
-            if item["additional"]["thumbnail"]["xl"] == "ready":
-                size = "xl"
-            elif item["additional"]["thumbnail"]["m"] == "ready":
-                size = "m"
-            else:
-                size = "sm"
-
-            items.append(
-                SynoPhotosItem(
-                    item["id"],
-                    item["type"],
-                    item["filename"],
-                    item["filesize"],
-                    item["additional"]["thumbnail"]["cache_key"],
-                    size,
-                    item["owner_user_id"] == 0,
-                )
-            )
-        return items
+        return self._raw_data_to_items(raw_data)
 
     async def download_item(self, item: SynoPhotosItem) -> bytes | None:
         """Download the given item."""

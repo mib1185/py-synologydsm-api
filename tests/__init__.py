@@ -71,6 +71,7 @@ from .api_data.dsm_7 import (
     DSM_7_FOTO_ALBUMS,
     DSM_7_FOTO_ITEMS,
     DSM_7_FOTO_ITEMS_SEARCHED,
+    DSM_7_FOTO_SHARED_ITEMS,
 )
 from .const import (
     DEVICE_TOKEN,
@@ -286,6 +287,9 @@ class SynologyDSMMock(SynologyDSM):
 
             if SynoPhotos.SEARCH_API_KEY in url:
                 return DSM_7_FOTO_ITEMS_SEARCHED
+
+            if SynoPhotos.BROWSE_ITEM_FOTOTEAM_API_KEY in url:
+                return DSM_7_FOTO_SHARED_ITEMS
 
             if SynoStorage.API_KEY in url:
                 return API_SWITCHER[self.dsm_version]["STORAGE_STORAGE"][

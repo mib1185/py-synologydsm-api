@@ -14,6 +14,7 @@ from .photos.const_7_photo import (
     DSM_7_FOTO_ALBUMS,
     DSM_7_FOTO_ITEMS,
     DSM_7_FOTO_ITEMS_SEARCHED,
+    DSM_7_FOTO_SHARED_ITEMS,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "DSM_7_FOTO_ALBUMS",
     "DSM_7_FOTO_ITEMS",
     "DSM_7_FOTO_ITEMS_SEARCHED",
+    "DSM_7_FOTO_SHARED_ITEMS",
 ]
