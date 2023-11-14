@@ -168,3 +168,25 @@ ERROR_VIRTUALIZATION: Final = {
     1400: "The result of image creating is partial success",
     1600: "The virtual machine has been successfully edited. However, errors occurred while reserving the memory or CPU on the HA hosts",  # pylint: disable=line-too-long
 }
+
+# SYNO.VideoStation.*
+ERROR_VIDEO: Final = {
+    400: "Execution failed",
+    401: "Invalid parameter",
+    402: "Camera disabled",
+    403: "Insufficient license",
+    404: "Codec activation failed",
+    405: "CMS server connection failed",
+    407: "CMS closed",
+    412: "Need to add license",
+    413: "Reach the maximum of platform",
+    414: "Some events not exist",
+    415: "Message connect failed",
+    417: "Test connection error",
+    418: "Object/VisualStation ID does not exist",
+    419: "VisualStation name repetition",
+    439: "Too many items selected",
+    446: "Task path already exist",
+    522: "Original task is migrating",
+    534: "Exceed name length limitation",
+}
