@@ -36,29 +36,59 @@ class SynoVideoStation(SynoBaseApi):
                 "sort_by": sort_by,
                 "sort_direction": sort_direction,
                 "library_id": library_id,
-                "additional": '["poster_mtime","summary","watched_ratio","extra","collection"]'
+                "additional": '["poster_mtime","summary","watched_ratio","extra","collection", "file"]'
             }
         )
-        return self._raw_data_to_movies(raw_data)
+
+        movies: list[SynoVideoStationMovie] = []
+        poster_url = ''
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return None
+
+        for movie in data["movie"]:
+            additional_data = movie["additional"]["extra"]
+            additional = json.loads(additional_data)
+            if (additional["com.synology.TheMovieDb"]["poster"]) is not None:
+                poster_url = additional["com.synology.TheMovieDb"]["poster"]
+
+            movies.append(
+                SynoVideoStationMovie(
+                    movie["id"],
+                    movie["title"],
+                    movie["additional"]["summary"],
+                    poster_url,
+                    movie["additional"]["file"][0]["id"],
+                    movie["additional"]["file"][0]["path"],
+                    movie["additional"]["file"][0]["path"],
+                    movie["additional"]["file"][0]["video_codec"],
+                    movie["additional"]["file"][0]["audio_codec"]
+                )
+            )
+        
+        return movies
+        # return self._raw_data_to_movies(raw_data)
     
     def _raw_data_to_movies(
         self, raw_data: bytes | dict | str
     ) -> list[SynoVideoStationMovie] | None:
         """Parse the raw data response to a list of photo items."""
         movies: list[SynoVideoStationMovie] = []
+        poster_url = ''
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
             return None
 
         for movie in data["movie"]:
             poster_str = movie["additional"]["extra"]
             poster = json.loads(poster_str)
+            if (poster["com.synology.TheMovieDb"]["poster"]) is not None:
+                poster_url = poster["com.synology.TheMovieDb"]["poster"]
 
             movies.append(
                 SynoVideoStationMovie(
                     movie["id"],
                     movie["title"],
-                    movie["additional"]["summary"]
-                    # poster["com.synology.TheMovieDb"]["poster"]
+                    movie["additional"]["summary"],
+                    poster_url
                 )
             )
         return movies
@@ -81,6 +111,7 @@ class SynoVideoStation(SynoBaseApi):
     
     async def get_devices(self)-> list[SynoVideoStationDevices] | None:
         """Get a Devices."""
+        devices: list[SynoVideoStationMovie] = []
         raw_data = await self._dsm.get(
             self.CONTROLLER_DEVICE_API_KEY,
             "list",
@@ -88,17 +119,43 @@ class SynoVideoStation(SynoBaseApi):
                 "limit": 50000
             },
         )
-        return raw_data
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return None
+
+        for device in data["device"]:
+            devices.append(
+                SynoVideoStationDevices(
+                    device["id"],
+                    device["now_playing"],
+                    device["password_protected"],
+                    device["title"],
+                )
+            )
+        return devices
     
     async def get_metadata_movie(
-        self, movie: SynoVideoStationMovie)-> list[SynoVideoStationMetadataMovie] | None:
+        self, movie_id)-> list[SynoVideoStationMetadataMovie] | None:
         """Get a metadata in movie."""
+        metadatas_movie: list[SynoVideoStationMetadataMovie] = []
+        print(movie_id)
         raw_data = await self._dsm.get(
             self.MOVIE_API_KEY,
             "getinfo",
             {
-                "id": movie.movie_id,
+                "id": movie_id,
                 "additional": '["summary","poster_mtime","backdrop_mtime","file","collection","watched_ratio","conversion_produced","actor","director","genre","writer","extra"]'
             },
         )
-        return raw_data
+        print(raw_data)
+
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return None
+
+        for metadata in data["movie"]:
+            metadatas_movie.append(
+                SynoVideoStationMetadataMovie(
+                    metadata["id"]
+                )
+            )
+
+        return metadatas_movie

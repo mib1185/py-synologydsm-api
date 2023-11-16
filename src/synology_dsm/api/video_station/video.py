@@ -5,10 +5,15 @@ from dataclasses import dataclass
 class SynoVideoStationMovie:
     """Representation of an Synology VideoStation Movies."""
 
-    movie_id: str
+    movie_id: int
     title: str
     summary: str
-    poster: str
+    poster_url: str
+    file_id: int
+    file_name: str
+    file_path: str
+    file_video_codec: str
+    file_audio_codec: str
 
 @dataclass
 class SynoVideoStationMoviePoster:
@@ -21,10 +26,10 @@ class SynoVideoStationMoviePoster:
 class SynoVideoStationDevices:
     """Representation of an Synology VideoStation Devices."""
 
-    device_id: str
-    device_now_playing: str
-    password_protected: bool
+    device_id: int
     device_title: str
+    device_now_playing: str
+    device_password_protected: bool
 
 @dataclass
 class SynoVideoStationMetadataMovie:
