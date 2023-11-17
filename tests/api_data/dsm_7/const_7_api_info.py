@@ -3352,6 +3352,42 @@ DSM_7_API_INFO = {
             "path": "entry.cgi",
             "requestFormat": "JSON",
         },
+        "SYNO.VideoStation2.AcrossLibrary": {
+            "maxVersion": 1,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON"
+        },
+        "SYNO.VideoStation2.Controller.Device": {
+            "maxVersion": 1,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON"
+        },
+        "SYNO.VideoStation2.Movie": {
+            "maxVersion": 1,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON"
+        },
+        "SYNO.VideoStation2.Poster": {
+            "maxVersion": 1,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON"
+        },
+        "SYNO.VideoStation2.TVShow": {
+            "maxVersion": 1,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON"
+        },
+        "SYNO.VideoStation2.TVShowEpisode": {
+            "maxVersion": 1,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON"
+        },
     },
     "success": True,
 }
