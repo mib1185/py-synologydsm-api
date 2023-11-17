@@ -2,27 +2,6 @@
 from dataclasses import dataclass
 
 @dataclass
-class SynoVideoStationMovie:
-    """Representation of an Synology VideoStation Movies."""
-
-    movie_id: int
-    title: str
-    summary: str
-    poster_url: str
-    file_id: int
-    file_name: str
-    file_path: str
-    file_video_codec: str
-    file_audio_codec: str
-
-@dataclass
-class SynoVideoStationMoviePoster:
-    """Representation of an Synology VideoStation Poster."""
-
-    movie_id: int
-    movie_type: str
-
-@dataclass
 class SynoVideoStationDevices:
     """Representation of an Synology VideoStation Devices."""
 
@@ -32,8 +11,46 @@ class SynoVideoStationDevices:
     device_password_protected: bool
 
 @dataclass
-class SynoVideoStationMetadataMovie:
-    """Representation of an Synology VideoStation Metadata."""
+class SynoVideoStationLibrary:
+    """Representation of an Synology VideoStation Poster."""
 
+    library_id: int
+    library_type: str
+
+@dataclass
+class SynoVideoStationMovie:
+    """Representation of an Synology VideoStation Movies."""
+
+    movie_id: int
+    title: str
+    summary: str
+    poster_url: str
+    poster_bytes: bytes
     file_id: int
-    certificate: str
+    file_name: str
+    file_path: str
+    file_video_codec: str
+    file_audio_codec: str
+
+@dataclass
+class SynoVideoStationTVShow:
+    """Representation of an Synology VideoStation Movies."""
+
+    tvshow_id: int
+    title: str
+    total_seasons: int
+    summary: str
+    poster_bytes: bytes
+
+@dataclass
+class SynoVideoStationTVShowEpisode:
+    """Representation of an Synology VideoStation Movies."""
+
+    episode_id: int
+    tvshow_id: int
+    season: int
+    episode: int
+    title: str
+    summary: str
+    poster_bytes: bytes
+
