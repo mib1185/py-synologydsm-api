@@ -23,7 +23,7 @@ class SynoVideoStation(SynoBaseApi):
 
     async def get_devices(self)-> list[SynoVideoStationDevices] | None:
         """Get a Devices."""
-        devices: list[SynoVideoStationMovie] = []
+        devices: list[SynoVideoStationDevices] = []
         raw_data = await self._dsm.get(
             self.CONTROLLER_DEVICE_API_KEY,
             "list",
