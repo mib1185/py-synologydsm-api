@@ -1,4 +1,4 @@
-"""Synology VideoStation API wrapper."""
+"""Synology VideoStation API wrapper"""
 
 from __future__ import annotations
 import json
