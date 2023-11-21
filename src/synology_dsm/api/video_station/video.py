@@ -26,12 +26,17 @@ class SynoVideoStationMovie:
     title: str
     summary: str
     poster_url: str
-    poster_bytes: bytes
     file_id: int
     file_name: str
     file_path: str
     file_video_codec: str
     file_audio_codec: str
+
+@dataclass
+class SynoVideoStationPoster:
+    """Representation of an Synology VideoStation Movies."""
+
+    poster_bytes: bytes
 
 @dataclass
 class SynoVideoStationTVShow:
@@ -41,6 +46,11 @@ class SynoVideoStationTVShow:
     title: str
     total_seasons: int
     summary: str
+
+@dataclass
+class SynoVideoStationTVShowPoster:
+    """Representation of an Synology VideoStation Movies."""
+
     poster_bytes: bytes
 
 @dataclass
@@ -53,5 +63,4 @@ class SynoVideoStationTVShowEpisode:
     episode: int
     title: str
     summary: str
-    poster_bytes: bytes
 

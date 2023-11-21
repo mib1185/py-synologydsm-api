@@ -6,7 +6,7 @@ import json
 from synology_dsm.api import SynoBaseApi
 
 from .video import SynoVideoStationDevices, SynoVideoStationLibrary
-from .video import SynoVideoStationMovie
+from .video import SynoVideoStationMovie, SynoVideoStationPoster
 from .video import SynoVideoStationTVShow, SynoVideoStationTVShowEpisode
 
 
@@ -76,9 +76,9 @@ class SynoVideoStation(SynoBaseApi):
     ) -> list[SynoVideoStationMovie] | None:
         """Get a list of all movies."""
         if bool(sort_by):
-            sort_by = 'added'
+            sort_list = 'added'
         else:
-            sort_by = ''
+            sort_list = ''
             sort_direction = 'asc'
 
         raw_data = await self._dsm.get(
@@ -87,7 +87,7 @@ class SynoVideoStation(SynoBaseApi):
             {
                 "offset": offset,
                 "limit": limit,
-                "sort_by": sort_by,
+                "sort_by": sort_list,
                 "sort_direction": sort_direction,
                 "library_id": library_id,
                 "additional": '["summary", "poster_mtime", "backdrop_mtime", "file", "collection", "watched_ratio", "conversion_produced", "actor", "director", "genre", "writer", "extra"]'
@@ -105,14 +105,14 @@ class SynoVideoStation(SynoBaseApi):
             if (additional["com.synology.TheMovieDb"]["poster"]) is not None:
                 poster_url = additional["com.synology.TheMovieDb"]["poster"]
 
-            raw_data_poster = await self._dsm.get(
-                self.POSTER_API_KEY,
-                "get",
-                {
-                    "id": movie["id"],
-                    "type": "movie"
-                },
-            )
+            # raw_data_poster = await self._dsm.get(
+            #     self.POSTER_API_KEY,
+            #     "get",
+            #     {
+            #         "id": movie["id"],
+            #         "type": "movie"
+            #     },
+            # )
 
             movies.append(
                 SynoVideoStationMovie(
@@ -120,7 +120,7 @@ class SynoVideoStation(SynoBaseApi):
                     movie["title"],
                     movie["additional"]["summary"],
                     poster_url,
-                    raw_data_poster,
+                    # raw_data_poster,
                     movie["additional"]["file"][0]["id"],
                     movie["additional"]["file"][0]["path"],
                     movie["additional"]["file"][0]["path"],
@@ -136,9 +136,9 @@ class SynoVideoStation(SynoBaseApi):
     ) -> list[SynoVideoStationTVShow] | None:
         """Get a list of all Tvshow."""
         if bool(sort_by):
-            sort_by = 'added'
+            sort_list = 'added'
         else:
-            sort_by = ''
+            sort_list = ''
             sort_direction = 'asc'
 
         raw_data = await self._dsm.get(
@@ -147,7 +147,7 @@ class SynoVideoStation(SynoBaseApi):
             {
                 "offset": offset,
                 "limit": limit,
-                "sort_by": sort_by,
+                "sort_by": sort_list,
                 "sort_direction": sort_direction,
                 "library_id": library_id,
                 "additional": '["poster_mtime","summary"]'
@@ -160,23 +160,17 @@ class SynoVideoStation(SynoBaseApi):
             return None
 
         for serie in data["tvshow"]:
-
-            raw_data_poster = await self._dsm.get(
-                self.POSTER_API_KEY,
-                "get",
-                {
-                    "id": serie["id"],
-                    "type": "tvshow"
-                },
-            )
+            
+            summary = ""
+            if "summary" in serie["additional"]:
+                summary = serie["additional"]["summary"]
 
             tvshow.append(
                 SynoVideoStationTVShow(
                     serie["id"],
                     serie["title"],
                     serie["additional"]["total_seasons"],
-                    serie["additional"]["summary"],
-                    raw_data_poster
+                    summary
                 )
             )
         
@@ -204,14 +198,9 @@ class SynoVideoStation(SynoBaseApi):
         
         for episode in data["episode"]:
 
-            raw_data_poster = await self._dsm.get(
-                self.POSTER_API_KEY,
-                "get",
-                {
-                    "id": episode["id"],
-                    "type": "tvshow_episode"
-                },
-            )
+            summary = ""
+            if "summary" in episode["additional"]:
+                summary = episode["additional"]["summary"]
 
             tvshow_episode.append(
                 SynoVideoStationTVShowEpisode(
@@ -220,9 +209,35 @@ class SynoVideoStation(SynoBaseApi):
                     episode["season"],
                     episode["episode"],
                     episode["tagline"],
-                    episode["additional"]["summary"],
-                    raw_data_poster
+                    summary
                 )
             )
 
         return tvshow_episode 
+
+    async def get_poster(
+        self, lib: SynoVideoStationLibrary,movie: SynoVideoStationMovie, tvshow: SynoVideoStationTVShow
+    ) -> list[SynoVideoStationPoster] | None:
+        
+        if movie is None:
+            raw_data = await self._dsm.get(
+                self.POSTER_API_KEY,
+                "get",
+                {
+                    "id": tvshow.tvshow_id,
+                    "type": lib.library_type
+                },
+            )
+        else:
+            raw_data = await self._dsm.get(
+                self.POSTER_API_KEY,
+                "get",
+                {
+                    "id": movie.movie_id,
+                    "type": lib.library_type
+                },
+            )
+        
+        if isinstance(raw_data, bytes):
+            return raw_data
+        return None
