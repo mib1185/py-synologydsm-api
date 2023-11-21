@@ -6,7 +6,7 @@ import json
 from synology_dsm.api import SynoBaseApi
 
 from .video import SynoVideoStationDevices, SynoVideoStationLibrary
-from .video import SynoVideoStationMovie, SynoVideoStationPoster
+from .video import SynoVideoStationMovie
 from .video import SynoVideoStationTVShow, SynoVideoStationTVShowEpisode
 
 
@@ -81,6 +81,11 @@ class SynoVideoStation(SynoBaseApi):
             sort_list = ''
             sort_direction = 'asc'
 
+        additional_1 = '["summary", "poster_mtime", "backdrop_mtime","file", '
+        additional_2 = '"collection", "watched_ratio", "conversion_produced", '
+        additional_3 = '"actor", "director", "genre", "writer", "extra"]'
+        additional = ''.join([additional_1, additional_2, additional_3])
+
         raw_data = await self._dsm.get(
             self.MOVIE_API_KEY,
             "list", 
@@ -90,7 +95,7 @@ class SynoVideoStation(SynoBaseApi):
                 "sort_by": sort_list,
                 "sort_direction": sort_direction,
                 "library_id": library_id,
-                "additional": '["summary", "poster_mtime", "backdrop_mtime", "file", "collection", "watched_ratio", "conversion_produced", "actor", "director", "genre", "writer", "extra"]'
+                "additional": additional
             }
         )
 
