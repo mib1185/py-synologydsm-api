@@ -6,9 +6,10 @@ class SynoVideoStationDevices:
     """Representation of an Synology VideoStation Devices."""
 
     device_id: int
-    device_title: str
-    device_now_playing: str
-    device_password_protected: bool
+    title: str
+    now_playing: str
+    password_protected: bool
+    volume_adjustable: bool
 
 @dataclass
 class SynoVideoStationLibrary:

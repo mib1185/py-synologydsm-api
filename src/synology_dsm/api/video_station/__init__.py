@@ -34,13 +34,15 @@ class SynoVideoStation(SynoBaseApi):
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
             return None
 
+
         for device in data["device"]:
             devices.append(
                 SynoVideoStationDevices(
                     device["id"],
+                    device["title"],
                     device["now_playing"],
                     device["password_protected"],
-                    device["title"],
+                    device["volume_adjustable"],
                 )
             )
         return devices
