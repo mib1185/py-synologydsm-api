@@ -48,12 +48,6 @@ class SynoVideoStationTVShow:
     summary: str
 
 @dataclass
-class SynoVideoStationTVShowPoster:
-    """Representation of an Synology VideoStation Movies."""
-
-    poster_bytes: bytes
-
-@dataclass
 class SynoVideoStationTVShowEpisode:
     """Representation of an Synology VideoStation Movies."""
 

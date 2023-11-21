@@ -160,7 +160,7 @@ class SynoVideoStation(SynoBaseApi):
             return None
 
         for serie in data["tvshow"]:
-            
+
             summary = ""
             if "summary" in serie["additional"]:
                 summary = serie["additional"]["summary"]
@@ -177,7 +177,7 @@ class SynoVideoStation(SynoBaseApi):
         return tvshow
     
     async def get_list_episode_tvshow(
-            self,library_id,tvshow_id
+            self, library_id: int, tvshow_id: int
     ) -> list[SynoVideoStationTVShowEpisode] | None:
         """Get a list of all Tvshow Episode."""
 
@@ -216,8 +216,8 @@ class SynoVideoStation(SynoBaseApi):
         return tvshow_episode 
 
     async def get_poster(
-        self, lib: SynoVideoStationLibrary,movie: SynoVideoStationMovie, tvshow: SynoVideoStationTVShow
-    ) -> list[SynoVideoStationPoster] | None:
+        self, lib: SynoVideoStationLibrary, movie: SynoVideoStationMovie, tvshow: SynoVideoStationTVShow
+    ) -> bytes | None:
         
         if movie is None:
             raw_data = await self._dsm.get(
