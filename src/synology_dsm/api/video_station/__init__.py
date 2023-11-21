@@ -186,13 +186,18 @@ class SynoVideoStation(SynoBaseApi):
     ) -> list[SynoVideoStationTVShowEpisode] | None:
         """Get a list of all Tvshow Episode."""
 
+        additional_1 = '["summary", "poster_mtime", "backdrop_mtime","file", '
+        additional_2 = '"collection", "watched_ratio", "conversion_produced", '
+        additional_3 = '"actor", "director", "genre", "writer", "extra"]'
+        additional = ''.join([additional_1, additional_2, additional_3])
+
         raw_data = await self._dsm.get(
             self.TVSHOW_EPISODE_API_KEY,
-            "list", 
+            "list",
             {
                 "library_id": library_id,
                 "tvshow_id": tvshow_id,
-                "additional": '["summary", "poster_mtime", "backdrop_mtime", "file", "collection", "watched_ratio", "conversion_produced", "actor", "director", "genre", "writer", "extra"]',
+                "additional": additional,
                 "limit": 500000
             }
         )
