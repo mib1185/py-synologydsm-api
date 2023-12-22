@@ -5,7 +5,7 @@ import pytest_asyncio
 from synology_dsm.api.hyperbackup.hyperbackup import (
     SynoHyperBackup, PROP_ONLINE, PROP_USED_SIZE, HEALTH_GOOD, HEALTH_WARN, HEALTH_CRIT,
     STATUS_OK, STATUS_RUNNING, STATUS_WAITING, STATUS_RESUMING, STATUS_SUSPENDED, STATUS_NEVER_RUN, STATUS_NO_SCHEDULE,
-    STATUS_RESTORE_ONLY, STATUS_UNKNOWN, STATUS_ERROR, STATUS_RUNNING_NO_SCHEDULE
+    STATUS_RESTORE_ONLY, STATUS_UNKNOWN, STATUS_ERROR, STATUS_RUNNING_NO_SCHEDULE, STATUS_DETECT
 )
 from synology_dsm.const import API_AUTH, API_INFO
 from synology_dsm.exceptions import (
@@ -65,7 +65,7 @@ class TestSynoHyperBackup:
     @pytest.mark.usefixtures('call_update')
     @pytest.mark.parametrize("task_id, expected_status", [
         (1, STATUS_RUNNING_NO_SCHEDULE), (2, STATUS_RUNNING_NO_SCHEDULE), (3, STATUS_RUNNING),
-        (4, STATUS_RESTORE_ONLY), (5, STATUS_NO_SCHEDULE), (6, STATUS_OK)
+        (4, STATUS_RESTORE_ONLY), (5, STATUS_NO_SCHEDULE), (6, STATUS_OK), (7, STATUS_DETECT)
     ])
     async def test_status(self, task_id, expected_status):
         """Test dervied status logic"""
@@ -74,7 +74,8 @@ class TestSynoHyperBackup:
     @pytest.mark.asyncio
     @pytest.mark.usefixtures('call_update')
     @pytest.mark.parametrize("task_id, expected_health", [
-        (1, HEALTH_WARN), (2, HEALTH_WARN), (3, HEALTH_GOOD), (4, HEALTH_CRIT), (5, HEALTH_WARN), (6, HEALTH_GOOD)
+        (1, HEALTH_WARN), (2, HEALTH_WARN), (3, HEALTH_GOOD), (4, HEALTH_CRIT), (5, HEALTH_WARN), (6, HEALTH_GOOD),
+        (7, HEALTH_WARN)
     ])
     async def test_health(self, task_id, expected_health):
         """Test health calculation"""
@@ -83,7 +84,7 @@ class TestSynoHyperBackup:
     @pytest.mark.asyncio
     @pytest.mark.usefixtures('call_update')
     @pytest.mark.parametrize("task_id, expected_percent", [
-        (1, 0), (2, PERCENT_MIDDLE), (3, 0), (4, None), (5, None), (6, None)
+        (1, 0), (2, PERCENT_MIDDLE), (3, 0), (4, None), (5, None), (6, None), (7, None)
     ])
     async def test_progress(self, task_id, expected_percent):
         """Test backup percentage"""

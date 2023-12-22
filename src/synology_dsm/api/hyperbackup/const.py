@@ -23,6 +23,7 @@ PROP_STATUS_BACKUP = 'backup'
 PROP_STATUS_DETECT = 'detect'
 PROP_STATUS_VER_DEL = 'version_deleting'
 PROP_STATUS_PREP_VER_DEL = 'preparing_version_delete'
+PROP_STATUS_DETECT_WAIT = 'detect_waiting'
 
 # Hyper backup raw result values
 RESULT_NONE = 'none'
@@ -57,6 +58,7 @@ STATUS_NEVER_RUN = 'Never backed up'
 STATUS_NO_SCHEDULE = 'No schedule set'  # Backup task has run successfully, but there is no active schedule
 STATUS_RESTORE_ONLY = 'Restore Only'  # Not backup-able, but can restore
 STATUS_UNKNOWN = 'Unhandled/Unknown'
+STATUS_DETECT = 'Waiting: target offline'
 STATUS_ERROR = 'Error'  # An error occurred, or unknown combination of raw status/prev result.
 
 

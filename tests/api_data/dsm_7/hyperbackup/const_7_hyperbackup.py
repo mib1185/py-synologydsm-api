@@ -133,6 +133,21 @@ DSM_7_TASK_6_STATUS_IDLE_WITH_SCHEDULE = {'success': True, 'data': {
     'last_bkp_end_time': '2023/12/21 01:13', 'last_bkp_error_code': 4401, 'last_bkp_success_time': '2023/12/21 01:12',
     'last_bkp_time': '2023/12/21 01:13', 'next_bkp_time': '2023/12/22 01:00', 'schedule': SCHEDULE_VALID
 }}
+
+# Detecting
+DSM_7_TASK_7_LIST_ERROR_DETECT = {
+    'name': 'Detecting', 'task_id': 7, 'state': 'error', 'status': 'detect_waiting',
+    'last_bkp_result': 'done', 'data_enc': False, 'data_type': 'data', 'ext3ShareList': [],
+    'last_bkp_end_time': '2023/12/18 14:51', 'last_bkp_time': '2023/12/18 14:51', 'next_bkp_time': '',
+    'repo_id': 1, 'schedule': SCHEDULE_DISABLED, 'target_id': 'vault_9.hbk', 'target_type': 'image',
+    'transfer_type': 'image_remote', 'type': 'image:image_remote'
+}
+DSM_7_TASK_7_STATUS_ERROR_DETECT = {'success': True, 'data': {
+    'task_id': 7, 'state': 'error_detect', 'status': 'detect_waiting', 'last_bkp_result': 'done', 'last_bkp_error': '',
+    'last_bkp_end_time': '2023/12/18 14:51', 'last_bkp_error_code': 4401, 'last_bkp_progress': 73,
+    'last_bkp_success_time': '2023/12/18 14:50', 'last_bkp_time': '2023/12/18 14:51', 'next_bkp_time': '',
+    'schedule': SCHEDULE_DISABLED
+}}
 # =============================================
 
 # Result of list endpoint with all backup tasks
@@ -145,7 +160,8 @@ DSM_7_HYPERBACKUP_LIST = {"success": True, "data": {
         DSM_7_TASK_3_LIST_RUN_WITH_SCHD_SIZE_CNT,
         DSM_7_TASK_4_LIST_BROKEN,
         DSM_7_TASK_5_LIST_IDLE_NO_SCHEDULE,
-        DSM_7_TASK_6_LIST_IDLE_WITH_SCHEDULE
+        DSM_7_TASK_6_LIST_IDLE_WITH_SCHEDULE,
+        DSM_7_TASK_7_LIST_ERROR_DETECT
 ]}}
 
 DSM_7_STATUSES = {
@@ -154,7 +170,8 @@ DSM_7_STATUSES = {
     3: DSM_7_TASK_3_STATUS_RUN_WITH_SCHD_SIZE_CNT,
     4: DSM_7_TASK_4_STATUS_BROKEN,
     5: DSM_7_TASK_5_STATUS_IDLE_NO_SCHEDULE,
-    6: DSM_7_TASK_6_STATUS_IDLE_WITH_SCHEDULE
+    6: DSM_7_TASK_6_STATUS_IDLE_WITH_SCHEDULE,
+    7: DSM_7_TASK_7_STATUS_ERROR_DETECT
 }
 
 TARGET_DATA_ONLINE = {'success': True, 'data': {

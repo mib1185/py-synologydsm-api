@@ -97,7 +97,8 @@ class SynoHyperBackup:
             * Warning => NEVER_RUN, SUSPENDED, NO_SCHEDULE
             * Critical => Error
         """
-        if self.has_schedule(task_id) and self.status(task_id) in [STATUS_OK, STATUS_RESUMING, STATUS_WAITING, STATUS_RUNNING]:
+        ok_statuses = [STATUS_OK, STATUS_RESUMING, STATUS_WAITING, STATUS_RUNNING]
+        if self.has_schedule(task_id) and self.status(task_id) in ok_statuses:
             return HEALTH_GOOD
         elif self.status(task_id) in [STATUS_RESTORE_ONLY, STATUS_ERROR]:
             return HEALTH_CRIT
@@ -116,6 +117,8 @@ class SynoHyperBackup:
         if state != STATE_BACKUP:
             if state == STATE_RESTORE_ONLY:
                 return STATUS_RESTORE_ONLY
+            elif state == STATE_ERROR and raw_status == PROP_STATUS_DETECT_WAIT:
+                return STATUS_DETECT
             elif state in [STATE_ERROR, STATE_BROKEN, STATE_UNAUTH, STATE_END_SERVICE]:
                 return STATUS_ERROR
             else:
