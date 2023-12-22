@@ -38,10 +38,6 @@ _LOGGER = logging.getLogger(__name__)
 class SynologyDSM:
     """Class containing the main Synology DSM functions."""
 
-    DSM_5_WEIRD_URL_API = [
-        SynoStorage.API_KEY,
-    ]
-
     def __init__(
         self,
         session: aiohttp.ClientSession,
@@ -96,27 +92,7 @@ class SynologyDSM:
         if self._debugmode:
             print("DEBUG: " + message)
 
-    def _is_weird_api_url(self, api: str) -> bool:
-        """Returns True if the API URL is not common.
-
-        Common template is nas_base_url/webapi/path?params
-        Only handles DSM 5 for now.
-        """
-        return (
-            api in self.DSM_5_WEIRD_URL_API
-            and self._information
-            and self._information.version
-            and int(self._information.version) < 7321  # < DSM 6
-        )
-
     def _build_url(self, api: str) -> str:
-        if self._is_weird_api_url(api):
-            if api == SynoStorage.API_KEY:
-                return (
-                    f"{self._base_url}/webman/modules/StorageManager/"
-                    f"storagehandler.cgi?"
-                )
-
         return f"{self._base_url}/webapi/{self.apis[api]['path']}?"
 
     async def discover_apis(self):
@@ -232,14 +208,13 @@ class SynologyDSM:
         params["api"] = api
         params["version"] = 1
 
-        if not self._is_weird_api_url(api):
-            # Check if API is available
-            if not self.apis.get(api):
-                raise SynologyDSMAPINotExistsException(api)
-            params["version"] = self.apis[api]["maxVersion"]
-            max_version = kwargs.pop("max_version", None)
-            if max_version and params["version"] > max_version:
-                params["version"] = max_version
+        # Check if API is available
+        if not self.apis.get(api):
+            raise SynologyDSMAPINotExistsException(api)
+        params["version"] = self.apis[api]["maxVersion"]
+        max_version = kwargs.pop("max_version", None)
+        if max_version and params["version"] > max_version:
+            params["version"] = max_version
 
         params["method"] = method
 

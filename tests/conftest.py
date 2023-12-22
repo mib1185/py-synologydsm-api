@@ -37,13 +37,6 @@ def dsm(request, api) -> SynologyDSM:
 
 
 @pytest.fixture
-def dsm_5(api) -> SynologyDSM:
-    """Return a mock DSM 5 API."""
-    api.dsm_version = 5
-    return api
-
-
-@pytest.fixture
 def dsm_6(api) -> SynologyDSM:
     """Alias for api fixture."""
     return api

@@ -19,16 +19,6 @@ from synology_dsm.const import API_AUTH, API_INFO
 from synology_dsm.exceptions import SynologyDSMRequestException
 from synology_dsm.api.hyperbackup.hyperbackup import SynoHyperBackup
 
-from .api_data.dsm_5 import (
-    DSM_5_API_INFO,
-    DSM_5_AUTH_LOGIN,
-    DSM_5_AUTH_LOGIN_2SA,
-    DSM_5_AUTH_LOGIN_2SA_OTP,
-    DSM_5_CORE_UTILIZATION,
-    DSM_5_DSM_INFORMATION,
-    DSM_5_DSM_NETWORK,
-    DSM_5_STORAGE_STORAGE_DS410J_RAID5_4DISKS_1VOL,
-)
 from .api_data.dsm_6 import (
     DSM_6_API_INFO,
     DSM_6_API_INFO_SURVEILLANCE_STATION,
@@ -76,18 +66,6 @@ from .const import (
 )
 
 API_SWITCHER = {
-    5: {
-        "API_INFO": DSM_5_API_INFO,
-        "AUTH_LOGIN": DSM_5_AUTH_LOGIN,
-        "AUTH_LOGIN_2SA": DSM_5_AUTH_LOGIN_2SA,
-        "AUTH_LOGIN_2SA_OTP": DSM_5_AUTH_LOGIN_2SA_OTP,
-        "DSM_INFORMATION": DSM_5_DSM_INFORMATION,
-        "DSM_NETWORK": DSM_5_DSM_NETWORK,
-        "CORE_UTILIZATION": DSM_5_CORE_UTILIZATION,
-        "STORAGE_STORAGE": {
-            "RAID": DSM_5_STORAGE_STORAGE_DS410J_RAID5_4DISKS_1VOL,
-        },
-    },
     6: {
         "API_INFO": DSM_6_API_INFO,
         "AUTH_LOGIN": DSM_6_AUTH_LOGIN,
