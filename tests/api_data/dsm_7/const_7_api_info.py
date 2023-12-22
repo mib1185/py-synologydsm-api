@@ -88,8 +88,38 @@ DSM_7_API_INFO = {
             "path": "entry.cgi",
             "requestFormat": "JSON",
         },
+        "SYNO.Backup.Repository": {
+            "maxVersion": 2,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON",
+        },
         "SYNO.Backup.Service.NetworkBackup": {
             "maxVersion": 1,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON",
+        },
+        "SYNO.Backup.Task": {
+            "maxVersion": 2,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON",
+        },
+        "SYNO.Backup.Target": {
+            "maxVersion": 2,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON",
+        },
+        "SYNO.Backup.Version": {
+            "maxVersion": 2,
+            "minVersion": 1,
+            "path": "entry.cgi",
+            "requestFormat": "JSON",
+        },
+        "SYNO.Backup.Version.History": {
+            "maxVersion": 2,
             "minVersion": 1,
             "path": "entry.cgi",
             "requestFormat": "JSON",

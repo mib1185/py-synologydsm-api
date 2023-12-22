@@ -14,6 +14,7 @@ PROP_TASKID = 'task_id'
 PROP_ONLINE = 'is_online'
 PROP_USED_SIZE = 'used_size'
 PROP_LAST_PROGRESS = 'last_bkp_progress'
+PROP_PROGRESS = 'progress'
 
 # Hyper backup Task raw status values
 PROP_STATUS_NONE = 'none'
@@ -48,6 +49,7 @@ HEALTH_CRIT = 'Error'
 # Hyper backup *derived* status values
 STATUS_OK = 'OK'
 STATUS_RUNNING = 'Backing up'
+STATUS_RUNNING_NO_SCHEDULE = 'Backing up (no schedule)'
 STATUS_WAITING = 'Waiting to backup'
 STATUS_RESUMING = 'Resuming'
 STATUS_SUSPENDED = 'Suspended'

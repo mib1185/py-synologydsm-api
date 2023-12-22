@@ -17,6 +17,7 @@ from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.const import API_AUTH, API_INFO
 from synology_dsm.exceptions import SynologyDSMRequestException
+from synology_dsm.api.hyperbackup.hyperbackup import SynoHyperBackup
 
 from .api_data.dsm_5 import (
     DSM_5_API_INFO,
@@ -128,20 +129,22 @@ VALID_OTP = "123456"
 
 USER_MAX_TRY = "user_max"
 
-
 class SynologyDSMMock(SynologyDSM):
     """Mocked SynologyDSM."""
 
     API_URI = "api="
+    hyper_backup_list = {'data': {'total': 0, 'task_list': []}, 'success': True}
+    hyper_task_status = {'data': {}, 'success': False}
+    hyper_target_data = {'data': {}, 'success': False}
 
     def __init__(
         self,
-        session,
-        dsm_ip,
-        dsm_port,
-        username,
-        password,
-        use_https=False,
+        session=None,
+        dsm_ip=VALID_HOST,
+        dsm_port=VALID_PORT,
+        username=VALID_USER,
+        password=VALID_PASSWORD,
+        use_https=VALID_HTTPS,
         timeout=10,
         device_token=None,
         debugmode=False,
@@ -302,6 +305,18 @@ class SynologyDSMMock(SynologyDSM):
                 and "test_not_exists" in url
             ):
                 return {"error": {"code": 408}, "success": False}
+
+            if params['api'] == SynoHyperBackup.API_KEY:
+                if "method=list" in url:
+                    return self.hyper_backup_list
+                if "method=status" in url:
+                    try:
+                        return self.hyper_task_status[params['task_id']]
+                    except KeyError:
+                        return {"success": False}
+
+            if params['api'] == SynoHyperBackup.API_KEY_TARGET:
+                return self.hyper_target_data
 
             return {"success": False}
 
