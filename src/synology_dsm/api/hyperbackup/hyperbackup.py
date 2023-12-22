@@ -3,6 +3,7 @@ from typing import Any
 from typing import Dict
 import json
 from datetime import datetime
+from typing import Optional
 
 from synology_dsm.exceptions import SynologyDSMAPIErrorException
 
@@ -149,11 +150,15 @@ class SynoHyperBackup:
         """Return name."""
         return self._data.get(task_id).get(PROP_NAME)
 
-    def has_schedule(self, task_id: int) -> str:
+    def has_schedule(self, task_id: int) -> bool:
         """Does this backup task have a future schedule?"""
         return bool(self.next_backup_time(task_id))
 
-    def backup_progress(self, task_id: int) -> str:
+    def is_backing_up(self, task_id: int) -> bool:
+        """Is this backup task currently running?"""
+        return bool(self.backup_progress(task_id) is not None)
+
+    def backup_progress(self, task_id: int) -> Optional[int]:
         """What is backup percent? Returns None if not running."""
         try:
             return self._data.get(task_id).get(PROP_PROGRESS).get(PROP_PROGRESS)

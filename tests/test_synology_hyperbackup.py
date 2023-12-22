@@ -1,6 +1,7 @@
 """Synology DSM tests."""
 import pytest
 import pytest_asyncio
+from typing import Optional
 
 from synology_dsm.api.hyperbackup.hyperbackup import (
     SynoHyperBackup, PROP_ONLINE, PROP_USED_SIZE, HEALTH_GOOD, HEALTH_WARN, HEALTH_CRIT,
@@ -89,3 +90,12 @@ class TestSynoHyperBackup:
     async def test_progress(self, task_id, expected_percent):
         """Test backup percentage"""
         assert self.hyperbackup.backup_progress(task_id) == expected_percent
+
+    @pytest.mark.asyncio
+    @pytest.mark.usefixtures('call_update')
+    @pytest.mark.parametrize("task_id, expected_bool", [
+        (1, True), (2, True), (3, True), (4, False), (5, False), (6, False), (7, False)
+    ])
+    async def test_is_backing_up(self, task_id, expected_bool):
+        """Test backup percentage"""
+        assert self.hyperbackup.is_backing_up(task_id) == expected_bool
