@@ -19,6 +19,7 @@ class SynoPhotos(SynoBaseApi):
     THUMBNAIL_API_KEY = "SYNO.Foto.Thumbnail"
     THUMBNAIL_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Thumbnail"
     BROWSE_ITEM_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Browse.Item"
+    BROWSE_SHARING_API_KEY = "SYNO.Foto.Sharing.Misc"
 
     async def get_albums(
         self, offset: int = 0, limit: int = 100
@@ -34,6 +35,27 @@ class SynoPhotos(SynoBaseApi):
         for album in data["list"]:
             albums.append(
                 SynoPhotosAlbum(album["id"], album["name"], album["item_count"])
+            )
+        return albums
+
+    async def get_albums_shared_with_me(
+        self, offset: int = 0, limit: int = 100
+    ) -> list[SynoPhotosAlbum] | None:
+        """Get a list of all albums shared with me."""
+        albums: list[SynoPhotosAlbum] = []
+        raw_data = await self._dsm.get(
+            self.BROWSE_SHARING_API_KEY,
+            "list_shared_with_me_album",
+            {"offset": offset, "limit": limit},
+        )
+        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+            return None
+
+        for album in data["list"]:
+            albums.append(
+                SynoPhotosAlbum(
+                    album["id"], album["name"], album["item_count"], album["passphrase"]
+                )
             )
         return albums
 
@@ -70,15 +92,20 @@ class SynoPhotos(SynoBaseApi):
         self, album: SynoPhotosAlbum, offset: int = 0, limit: int = 100
     ) -> list[SynoPhotosItem] | None:
         """Get a list of all items from given album."""
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "additional": '["thumbnail"]',
+        }
+        if album.passphrase:
+            params["passphrase"] = album.passphrase
+        else:
+            params["album_id"] = album.album_id
+
         raw_data = await self._dsm.get(
             self.BROWSE_ITEM_API_KEY,
             "list",
-            {
-                "album_id": album.album_id,
-                "offset": offset,
-                "limit": limit,
-                "additional": '["thumbnail"]',
-            },
+            params,
         )
         return self._raw_data_to_items(raw_data)
 

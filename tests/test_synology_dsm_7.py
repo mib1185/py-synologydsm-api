@@ -234,3 +234,20 @@ class TestSynologyDSM7:
         assert items[1].thumbnail_cache_key == "490_1628323817"
         assert items[2].file_name == "shared_3.jpg"
         assert items[2].thumbnail_cache_key == "96_1628323786"
+
+        shared_albums = await dsm_7.photos.get_albums_shared_with_me()
+        assert shared_albums
+        assert len(shared_albums) == 1
+        assert shared_albums[0].album_id == 8
+        assert shared_albums[0].name == "SharedAlbum"
+        assert shared_albums[0].item_count == 2
+
+        items = await dsm_7.photos.get_items_from_album(shared_albums[0])
+        assert items
+        assert len(items) == 2
+        assert items[0].file_name == "album_share_1.jpg"
+        assert items[0].thumbnail_cache_key == "1986_1650286954"
+        assert items[0].thumbnail_size == "xl"
+        assert items[1].file_name == "album_share_2.jpg"
+        assert items[1].thumbnail_cache_key == "18924_1650288297"
+        assert items[1].thumbnail_size == "m"

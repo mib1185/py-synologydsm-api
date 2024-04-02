@@ -9,6 +9,7 @@ class SynoPhotosAlbum:
     album_id: int
     name: str
     item_count: int
+    passphrase: str = ""
 
 
 @dataclass

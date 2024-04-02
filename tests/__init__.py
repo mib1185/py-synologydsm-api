@@ -71,6 +71,8 @@ from .api_data.dsm_7 import (
     DSM_7_FOTO_ALBUMS,
     DSM_7_FOTO_ITEMS,
     DSM_7_FOTO_ITEMS_SEARCHED,
+    DSM_7_FOTO_SHARED_ALBUM_ITEMS,
+    DSM_7_FOTO_SHARED_ALBUMS,
     DSM_7_FOTO_SHARED_ITEMS,
 )
 from .const import (
@@ -283,6 +285,8 @@ class SynologyDSMMock(SynologyDSM):
                 return DSM_7_FOTO_ALBUMS
 
             if SynoPhotos.BROWSE_ITEM_API_KEY in url:
+                if "passphrase" in params:
+                    return DSM_7_FOTO_SHARED_ALBUM_ITEMS
                 return DSM_7_FOTO_ITEMS
 
             if SynoPhotos.SEARCH_API_KEY in url:
@@ -290,6 +294,9 @@ class SynologyDSMMock(SynologyDSM):
 
             if SynoPhotos.BROWSE_ITEM_FOTOTEAM_API_KEY in url:
                 return DSM_7_FOTO_SHARED_ITEMS
+
+            if SynoPhotos.BROWSE_SHARING_API_KEY in url:
+                return DSM_7_FOTO_SHARED_ALBUMS
 
             if SynoStorage.API_KEY in url:
                 return API_SWITCHER[self.dsm_version]["STORAGE_STORAGE"][
