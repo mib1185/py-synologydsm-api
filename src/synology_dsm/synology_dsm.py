@@ -6,7 +6,7 @@ import logging
 import socket
 from ipaddress import IPv6Address
 from json import JSONDecodeError
-from typing import Any, TypedDict
+from typing import Any, Coroutine, TypedDict
 from urllib.parse import quote, urlencode
 
 import aiohttp
@@ -397,38 +397,42 @@ class SynologyDSM:
         self, with_information: bool = False, with_network: bool = False
     ) -> None:
         """Updates the various instanced modules."""
+        update_methods: list[Coroutine[Any, Any, None]] = []
+
         if self._download:
-            await self._download.update()
+            update_methods.append(self._download.update())
 
         if self._external_usb:
-            await self._external_usb.update()
+            update_methods.append(self._external_usb.update())
 
         if self._information and with_information:
-            await self._information.update()
+            update_methods.append(self._information.update())
 
         if self._network and with_network:
-            await self._network.update()
+            update_methods.append(self._network.update())
 
         if self._security:
-            await self._security.update()
+            update_methods.append(self._security.update())
 
         if self._utilisation:
-            await self._utilisation.update()
+            update_methods.append(self._utilisation.update())
 
         if self._storage:
-            await self._storage.update()
+            update_methods.append(self._storage.update())
 
         if self._share:
-            await self._share.update()
+            update_methods.append(self._share.update())
 
         if self._surveillance:
-            await self._surveillance.update()
+            update_methods.append(self._surveillance.update())
 
         if self._system:
-            await self._system.update()
+            update_methods.append(self._system.update())
 
         if self._upgrade:
-            await self._upgrade.update()
+            update_methods.append(self._upgrade.update())
+
+        await asyncio.gather(*update_methods)
 
     def reset(self, api: SynoBaseApi | str) -> bool:
         """Reset an API to avoid fetching in on update."""
