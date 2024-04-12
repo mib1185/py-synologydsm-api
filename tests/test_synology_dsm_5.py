@@ -1,4 +1,5 @@
 """Synology DSM tests."""
+
 # pylint: disable=protected-access
 import pytest
 

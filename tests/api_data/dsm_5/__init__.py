@@ -1,4 +1,5 @@
 """DSM 5 datas."""
+
 from .const_5_api_auth import (
     DSM_5_AUTH_LOGIN,
     DSM_5_AUTH_LOGIN_2SA,

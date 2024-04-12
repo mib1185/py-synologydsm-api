@@ -1,4 +1,5 @@
 """DSM 6 SYNO.Storage.CGI.Storage data."""
+
 from tests.const import UNIQUE_KEY
 
 DSM_6_STORAGE_STORAGE_DS1819_PLUS_SHR2_8DISKS_1VOL = {

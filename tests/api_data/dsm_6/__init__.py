@@ -1,4 +1,5 @@
 """DSM 6 datas."""
+
 from .const_6_api_auth import (
     DSM_6_AUTH_LOGIN,
     DSM_6_AUTH_LOGIN_2SA,

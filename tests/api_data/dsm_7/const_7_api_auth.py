@@ -1,4 +1,5 @@
 """DSM 7 SYNO.API.Auth data."""
+
 from tests.const import (
     DEVICE_TOKEN,
     ERROR_AUTH_OTP_NOT_SPECIFIED,

@@ -1,4 +1,5 @@
 """Library tests."""
+
 from json import JSONDecodeError
 from urllib.parse import urlencode
 
