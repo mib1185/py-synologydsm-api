@@ -25,6 +25,7 @@ from .api.dsm.network import SynoDSMNetwork
 from .api.photos import SynoPhotos
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
+from .api.video_station import SynoVideoStation
 from .const import API_AUTH, API_INFO, SENSITIV_PARAMS
 from .exceptions import (
     SynologyDSMAPIErrorException,
@@ -65,7 +66,7 @@ class SynologyDSM:
         dsm_port: int,
         username: str,
         password: str,
-        use_https: bool = False,
+        use_https: bool = True,
         timeout: int = 10,
         device_token: str | None = None,
         debugmode: bool = False,
@@ -100,6 +101,7 @@ class SynologyDSM:
         self._system: SynoCoreSystem | None = None
         self._utilisation: SynoCoreUtilization | None = None
         self._upgrade: SynoCoreUpgrade | None = None
+        self._video: SynoVideoStation | None = None
 
         try:
             IPv6Address(dsm_ip)
@@ -473,6 +475,9 @@ class SynologyDSM:
             if api == SynoSurveillanceStation.API_KEY:
                 self._surveillance = None
                 return True
+            if api == SynoVideoStation.API_KEY:
+                self._video = None
+                return True
         if isinstance(api, SynoCoreExternalUSB):
             self._external_usb = None
             return True
@@ -502,6 +507,9 @@ class SynologyDSM:
             return True
         if isinstance(api, SynoSurveillanceStation):
             self._surveillance = None
+            return True
+        if isinstance(api, SynoVideoStation):
+            self._video = None
             return True
         return False
 
@@ -567,6 +575,13 @@ class SynologyDSM:
         if not self._surveillance:
             self._surveillance = SynoSurveillanceStation(self)
         return self._surveillance
+    
+    @property
+    def video_station(self) -> SynoVideoStation:
+        """Gets NAS VideoStation."""
+        if not self._video:
+            self._video = SynoVideoStation(self)
+        return self._video
 
     @property
     def system(self) -> SynoCoreSystem:

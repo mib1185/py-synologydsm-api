@@ -10,6 +10,7 @@ from .const import (
     ERROR_FILE,
     ERROR_SURVEILLANCE,
     ERROR_VIRTUALIZATION,
+    ERROR_VIDEO,
 )
 
 
@@ -33,6 +34,8 @@ class SynologyDSMException(Exception):
                 reason = ERROR_SURVEILLANCE.get(code)
             elif "SYNO.Virtualization" in api:
                 reason = ERROR_VIRTUALIZATION.get(code)
+            elif "SYNO.VideoStation2" in api:
+                reason = ERROR_VIDEO.get(code)
         if not reason:
             reason = "Unknown"
 

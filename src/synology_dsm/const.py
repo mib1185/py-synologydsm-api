@@ -168,3 +168,42 @@ ERROR_VIRTUALIZATION: Final = {
     1400: "The result of image creating is partial success",
     1600: "The virtual machine has been successfully edited. However, errors occurred while reserving the memory or CPU on the HA hosts",  # pylint: disable=line-too-long
 }
+
+# SYNO.VideoStation.*
+ERROR_VIDEO: Final = {
+    400: "Download failed",
+    417: "image_format",
+    418: "image_too_big",
+    431: "error_name_duplicated",
+    800: "download_failed",
+    801: "image_format",
+    803: "image_too_big",
+    804: "image_too_big",
+    903: "error_name_duplicated",
+    1002: "invalid_apikey",
+    1003: "plugin_connect_failed",
+    1004: "plugin_connect_failed",
+    1005: "duplicate_plugin_name",
+    1006: "duplicate_plugin",
+    1007: "invalid_plugin_info",
+    1008: "plugin_install_failed",
+    1009: "search_all_video_info_again_failed",
+    1010: "format_zip_or_tar",
+    1011: "unzip_filesize_should_less_than",
+    1152: "download_subtitle_fail_retry_later",
+    1153: "unsupported_subtitle_format",
+    1500: "dtv_request_dongle",
+    1502: "error_someone_scaning",
+    1503: "scan_fail",
+    1505: "error_someone_scaning",
+    1506: "dtv_channeltable_not_found",
+    1510: "record_program_not_exist",
+    1511: "update_recording",
+    1512: "update_streaming",
+    1513: "dtv_device_busy",
+    1517: "error_file_exist",
+    1520: "dtv_folder_not_found",
+    1521: "recorde_duplicate",
+    1522: "no_data",
+    1526: "dvbs_scan_fail"
+}

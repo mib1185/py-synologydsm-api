@@ -16,6 +16,12 @@ from .photos.const_7_photo import (
     DSM_7_FOTO_ITEMS_SEARCHED,
     DSM_7_FOTO_SHARED_ITEMS,
 )
+from .videos.const_7_video import (
+    DSM_7_VIDEO_MOVIES,
+    DSM_7_VIDEO_TVSHOW,
+    DSM_7_VIDEO_TVSHOW_EPISODES,
+    DSM_7_VIDEO_DEVICES,
+)
 
 __all__ = [
     "DSM_7_AUTH_LOGIN",
@@ -30,4 +36,8 @@ __all__ = [
     "DSM_7_FOTO_ITEMS",
     "DSM_7_FOTO_ITEMS_SEARCHED",
     "DSM_7_FOTO_SHARED_ITEMS",
+    "DSM_7_VIDEO_MOVIES",
+    "DSM_7_VIDEO_TVSHOW",
+    "DSM_7_VIDEO_TVSHOW_EPISODES",
+    "DSM_7_VIDEO_DEVICES",
 ]
