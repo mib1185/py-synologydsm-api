@@ -10,7 +10,6 @@ from typing import Any, TypedDict
 from urllib.parse import quote, urlencode
 
 import aiohttp
-import async_timeout
 from yarl import URL
 
 from .api import SynoBaseApi
@@ -74,7 +73,7 @@ class SynologyDSM:
         """Constructor method."""
         self.username = username
         self._password = password
-        self._timeout = timeout
+        self._aiohttp_timeout = aiohttp.ClientTimeout(total=timeout)
         self._debugmode = debugmode
 
         # Session
@@ -348,8 +347,9 @@ class SynologyDSM:
 
         try:
             if method == "GET":
-                async with async_timeout.timeout(self._timeout):
-                    response = await self._session.get(url_encoded, **kwargs)
+                response = await self._session.get(
+                    url_encoded, timeout=self._aiohttp_timeout, **kwargs
+                )
             elif method == "POST":
                 data = {}
                 if params is not None:
@@ -359,8 +359,9 @@ class SynologyDSM:
                 kwargs["data"] = data
                 self._debuglog("POST data: " + str(data))
 
-                async with async_timeout.timeout(self._timeout):
-                    response = await self._session.post(url_encoded, **kwargs)
+                response = await self._session.post(
+                    url_encoded, timeout=self._aiohttp_timeout, **kwargs
+                )
 
             # mask sesitiv parameters
             response_url = response.url

@@ -44,7 +44,7 @@ class TestSynologyDSM:
         """Test init."""
         assert dsm.username == VALID_USER
         assert dsm._base_url == f"https://{VALID_HOST}:{VALID_PORT}"
-        assert dsm._timeout == 10
+        assert dsm._aiohttp_timeout.total == 10
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
 
@@ -289,7 +289,7 @@ class TestSynologyDSM:
             timeout=2,
         )
         dsm.dsm_version = version
-        assert dsm._timeout == 2
+        assert dsm._aiohttp_timeout.total == 2
 
     @pytest.mark.asyncio
     async def test_request_get(self, dsm):
