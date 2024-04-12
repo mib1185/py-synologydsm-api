@@ -1,4 +1,5 @@
 """Class to interact with Synology DSM."""
+
 from __future__ import annotations
 
 import asyncio

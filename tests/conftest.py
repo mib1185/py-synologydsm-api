@@ -1,4 +1,5 @@
 """Main conftest."""
+
 import pytest
 
 from synology_dsm.synology_dsm import SynologyDSM

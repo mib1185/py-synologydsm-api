@@ -1,4 +1,5 @@
 """Library constants."""
+
 from typing import Final
 
 # APIs

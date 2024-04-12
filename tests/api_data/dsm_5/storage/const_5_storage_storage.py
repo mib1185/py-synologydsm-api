@@ -1,4 +1,5 @@
 """DSM 5 SYNO.Storage.CGI.Storage data."""
+
 from tests.const import UNIQUE_KEY
 
 DSM_5_STORAGE_STORAGE_DS410J_RAID5_4DISKS_1VOL = {

@@ -1,4 +1,5 @@
 """Library exceptions."""
+
 from __future__ import annotations
 
 from .const import (

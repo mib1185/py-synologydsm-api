@@ -1,4 +1,5 @@
 """Synology DownloadStation API wrapper."""
+
 from __future__ import annotations
 
 from synology_dsm.api import SynoBaseApi

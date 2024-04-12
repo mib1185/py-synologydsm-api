@@ -1,4 +1,5 @@
 """Data models for Synology Photos Module."""
+
 from dataclasses import dataclass
 
 
