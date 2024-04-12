@@ -19,6 +19,9 @@ class SynoStorageDisk(TypedDict, total=False):
     exceed_bad_sector_thr: bool
     below_remain_life_thr: bool
     temp: int
+    model: str
+    vendor: str
+    size_total: int
 
 
 SynoStoragePoolChild = TypedDict(
@@ -52,6 +55,7 @@ class SynoStorageVolume(TypedDict, total=False):
     device_type: str
     size: SynoStorageVolumeSize
     status: str
+    fs_type: str
 
 
 class StorageDataType(TypedDict, total=False):
