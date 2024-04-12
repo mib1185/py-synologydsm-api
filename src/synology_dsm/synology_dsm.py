@@ -73,7 +73,6 @@ class SynologyDSM:
         """Constructor method."""
         self.username = username
         self._password = password
-        self._timeout = timeout
         self._aiohttp_timeout = aiohttp.ClientTimeout(total=timeout)
         self._debugmode = debugmode
 
