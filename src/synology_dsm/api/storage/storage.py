@@ -14,6 +14,8 @@ class SynoStorageDisk(TypedDict, total=False):
     id: str
     name: str
     device: str
+    firm: str
+    diskType: str  # noqa: N815
     smart_status: str
     status: str
     exceed_bad_sector_thr: bool
