@@ -44,7 +44,7 @@ class TestSynologyDSM:
     def test_init(self, dsm):
         """Test init."""
         assert dsm.username == VALID_USER
-        assert dsm._base_url == f"https://{VALID_HOST}:{VALID_PORT}"
+        assert str(dsm._base_url) == f"https://{VALID_HOST}:{VALID_PORT}"
         assert dsm._aiohttp_timeout.total == 10
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id

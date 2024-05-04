@@ -110,9 +110,9 @@ class SynologyDSM:
 
         # Build variables
         if use_https:
-            self._base_url = f"https://{dsm_ip}:{dsm_port}"
+            self._base_url = URL(f"https://{dsm_ip}:{dsm_port}")
         else:
-            self._base_url = f"http://{dsm_ip}:{dsm_port}"
+            self._base_url = URL(f"http://{dsm_ip}:{dsm_port}")
 
     def _debuglog(self, message: str) -> None:
         """Outputs message if debug mode is enabled."""
@@ -132,15 +132,13 @@ class SynologyDSM:
             and int(self._information.version) < 7321  # < DSM 6
         )
 
-    def _build_url(self, api: str) -> str:
-        if self._is_weird_api_url(api):
-            if api == SynoStorage.API_KEY:
-                return (
-                    f"{self._base_url}/webman/modules/StorageManager/"
-                    f"storagehandler.cgi?"
-                )
+    def _build_url(self, api: str) -> URL:
+        if self._is_weird_api_url(api) and api == SynoStorage.API_KEY:
+            return self._base_url.join(
+                URL("/webman/modules/StorageManager/storagehandler.cgi?")
+            )
 
-        return f"{self._base_url}/webapi/{self.apis[api]['path']}?"
+        return self._base_url.join(URL(f"/webapi/{self.apis[api]['path']}?"))
 
     async def discover_apis(self) -> None:
         """Retreives available API infos from the NAS."""
@@ -259,7 +257,7 @@ class SynologyDSM:
         method: str,
         params: dict | None = None,
         **kwargs: Any,
-    ) -> tuple[str, dict, dict]:
+    ) -> tuple[URL, dict, dict]:
         """Prepare the url and parameters for a request."""
         # Discover existing APIs
         if api != API_INFO:
@@ -333,18 +331,17 @@ class SynologyDSM:
         return response
 
     async def _execute_request(
-        self, method: str, url: str, params: dict | None, **kwargs: Any
+        self, method: str, url: URL, params: dict | None, **kwargs: Any
     ) -> bytes | dict | str:
         """Function to execute and handle a request."""
         if params:
             # special handling for spaces in parameters
             # because yarl.URL does encode a space as + instead of %20
             # safe extracted from yarl.URL._QUERY_PART_QUOTER
-            safe = "?/:@-._~!$'()*,"
-            query = urlencode(params, safe=safe, quote_via=quote)
-            url_encoded = URL(str(URL(url)) + "?" + query, encoded=True)
+            query = urlencode(params, safe="?/:@-._~!$'()*,", quote_via=quote)
+            url_encoded = url.join(URL(f"?{query}", encoded=True))
         else:
-            url_encoded = URL(url)
+            url_encoded = url
 
         try:
             if method == "GET":
