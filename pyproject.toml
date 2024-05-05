@@ -54,6 +54,9 @@ fail_under = 80
 profile = "black"
 src_paths = ["src", "tests"]
 
+[tool.mypy]
+exclude = ["tests/"]
+
 [tool.pylint.MAIN]
 ignore = ["tests"]
 
