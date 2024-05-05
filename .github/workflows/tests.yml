@@ -13,10 +13,10 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4.1.4
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v5.1.0
         with:
-          python-version: "3.8"
+          python-version: "3.9"
 
       - name: Install dependencies
         run: |
@@ -55,9 +55,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python-version: "3.8"
           - python-version: "3.9"
           - python-version: "3.10"
+          - python-version: "3.11"
+          - python-version: "3.12"
 
     steps:
       - name: Check out the repository
@@ -90,10 +91,10 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4.1.4
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5.1.0
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
@@ -128,7 +129,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5.1.0
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Install build dependencies
         run: |
