@@ -13,6 +13,15 @@
       }
     },
     {
+      "label": "coverage",
+      "type": "shell",
+      "command": "coverage run --parallel -m pytest ; coverage combine ; coverage report",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
       "label": "reinstall dependencies",
       "type": "shell",
       "command": "pip3 --disable-pip-version-check --no-cache-dir install -r requirements_dev.txt -e .",
