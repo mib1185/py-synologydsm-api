@@ -2,6 +2,7 @@
 
 # pylint: disable=protected-access
 import pytest
+from aiohttp import ClientTimeout
 
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
@@ -278,7 +279,16 @@ class TestSynologyDSM:
         assert not dsm._session_id
 
     @pytest.mark.parametrize("version", [5, 6, 7])
-    def test_request_timeout(self, version):
+    @pytest.mark.parametrize(
+        "timeout,expected_result",
+        [
+            (2, (2, None)),
+            (15, (15, None)),
+            (ClientTimeout(total=5), (5, None)),
+            (ClientTimeout(total=60, connect=15), (60, 15)),
+        ],
+    )
+    def test_request_timeout(self, version, timeout, expected_result):
         """Test request timeout."""
         dsm = SynologyDSMMock(
             None,
@@ -287,10 +297,11 @@ class TestSynologyDSM:
             VALID_USER,
             VALID_PASSWORD,
             VALID_HTTPS,
-            timeout=2,
+            timeout=timeout,
         )
         dsm.dsm_version = version
-        assert dsm._aiohttp_timeout.total == 2
+        assert dsm._aiohttp_timeout.total == expected_result[0]
+        assert dsm._aiohttp_timeout.connect == expected_result[1]
 
     @pytest.mark.asyncio
     async def test_request_get(self, dsm):
