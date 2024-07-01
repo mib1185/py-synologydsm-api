@@ -2,7 +2,7 @@ aiohttp
 black==24.4.0
 coverage[toml]
 flake8-bandit==4.1.1
-flake8-bugbear==24.2.6
+flake8-bugbear==24.4.26
 flake8-docstrings==1.7.0
 flake8-rst-docstrings==0.3.0
 flake8==7.0.0
