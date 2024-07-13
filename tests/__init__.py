@@ -71,6 +71,7 @@ from .api_data.dsm_7 import (
     DSM_7_DSM_INFORMATION,
     DSM_7_FOTO_ALBUMS,
     DSM_7_FOTO_ITEMS,
+    DSM_7_FOTO_ITEMS_SHARED_ALBUM,
     DSM_7_FOTO_ITEMS_SEARCHED,
     DSM_7_FOTO_SHARED_ITEMS,
 )
@@ -285,7 +286,10 @@ class SynologyDSMMock(SynologyDSM):
                 return DSM_7_FOTO_ALBUMS
 
             if SynoPhotos.BROWSE_ITEM_API_KEY in url:
-                return DSM_7_FOTO_ITEMS
+                if "album_id=3" in url:
+                    return DSM_7_FOTO_ITEMS_SHARED_ALBUM
+                else:
+                    return DSM_7_FOTO_ITEMS
 
             if SynoPhotos.SEARCH_API_KEY in url:
                 return DSM_7_FOTO_ITEMS_SEARCHED

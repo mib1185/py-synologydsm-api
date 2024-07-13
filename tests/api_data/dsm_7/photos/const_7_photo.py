@@ -38,6 +38,25 @@ DSM_7_FOTO_ALBUMS = {
                 "type": "normal",
                 "version": 195694,
             },
+             {
+                "cant_migrate_condition": {},
+                "condition": {},
+                "create_time": 1718658534,
+                "end_time": 1719075481,
+                "freeze_album": False,
+                "id": 3,
+                "item_count": 1,
+                "name": "Album3",
+                "owner_user_id": 7,
+                "passphrase": "NiXlv1i2N",
+                "shared": False,
+                "sort_by": "default",
+                "sort_direction": "default",
+                "start_time": 1659724703,
+                "temporary_shared": False,
+                "type": "normal",
+                "version": 102886,
+            },
         ]
     },
     "success": True,
@@ -104,6 +123,34 @@ DSM_7_FOTO_ITEMS = {
                         "sm": "ready",
                         "cache_key": "29809_1668560967",
                         "unit_id": 29809,
+                    }
+                },
+            },
+        ]
+    },
+}
+
+DSM_7_FOTO_ITEMS_SHARED_ALBUM = {
+    "success": True,
+    "data": {
+        "list": [
+            {
+                "id": 29807,
+                "filename": "20221115_185645.jpg",
+                "filesize": 2644859,
+                "time": 1668538602,
+                "indexed_time": 1668564550862,
+                "owner_user_id": 7,
+                "folder_id": 597,
+                "type": "photo",
+                "additional": {
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "29810_1668560967",
+                        "unit_id": 29807,
                     }
                 },
             },
