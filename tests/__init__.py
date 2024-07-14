@@ -286,7 +286,7 @@ class SynologyDSMMock(SynologyDSM):
                 return DSM_7_FOTO_ALBUMS
 
             if SynoPhotos.BROWSE_ITEM_API_KEY in url:
-                if "album_id=3" in url:
+                if "passphrase" in url:
                     return DSM_7_FOTO_ITEMS_SHARED_ALBUM
                 else:
                     return DSM_7_FOTO_ITEMS

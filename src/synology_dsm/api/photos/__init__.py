@@ -26,7 +26,11 @@ class SynoPhotos(SynoBaseApi):
         """Get a list of all albums."""
         albums: list[SynoPhotosAlbum] = []
         raw_data = await self._dsm.get(
-            self.BROWSE_ALBUMS_API_KEY, "list", {"offset": offset, "limit": limit}
+            self.BROWSE_ALBUMS_API_KEY, "list", {
+                "offset": offset,
+                "limit": limit,
+                "category": "normal_share_with_me"
+            }
         )
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
             return None
@@ -71,15 +75,20 @@ class SynoPhotos(SynoBaseApi):
         self, album: SynoPhotosAlbum, offset: int = 0, limit: int = 100
     ) -> list[SynoPhotosItem] | None:
         """Get a list of all items from given album."""
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "additional": '["thumbnail"]',
+        }
+        if album.passphrase is not None:
+            params["passphrase"] = album.passphrase
+        else:
+            params["album_id"] = album.album_id
+
         raw_data = await self._dsm.get(
             self.BROWSE_ITEM_API_KEY,
             "list",
-            {
-                "album_id": album.album_id,
-                "offset": offset,
-                "limit": limit,
-                "additional": '["thumbnail"]',
-            },
+            params,
         )
         return self._raw_data_to_items(raw_data, album.passphrase)
 
