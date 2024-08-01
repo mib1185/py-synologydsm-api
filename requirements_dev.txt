@@ -11,7 +11,7 @@ pep8-naming==0.14.1
 pre-commit-hooks==4.6.0
 pre-commit==3.2.2
 Pygments==2.18.0
-pylint==3.1.0
+pylint==3.2.6
 pytest-asyncio==0.23.7
 pytest==8.1.1
 reorder-python-imports==3.12.0
