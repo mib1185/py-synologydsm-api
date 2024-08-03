@@ -38,7 +38,7 @@ DSM_7_FOTO_ALBUMS = {
                 "type": "normal",
                 "version": 195694,
             },
-             {
+            {
                 "cant_migrate_condition": {},
                 "condition": {},
                 "create_time": 1718658534,

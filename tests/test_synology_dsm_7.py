@@ -193,7 +193,7 @@ class TestSynologyDSM7:
         assert albums[2].album_id == 3
         assert albums[2].name == "Album3"
         assert albums[2].item_count == 1
-        assert albums[2].passphrase == 'NiXlv1i2N'
+        assert albums[2].passphrase == "NiXlv1i2N"
 
         items = await dsm_7.photos.get_items_from_album(albums[0])
         assert items
@@ -237,7 +237,7 @@ class TestSynologyDSM7:
         assert items[0].file_name == "20221115_185645.jpg"
         assert items[0].thumbnail_cache_key == "29810_1668560967"
         assert items[0].thumbnail_size == "xl"
-        assert items[0].passphrase == 'NiXlv1i2N'
+        assert items[0].passphrase == "NiXlv1i2N"
 
         thumb_url = await dsm_7.photos.get_item_thumbnail_url(items[0])
         assert thumb_url
