@@ -26,18 +26,21 @@ class SynoPhotos(SynoBaseApi):
         """Get a list of all albums."""
         albums: list[SynoPhotosAlbum] = []
         raw_data = await self._dsm.get(
-            self.BROWSE_ALBUMS_API_KEY, "list", {
-                "offset": offset,
-                "limit": limit,
-                "category": "normal_share_with_me"
-            }
+            self.BROWSE_ALBUMS_API_KEY,
+            "list",
+            {"offset": offset, "limit": limit, "category": "normal_share_with_me"},
         )
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
             return None
 
         for album in data["list"]:
             albums.append(
-                SynoPhotosAlbum(album["id"], album["name"], album["item_count"], album["passphrase"] if album["passphrase"] != '' else None)
+                SynoPhotosAlbum(
+                    album["id"],
+                    album["name"],
+                    album["item_count"],
+                    album["passphrase"] if album["passphrase"] != "" else None,
+                )
             )
         return albums
 
@@ -134,7 +137,7 @@ class SynoPhotos(SynoBaseApi):
             "cache_key": item.thumbnail_cache_key,
         }
 
-        if item.passphrase is not None :
+        if item.passphrase is not None:
             params["passphrase"] = item.passphrase
 
         raw_data = await self._dsm.get(
@@ -159,7 +162,7 @@ class SynoPhotos(SynoBaseApi):
             "type": "unit",
         }
 
-        if item.passphrase is not None :
+        if item.passphrase is not None:
             params["passphrase"] = item.passphrase
 
         raw_data = await self._dsm.get(
@@ -184,8 +187,8 @@ class SynoPhotos(SynoBaseApi):
             "type": "unit",
         }
 
-        if item.passphrase is not None :
-             params["passphrase"] = item.passphrase
+        if item.passphrase is not None:
+            params["passphrase"] = item.passphrase
 
         return await self._dsm.generate_url(
             download_api,

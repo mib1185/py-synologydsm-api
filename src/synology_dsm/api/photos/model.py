@@ -1,5 +1,7 @@
 """Data models for Synology Photos Module."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 
@@ -10,7 +12,7 @@ class SynoPhotosAlbum:
     album_id: int
     name: str
     item_count: int
-    passphrase: str
+    passphrase: str | None
 
 
 @dataclass
@@ -24,4 +26,4 @@ class SynoPhotosItem:
     thumbnail_cache_key: str
     thumbnail_size: str
     is_shared: bool
-    passphrase: str
+    passphrase: str | None
