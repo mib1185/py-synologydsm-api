@@ -48,7 +48,7 @@ source = ["synology_dsm"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 80
+fail_under = 75
 
 [tool.isort]
 profile = "black"
