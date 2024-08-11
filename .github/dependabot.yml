@@ -4,7 +4,13 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
+    groups:
+      gh-actions:
+        patterns: ["*"]
   - package-ecosystem: pip
     directory: "/"
     schedule:
       interval: monthly
+    groups:
+      pip-dependencies:
+        patterns: ["*"]
