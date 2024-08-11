@@ -347,6 +347,7 @@ class SynologyDSM:
             url_encoded = url
 
         try:
+            assert method in ["GET", "POST"]
             if method == "GET":
                 response = await self._session.get(
                     url_encoded, timeout=self._aiohttp_timeout, **kwargs
