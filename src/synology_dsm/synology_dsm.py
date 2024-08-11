@@ -347,7 +347,6 @@ class SynologyDSM:
             url_encoded = url
 
         try:
-            assert method in ["GET", "POST"]
             if method == "GET":
                 response = await self._session.get(
                     url_encoded, timeout=self._aiohttp_timeout, **kwargs
@@ -366,7 +365,7 @@ class SynologyDSM:
                 )
 
             # mask sesitiv parameters
-            response_url = response.url
+            response_url = response.url  # pylint: disable=E0606
             for param in SENSITIV_PARAMS:
                 if params is not None and params.get(param):
                     response_url = response_url.update_query({param: "*********"})
