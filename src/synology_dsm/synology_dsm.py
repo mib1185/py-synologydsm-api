@@ -384,7 +384,10 @@ class SynologyDSM:
                 ]:
                     return dict(await response.json(content_type=content_type))
 
-                if content_type.startswith("image"):
+                if (
+                    content_type == "application/octet-stream"
+                    or content_type.startswith("image")
+                ):
                     return await response.read()
 
                 return await response.text()

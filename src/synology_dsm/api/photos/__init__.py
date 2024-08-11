@@ -26,19 +26,26 @@ class SynoPhotos(SynoBaseApi):
         """Get a list of all albums."""
         albums: list[SynoPhotosAlbum] = []
         raw_data = await self._dsm.get(
-            self.BROWSE_ALBUMS_API_KEY, "list", {"offset": offset, "limit": limit}
+            self.BROWSE_ALBUMS_API_KEY,
+            "list",
+            {"offset": offset, "limit": limit, "category": "normal_share_with_me"},
         )
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
             return None
 
         for album in data["list"]:
             albums.append(
-                SynoPhotosAlbum(album["id"], album["name"], album["item_count"])
+                SynoPhotosAlbum(
+                    album["id"],
+                    album["name"],
+                    album["item_count"],
+                    album["passphrase"] if album["passphrase"] else None,
+                )
             )
         return albums
 
     def _raw_data_to_items(
-        self, raw_data: bytes | dict | str
+        self, raw_data: bytes | dict | str, passphrase: str | None = None
     ) -> list[SynoPhotosItem] | None:
         """Parse the raw data response to a list of photo items."""
         items: list[SynoPhotosItem] = []
@@ -62,6 +69,7 @@ class SynoPhotos(SynoBaseApi):
                     item["additional"]["thumbnail"]["cache_key"],
                     size,
                     item["owner_user_id"] == 0,
+                    passphrase,
                 )
             )
         return items
@@ -70,17 +78,22 @@ class SynoPhotos(SynoBaseApi):
         self, album: SynoPhotosAlbum, offset: int = 0, limit: int = 100
     ) -> list[SynoPhotosItem] | None:
         """Get a list of all items from given album."""
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "additional": '["thumbnail"]',
+        }
+        if album.passphrase:
+            params["passphrase"] = album.passphrase
+        else:
+            params["album_id"] = album.album_id
+
         raw_data = await self._dsm.get(
             self.BROWSE_ITEM_API_KEY,
             "list",
-            {
-                "album_id": album.album_id,
-                "offset": offset,
-                "limit": limit,
-                "additional": '["thumbnail"]',
-            },
+            params,
         )
-        return self._raw_data_to_items(raw_data)
+        return self._raw_data_to_items(raw_data, album.passphrase)
 
     async def get_items_from_shared_space(
         self, offset: int = 0, limit: int = 100
@@ -118,13 +131,19 @@ class SynoPhotos(SynoBaseApi):
         download_api = self.DOWNLOAD_API_KEY
         if item.is_shared:
             download_api = self.DOWNLOAD_FOTOTEAM_API_KEY
+
+        params = {
+            "unit_id": f"[{item.item_id}]",
+            "cache_key": item.thumbnail_cache_key,
+        }
+
+        if item.passphrase:
+            params["passphrase"] = item.passphrase
+
         raw_data = await self._dsm.get(
             download_api,
             "download",
-            {
-                "unit_id": f"[{item.item_id}]",
-                "cache_key": item.thumbnail_cache_key,
-            },
+            params,
         )
         if isinstance(raw_data, bytes):
             return raw_data
@@ -135,15 +154,21 @@ class SynoPhotos(SynoBaseApi):
         download_api = self.THUMBNAIL_API_KEY
         if item.is_shared:
             download_api = self.THUMBNAIL_FOTOTEAM_API_KEY
+
+        params = {
+            "id": item.item_id,
+            "cache_key": item.thumbnail_cache_key,
+            "size": item.thumbnail_size,
+            "type": "unit",
+        }
+
+        if item.passphrase:
+            params["passphrase"] = item.passphrase
+
         raw_data = await self._dsm.get(
             download_api,
             "get",
-            {
-                "id": item.item_id,
-                "cache_key": item.thumbnail_cache_key,
-                "size": item.thumbnail_size,
-                "type": "unit",
-            },
+            params,
         )
         if isinstance(raw_data, bytes):
             return raw_data
@@ -154,13 +179,19 @@ class SynoPhotos(SynoBaseApi):
         download_api = self.THUMBNAIL_API_KEY
         if item.is_shared:
             download_api = self.THUMBNAIL_FOTOTEAM_API_KEY
+
+        params = {
+            "id": item.item_id,
+            "cache_key": item.thumbnail_cache_key,
+            "size": item.thumbnail_size,
+            "type": "unit",
+        }
+
+        if item.passphrase:
+            params["passphrase"] = item.passphrase
+
         return await self._dsm.generate_url(
             download_api,
             "get",
-            {
-                "id": item.item_id,
-                "cache_key": item.thumbnail_cache_key,
-                "size": item.thumbnail_size,
-                "type": "unit",
-            },
+            params,
         )
