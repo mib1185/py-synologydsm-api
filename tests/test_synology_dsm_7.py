@@ -3,6 +3,18 @@
 # pylint: disable=protected-access
 import pytest
 
+from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
+from synology_dsm.api.core.security import SynoCoreSecurity
+from synology_dsm.api.core.share import SynoCoreShare
+from synology_dsm.api.core.system import SynoCoreSystem
+from synology_dsm.api.core.upgrade import SynoCoreUpgrade
+from synology_dsm.api.core.utilization import SynoCoreUtilization
+from synology_dsm.api.download_station import SynoDownloadStation
+from synology_dsm.api.dsm.information import SynoDSMInformation
+from synology_dsm.api.dsm.network import SynoDSMNetwork
+from synology_dsm.api.photos import SynoPhotos
+from synology_dsm.api.storage.storage import SynoStorage
+from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.const import API_AUTH
 from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
 
@@ -15,6 +27,7 @@ from . import (
     VALID_USER_2SA,
     SynologyDSMMock,
 )
+from .api_data.dsm_7 import DSM_7_API_INFO
 from .const import DEVICE_TOKEN, SESSION_ID, SYNO_TOKEN
 
 
@@ -28,6 +41,20 @@ class TestSynologyDSM7:
         assert dsm_7.apis.get(API_AUTH)
         assert dsm_7._session_id == SESSION_ID
         assert dsm_7._syno_token == SYNO_TOKEN
+        assert dsm_7.device_token is None
+        assert dsm_7.apis == DSM_7_API_INFO["data"]
+        assert isinstance(dsm_7.download_station, SynoDownloadStation)
+        assert isinstance(dsm_7.external_usb, SynoCoreExternalUSB)
+        assert isinstance(dsm_7.information, SynoDSMInformation)
+        assert isinstance(dsm_7.network, SynoDSMNetwork)
+        assert isinstance(dsm_7.photos, SynoPhotos)
+        assert isinstance(dsm_7.security, SynoCoreSecurity)
+        assert isinstance(dsm_7.share, SynoCoreShare)
+        assert isinstance(dsm_7.storage, SynoStorage)
+        assert isinstance(dsm_7.surveillance_station, SynoSurveillanceStation)
+        assert isinstance(dsm_7.system, SynoCoreSystem)
+        assert isinstance(dsm_7.upgrade, SynoCoreUpgrade)
+        assert isinstance(dsm_7.utilisation, SynoCoreUtilization)
 
     @pytest.mark.asyncio
     async def test_login_2sa(self):

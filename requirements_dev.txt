@@ -9,7 +9,7 @@ flake8==7.0.0
 mypy==1.10.0
 pep8-naming==0.14.1
 pre-commit-hooks==4.6.0
-pre-commit==3.2.2
+pre-commit==3.7.0
 Pygments==2.18.0
 pylint==3.1.0
 pytest-asyncio==0.23.7
