@@ -39,7 +39,7 @@ class SynoPhotos(SynoBaseApi):
                     album["id"],
                     album["name"],
                     album["item_count"],
-                    album["passphrase"] if album["passphrase"] != "" else None,
+                    album["passphrase"] if album["passphrase"] else None,
                 )
             )
         return albums
@@ -83,7 +83,7 @@ class SynoPhotos(SynoBaseApi):
             "limit": limit,
             "additional": '["thumbnail"]',
         }
-        if album.passphrase is not None:
+        if album.passphrase:
             params["passphrase"] = album.passphrase
         else:
             params["album_id"] = album.album_id
@@ -137,7 +137,7 @@ class SynoPhotos(SynoBaseApi):
             "cache_key": item.thumbnail_cache_key,
         }
 
-        if item.passphrase is not None:
+        if item.passphrase:
             params["passphrase"] = item.passphrase
 
         raw_data = await self._dsm.get(
@@ -162,7 +162,7 @@ class SynoPhotos(SynoBaseApi):
             "type": "unit",
         }
 
-        if item.passphrase is not None:
+        if item.passphrase:
             params["passphrase"] = item.passphrase
 
         raw_data = await self._dsm.get(
@@ -187,7 +187,7 @@ class SynoPhotos(SynoBaseApi):
             "type": "unit",
         }
 
-        if item.passphrase is not None:
+        if item.passphrase:
             params["passphrase"] = item.passphrase
 
         return await self._dsm.generate_url(
