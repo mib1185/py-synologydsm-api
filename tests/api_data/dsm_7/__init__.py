@@ -1,4 +1,4 @@
-"""DSM 6 datas."""
+"""DSM 7 datas."""
 
 from .const_7_api_auth import (
     DSM_7_AUTH_LOGIN,
@@ -15,6 +15,7 @@ from .photos.const_7_photo import (
     DSM_7_FOTO_ALBUMS,
     DSM_7_FOTO_ITEMS,
     DSM_7_FOTO_ITEMS_SEARCHED,
+    DSM_7_FOTO_ITEMS_SHARED_ALBUM,
     DSM_7_FOTO_SHARED_ITEMS,
 )
 
@@ -29,6 +30,7 @@ __all__ = [
     "DSM_7_DSM_INFORMATION",
     "DSM_7_FOTO_ALBUMS",
     "DSM_7_FOTO_ITEMS",
+    "DSM_7_FOTO_ITEMS_SHARED_ALBUM",
     "DSM_7_FOTO_ITEMS_SEARCHED",
     "DSM_7_FOTO_SHARED_ITEMS",
 ]

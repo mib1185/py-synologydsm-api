@@ -36,7 +36,7 @@ For `session` a valid `aiohttp.ClientSession` needs to be provided. If ssl verif
 
 `device_token` should be added when using a two-step authentication account, otherwise DSM will ask to login with a One Time Password (OTP) and requests will fail (see the login section for more details).
 
-Default `timeout` is 10 seconds.
+Default `timeout` is 10 seconds. `SynologyDSM` also takes a `aiohttp.ClientTimeout` as `timeout`.
 
 ## Login
 

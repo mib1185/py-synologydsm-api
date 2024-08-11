@@ -10,7 +10,7 @@ from json import JSONDecodeError
 from typing import Any, Coroutine, TypedDict
 from urllib.parse import quote, urlencode
 
-import aiohttp
+from aiohttp import ClientError, ClientSession, ClientTimeout
 from yarl import URL
 
 from .api import SynoBaseApi
@@ -61,20 +61,23 @@ class SynologyDSM:
 
     def __init__(
         self,
-        session: aiohttp.ClientSession,
+        session: ClientSession,
         dsm_ip: str,
         dsm_port: int,
         username: str,
         password: str,
         use_https: bool = False,
-        timeout: int = 10,
+        timeout: int | ClientTimeout = 10,
         device_token: str | None = None,
         debugmode: bool = False,
     ):
         """Constructor method."""
         self.username = username
         self._password = password
-        self._aiohttp_timeout = aiohttp.ClientTimeout(total=timeout)
+        if isinstance(timeout, ClientTimeout):
+            self._aiohttp_timeout = timeout
+        else:
+            self._aiohttp_timeout = ClientTimeout(total=timeout)
         self._debugmode = debugmode
 
         # Session
@@ -381,15 +384,18 @@ class SynologyDSM:
                 ]:
                     return dict(await response.json(content_type=content_type))
 
-                if content_type.startswith("image"):
+                if (
+                    content_type == "application/octet-stream"
+                    or content_type.startswith("image")
+                ):
                     return await response.read()
 
                 return await response.text()
 
             # We got a 400, 401 or 404 ...
-            raise aiohttp.ClientError(response)
+            raise ClientError(response)
 
-        except (aiohttp.ClientError, asyncio.TimeoutError, JSONDecodeError) as exp:
+        except (ClientError, asyncio.TimeoutError, JSONDecodeError) as exp:
             raise SynologyDSMRequestException(exp) from exp
 
     async def update(
