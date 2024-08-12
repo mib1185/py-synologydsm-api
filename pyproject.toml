@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-synologydsm-api"
-version = "2.5.0"
+version = "2.5.1"
 description = "Python API for communication with Synology DSM"
 authors = [
     {name="Michael Brussk (mib1185)"},
