@@ -39,13 +39,13 @@ class SynoPhotos(SynoBaseApi):
                     album["id"],
                     album["name"],
                     album["item_count"],
-                    album["passphrase"] if album["passphrase"] else None,
+                    album["passphrase"],
                 )
             )
         return albums
 
-    def _raw_data_to_items(
-        self, raw_data: bytes | dict | str, passphrase: str | None = None
+    def _raw_data_to_items(  # noqa: S107
+        self, raw_data: bytes | dict | str, passphrase: str = ""
     ) -> list[SynoPhotosItem] | None:
         """Parse the raw data response to a list of photo items."""
         items: list[SynoPhotosItem] = []

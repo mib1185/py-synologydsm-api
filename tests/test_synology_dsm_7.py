@@ -210,12 +210,12 @@ class TestSynologyDSM7:
         assert albums[0].album_id == 4
         assert albums[0].name == "Album1"
         assert albums[0].item_count == 3
-        assert albums[0].passphrase is None
+        assert albums[0].passphrase == ""
 
         assert albums[1].album_id == 1
         assert albums[1].name == "Album2"
         assert albums[1].item_count == 1
-        assert albums[1].passphrase is None
+        assert albums[1].passphrase == ""
 
         assert albums[2].album_id == 3
         assert albums[2].name == "Album3"
@@ -228,17 +228,17 @@ class TestSynologyDSM7:
         assert items[0].file_name == "20221115_185642.jpg"
         assert items[0].thumbnail_cache_key == "29807_1668560967"
         assert items[0].thumbnail_size == "xl"
-        assert items[0].passphrase is None
+        assert items[0].passphrase == ""
 
         assert items[1].file_name == "20221115_185643.jpg"
         assert items[1].thumbnail_cache_key == "29808_1668560967"
         assert items[1].thumbnail_size == "m"
-        assert items[1].passphrase is None
+        assert items[1].passphrase == ""
 
         assert items[2].file_name == "20221115_185644.jpg"
         assert items[2].thumbnail_cache_key == "29809_1668560967"
         assert items[2].thumbnail_size == "sm"
-        assert items[2].passphrase is None
+        assert items[2].passphrase == ""
 
         thumb_url = await dsm_7.photos.get_item_thumbnail_url(items[0])
         assert thumb_url

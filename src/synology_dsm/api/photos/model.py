@@ -12,7 +12,7 @@ class SynoPhotosAlbum:
     album_id: int
     name: str
     item_count: int
-    passphrase: str | None
+    passphrase: str
 
 
 @dataclass
@@ -26,4 +26,4 @@ class SynoPhotosItem:
     thumbnail_cache_key: str
     thumbnail_size: str
     is_shared: bool
-    passphrase: str | None
+    passphrase: str
