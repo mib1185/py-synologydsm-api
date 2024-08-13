@@ -325,7 +325,6 @@ class SynologyDSM:
                 # see https://github.com/aerialls/synology-srm/pull/3
                 self._session_id = None
                 self._syno_token = None
-                self._device_token = None
                 return await self._request(request_method, api, method, params, False)
             raise SynologyDSMAPIErrorException(
                 api, response["error"]["code"], response["error"].get("errors")
