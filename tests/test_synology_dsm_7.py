@@ -243,7 +243,7 @@ class TestSynologyDSM7:
         thumb_url = await dsm_7.photos.get_item_thumbnail_url(items[0])
         assert thumb_url
         assert thumb_url == (
-            "https://nas.mywebsite.me:443/webapi/entry.cgi?"
+            f"https://{VALID_HOST}:{VALID_PORT}/webapi/entry.cgi?"
             "id=29807&cache_key=29807_1668560967&size=xl&type=unit"
             "&api=SYNO.Foto.Thumbnail&version=2&method=get"
             "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
@@ -252,7 +252,7 @@ class TestSynologyDSM7:
         thumb_url = await dsm_7.photos.get_item_thumbnail_url(items[1])
         assert thumb_url
         assert thumb_url == (
-            "https://nas.mywebsite.me:443/webapi/entry.cgi?"
+            f"https://{VALID_HOST}:{VALID_PORT}/webapi/entry.cgi?"
             "id=29808&cache_key=29808_1668560967&size=m&type=unit"
             "&api=SYNO.FotoTeam.Thumbnail&version=2&method=get"
             "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
@@ -269,7 +269,7 @@ class TestSynologyDSM7:
         thumb_url = await dsm_7.photos.get_item_thumbnail_url(items[0])
         assert thumb_url
         assert thumb_url == (
-            "https://nas.mywebsite.me:443/webapi/entry.cgi?"
+            f"https://{VALID_HOST}:{VALID_PORT}/webapi/entry.cgi?"
             "id=29807&cache_key=29810_1668560967&size=xl&type=unit"
             "&passphrase=NiXlv1i2N&api=SYNO.Foto.Thumbnail&version=2&method=get"
             "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
