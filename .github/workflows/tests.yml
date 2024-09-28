@@ -81,6 +81,7 @@ jobs:
         if: matrix.python-version == '3.10'
         uses: "actions/upload-artifact@v4.4.0"
         with:
+          include-hidden-files: true
           name: coverage-data
           path: ".coverage.*"
 
