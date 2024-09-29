@@ -363,14 +363,15 @@ class SynologyDSM:
                     url_encoded, timeout=self._aiohttp_timeout, **kwargs
                 )
 
-            # mask sesitiv parameters
-            response_url = response.url  # pylint: disable=E0606
-            for param in SENSITIV_PARAMS:
-                if params is not None and params.get(param):
-                    response_url = response_url.update_query({param: "*********"})
-            self._debuglog("Request url: " + str(response_url))
-            self._debuglog("Response status_code: " + str(response.status))
-            self._debuglog("Response headers: " + str(dict(response.headers)))
+            # mask sesitive parameters
+            if _LOGGER.isEnabledFor(logging.DEBUG):
+                response_url = response.url  # pylint: disable=E0606
+                for param in SENSITIV_PARAMS:
+                    if params is not None and params.get(param):
+                        response_url = response_url.update_query({param: "*********"})
+                self._debuglog("Request url: " + str(response_url))
+                self._debuglog("Response status_code: " + str(response.status))
+                self._debuglog("Response headers: " + str(dict(response.headers)))
 
             if response.status == 200:
                 # We got a DSM response
