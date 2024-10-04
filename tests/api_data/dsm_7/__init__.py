@@ -18,6 +18,7 @@ from .photos.const_7_photo import (
     DSM_7_FOTO_ITEMS_SHARED_ALBUM,
     DSM_7_FOTO_SHARED_ITEMS,
 )
+from .virtual_machine_manager.const_7_vmm import DSM_7_VMM_GUESTS
 
 __all__ = [
     "DSM_7_AUTH_LOGIN",
@@ -33,4 +34,5 @@ __all__ = [
     "DSM_7_FOTO_ITEMS_SHARED_ALBUM",
     "DSM_7_FOTO_ITEMS_SEARCHED",
     "DSM_7_FOTO_SHARED_ITEMS",
+    "DSM_7_VMM_GUESTS",
 ]

@@ -379,6 +379,86 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Virtual Machine Manager usage
+
+### Show information about all existing guests
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    await api.virtual_machine_manager.update()
+
+    guests = api.virtual_machine_manager.get_all_guests()
+
+    for guest in guests:
+        print(f"############### {guest.name} ###############")
+        print(f"autorun: {guest.autorun}")
+        print(f"description: {guest.description}")
+        print(f"guest_id: {guest.guest_id}")
+        print(f"status: {guest.status}")
+        print(f"vcpu_num: {guest.vcpu_num}")
+        print(f"vram_size: {guest.vram_size / 1024} MiBytes")
+        print(f"host_cpu_usage: {guest.host_cpu_usage / 10} %")
+        print(f"host_ram_usage: {round(guest.host_ram_usage / 1024,1)} MiBytes")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Perform power actions on guests
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    await api.virtual_machine_manager.update()
+
+    # start a guest
+    await api.virtual_machine_manager.guest_poweron("{guest.guest_id}")
+
+    # power off a guest
+    await api.virtual_machine_manager.guest_poweroff("{guest.guest_id}")
+
+    # graceful shutdown a guest (needs working guest-agent, else it is not graceful)
+    await api.virtual_machine_manager.guest_shutdown("{guest.guest_id}")
+
+    # graceful restart a guest (needs working guest-agent, else it is not graceful)
+    await api.virtual_machine_manager.guest_restart("{guest.guest_id}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 # Credits / Special Thanks
 
 - [@florianeinfalt](https://github.com/florianeinfalt)

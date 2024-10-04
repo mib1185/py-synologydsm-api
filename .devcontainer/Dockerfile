@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.9
+FROM mcr.microsoft.com/vscode/devcontainers/python:3.9-bookworm
 
 # install test requirements
 COPY requirements*.txt /tmp/pip-tmp/

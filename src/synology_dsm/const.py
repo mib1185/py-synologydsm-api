@@ -155,15 +155,16 @@ ERROR_VIRTUALIZATION: Final = {
     900: "The storage is in invalid",
     901: "Failed to set a host to a virtual machine",
     902: "The virtual machine does not have a host",
-    903: "Failed to power on a virtual machine due to insufficient CPU threads",
-    904: "Failed to power on a virtual machine due to insufficient memory",
-    905: "The status of virtual machine is online",
+    903: "Can't shutdown the guest, it is not running",
+    904: "Can't power off the guest, it is not running",
+    905: "Can't restart the guest, it is not running",
     906: "MAC conflict",
     907: "Failed to create virtual machine because the selected image is not found",
     908: "The status of virtual machine is offline",
     909: "Failed to power on a virtual machine due to insufficient CPU threads for reservation on the host",  # pylint: disable=line-too-long
     910: "Failed to power on the virtual machine because there is no corresponding networking on the host",  # pylint: disable=line-too-long
     911: "Only the VirtIO hard disk controller can be used to boot the virtual machine remotely. Virtual machines with UEFI enabled cannot be powered on remotely",  # pylint: disable=line-too-long
+    939: "Guest already running",
     1000: "Cannot find task_id",
     1001: "Need Virtual Machine Manager Pro",
     1400: "The result of image creating is partial success",
