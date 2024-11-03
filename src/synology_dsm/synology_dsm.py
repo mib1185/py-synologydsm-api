@@ -26,6 +26,7 @@ from .api.dsm.network import SynoDSMNetwork
 from .api.photos import SynoPhotos
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
+from .api.virtual_machine_manager import SynoVirtualMachineManager
 from .const import API_AUTH, API_INFO, SENSITIV_PARAMS
 from .exceptions import (
     SynologyDSMAPIErrorException,
@@ -104,6 +105,7 @@ class SynologyDSM:
         self._system: SynoCoreSystem | None = None
         self._utilisation: SynoCoreUtilization | None = None
         self._upgrade: SynoCoreUpgrade | None = None
+        self._vmm: SynoVirtualMachineManager | None = None
 
         try:
             IPv6Address(dsm_ip)
@@ -437,6 +439,9 @@ class SynologyDSM:
         if self._upgrade:
             update_methods.append(self._upgrade.update())
 
+        if self._vmm:
+            update_methods.append(self._vmm.update())
+
         await asyncio.gather(*update_methods)
 
     def reset(self, api: SynoBaseApi | str) -> bool:
@@ -477,6 +482,9 @@ class SynologyDSM:
             if api == SynoSurveillanceStation.API_KEY:
                 self._surveillance = None
                 return True
+            if api == SynoVirtualMachineManager.API_KEY:
+                self._vmm = None
+                return True
         if isinstance(api, SynoCoreExternalUSB):
             self._external_usb = None
             return True
@@ -506,6 +514,9 @@ class SynologyDSM:
             return True
         if isinstance(api, SynoSurveillanceStation):
             self._surveillance = None
+            return True
+        if isinstance(api, SynoVirtualMachineManager):
+            self._vmm = None
             return True
         return False
 
@@ -592,3 +603,10 @@ class SynologyDSM:
         if not self._utilisation:
             self._utilisation = SynoCoreUtilization(self)
         return self._utilisation
+
+    @property
+    def virtual_machine_manager(self) -> SynoVirtualMachineManager:
+        """Gets NAS virtual machine manager informations."""
+        if not self._vmm:
+            self._vmm = SynoVirtualMachineManager(self)
+        return self._vmm

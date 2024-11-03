@@ -15,6 +15,7 @@ from synology_dsm.api.dsm.network import SynoDSMNetwork
 from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
+from synology_dsm.api.virtual_machine_manager import SynoVirtualMachineManager
 from synology_dsm.const import API_AUTH
 from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
 
@@ -55,6 +56,7 @@ class TestSynologyDSM7:
         assert isinstance(dsm_7.system, SynoCoreSystem)
         assert isinstance(dsm_7.upgrade, SynoCoreUpgrade)
         assert isinstance(dsm_7.utilisation, SynoCoreUtilization)
+        assert isinstance(dsm_7.virtual_machine_manager, SynoVirtualMachineManager)
 
     @pytest.mark.asyncio
     async def test_login_2sa(self):
@@ -292,3 +294,35 @@ class TestSynologyDSM7:
         assert items[1].thumbnail_cache_key == "490_1628323817"
         assert items[2].file_name == "shared_3.jpg"
         assert items[2].thumbnail_cache_key == "96_1628323786"
+
+    @pytest.mark.asyncio
+    async def test_virtual_machine_manager(self, dsm_7):
+        """Test vmm."""
+        assert await dsm_7.login()
+        assert dsm_7.virtual_machine_manager
+
+        await dsm_7.virtual_machine_manager.update()
+        guests = dsm_7.virtual_machine_manager.get_all_guests()
+
+        assert guests
+        assert len(guests) == 2
+
+        assert guests[0].autorun is False
+        assert guests[0].description == "vDSM test"
+        assert guests[0].guest_id == "a39d0628-380e-42f8-8cb6-a00d6b930fa0"
+        assert guests[0].name == "vdsm"
+        assert guests[0].status == "shutdown"
+        assert guests[0].host_cpu_usage == 0
+        assert guests[0].host_ram_usage == 0
+        assert guests[0].vcpu_num == 1
+        assert guests[0].vram_size == 1048576
+
+        assert guests[1].autorun is True
+        assert guests[1].description == ""
+        assert guests[1].guest_id == "2b4ec8c8-2bec-4daa-b36d-1a47b639254f"
+        assert guests[1].name == "lnx_test"
+        assert guests[1].status == "running"
+        assert guests[1].host_cpu_usage == 25
+        assert guests[1].host_ram_usage == 1169544
+        assert guests[1].vcpu_num == 1
+        assert guests[1].vram_size == 1048576

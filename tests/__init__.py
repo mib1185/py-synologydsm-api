@@ -18,6 +18,7 @@ from synology_dsm.api.dsm.network import SynoDSMNetwork
 from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
+from synology_dsm.api.virtual_machine_manager import SynoVirtualMachineManager
 from synology_dsm.const import API_AUTH, API_INFO
 from synology_dsm.exceptions import SynologyDSMRequestException
 
@@ -74,6 +75,7 @@ from .api_data.dsm_7 import (
     DSM_7_FOTO_ITEMS_SEARCHED,
     DSM_7_FOTO_ITEMS_SHARED_ALBUM,
     DSM_7_FOTO_SHARED_ITEMS,
+    DSM_7_VMM_GUESTS,
 )
 from .const import (
     DEVICE_TOKEN,
@@ -124,6 +126,7 @@ API_SWITCHER = {
         "DSM_INFORMATION": DSM_7_DSM_INFORMATION,
         "FOTO_ALBUMS": DSM_7_FOTO_ALBUMS,
         "FOTO_ITEMS": DSM_7_FOTO_ITEMS,
+        "VMM_GUESTS": DSM_7_VMM_GUESTS,
     },
 }
 
@@ -296,6 +299,9 @@ class SynologyDSMMock(SynologyDSM):
 
             if SynoPhotos.BROWSE_ITEM_FOTOTEAM_API_KEY in url:
                 return DSM_7_FOTO_SHARED_ITEMS
+
+            if SynoVirtualMachineManager.GUEST_API_KEY in url:
+                return DSM_7_VMM_GUESTS
 
             if SynoStorage.API_KEY in url:
                 return API_SWITCHER[self.dsm_version]["STORAGE_STORAGE"][
