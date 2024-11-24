@@ -17,9 +17,9 @@ class SynoFormatHelper:
         work_num = float(num)
         for unit in ["", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb"]:
             if abs(work_num) < 1024.0:
-                return f"{round(work_num,1)}{unit}"
+                return f"{round(work_num, 1)}{unit}"
             work_num /= 1024.0
-        return f"{round(work_num,1)}Yb"
+        return f"{round(work_num, 1)}Yb"
 
     @staticmethod
     def bytes_to_megabytes(num: int) -> float:
