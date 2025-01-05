@@ -156,6 +156,73 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## File Station usage
+
+### List folders and files in specific folder
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    shared_folders = await api.file.get_shared_folders()
+    for folder in shared_folders:
+        print(f"############### {folder.name} ###############")
+        print(f"path: {folder.path}")
+        print(f"freespace: {folder.additional.volume_status.freespace}")
+        print(f"totalspace: {folder.additional.volume_status.totalspace}")
+        print(f"readonly: {folder.additional.volume_status.readonly}")
+
+    files = await api.file.get_files(path="/home")
+    for file in files:
+        print(f"path: {file.path}")
+        print(f"size: {file.additional.size}")
+        print(f"is dir: {file.is_dir}")
+        print(f"owner user: {file.additional.owner.user}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Upload, Download and Delete files
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    await api.file.upload_file(path="/home", filename="myfile.name", source="/workspace/myfile.name")
+
+    await api.file.download_file(path="/home", filename="myfile.name", target_file="/tmp/download.file")
+
+    await api.file.delete_file(path="/home", filename="myfile.name")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## External USB storage usage
 
 ```python
