@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from io import BufferedReader
 
+from aiohttp import StreamReader
+
 from synology_dsm.api import SynoBaseApi
 
 from .models import (
@@ -110,16 +112,40 @@ class SynoFileStation(SynoBaseApi):
 
         return files
 
-    async def upload_files(
+    async def upload_file(
         self,
         path: str,
         filename: str,
-        content: bytes | BufferedReader | AsyncIterator[bytes],
+        source: bytes | BufferedReader | AsyncIterator[bytes] | str,
     ) -> bool | None:
-        """Upload a file to a folder."""
+        """Upload a file to a folder from eather a local source_file or content."""
+        if isinstance(source, str):
+            source = open(source, "rb")
+
         raw_data = await self._dsm.post(
-            self.UPLOAD_API_KEY, "upload", path=path, filename=filename, content=content
+            self.UPLOAD_API_KEY, "upload", path=path, filename=filename, content=source
         )
         if not isinstance(raw_data, dict):
             return None
         return raw_data.get("success")
+
+    async def download_file(
+        self, path: str, filename: str, target_file: str | None = None
+    ) -> StreamReader | bool | None:
+        """Download a file to local target_file or returns an async StreamReader."""
+        response_content = await self._dsm.get(
+            self.DOWNLOAD_API_KEY,
+            "download",
+            {"path": f"{path}/{filename}", "mode": "download"},
+            raw_response_content=True,
+        )
+        if not isinstance(response_content, StreamReader):
+            return None
+
+        if target_file:
+            with open(target_file, "wb") as fh:
+                async for data in response_content.iter_chunked(8192):
+                    fh.write(data)
+            return True
+
+        return response_content
