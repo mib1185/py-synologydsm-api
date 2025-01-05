@@ -11,13 +11,14 @@ from synology_dsm.api import SynoBaseApi
 
 from .models import (
     SynoFileAdditionalOwner,
-    SynoFileAdditionalPermission,
-    SynoFileAdditionalTime,
-    SynoFileAdditionalVolumeStatus,
     SynoFileFile,
     SynoFileFileAdditional,
+    SynoFileFileAdditionalPermission,
+    SynoFileFileAdditionalTime,
     SynoFileSharedFolder,
     SynoFileSharedFolderAdditional,
+    SynoFileSharedFolderAdditionalPermission,
+    SynoFileSharedFolderAdditionalVolumeStatus,
 )
 
 
@@ -58,8 +59,8 @@ class SynoFileStation(SynoBaseApi):
                     SynoFileSharedFolderAdditional(
                         additional["mount_point_type"],
                         SynoFileAdditionalOwner(**additional["owner"]),
-                        SynoFileAdditionalPermission(**additional["perm"]),
-                        SynoFileAdditionalVolumeStatus(
+                        SynoFileSharedFolderAdditionalPermission(**additional["perm"]),
+                        SynoFileSharedFolderAdditionalVolumeStatus(
                             **additional["volume_status"],
                         ),
                     ),
@@ -99,10 +100,10 @@ class SynoFileStation(SynoBaseApi):
                     SynoFileFileAdditional(
                         additional["mount_point_type"],
                         SynoFileAdditionalOwner(**additional["owner"]),
-                        SynoFileAdditionalPermission(**additional["perm"]),
+                        SynoFileFileAdditionalPermission(**additional["perm"]),
                         additional["real_path"],
                         additional["size"],
-                        SynoFileAdditionalTime(**additional["time"]),
+                        SynoFileFileAdditionalTime(**additional["time"]),
                         additional["type"],
                     ),
                     file["isdir"],

@@ -19,22 +19,26 @@ class SynoFileAdditionalOwner:
     user: str
 
 
-@dataclass
-class SynoFileAdditionalPermission:
-    """Representation of an Synology FileStation additionl permission data."""
-
-    acl: dict
-    is_acl_mode: bool
-    posix: int
-
-
 # -------------------------------------
 # shared folder
 # -------------------------------------
 
 
 @dataclass
-class SynoFileAdditionalVolumeStatus:
+class SynoFileSharedFolderAdditionalPermission:
+    """Representation of an Synology FileStation additionl permission data."""
+
+    acl: dict
+    acl_enable: bool
+    adv_right: dict
+    is_acl_mode: bool
+    is_share_readonly: bool
+    posix: int
+    share_right: str
+
+
+@dataclass
+class SynoFileSharedFolderAdditionalVolumeStatus:
     """Representation of an Synology FileStation additionl permission data."""
 
     freespace: int
@@ -48,15 +52,15 @@ class SynoFileSharedFolderAdditional:
 
     mount_point_type: str
     owner: SynoFileAdditionalOwner
-    perm: SynoFileAdditionalPermission
-    volume_status: SynoFileAdditionalVolumeStatus
+    perm: SynoFileSharedFolderAdditionalPermission
+    volume_status: SynoFileSharedFolderAdditionalVolumeStatus
 
 
 @dataclass
 class SynoFileSharedFolder:
     """Representation of an Synology FileStation Shared Folder."""
 
-    addidtionan: SynoFileSharedFolderAdditional
+    additional: SynoFileSharedFolderAdditional
     is_dir: bool
     name: str
     path: str
@@ -68,7 +72,16 @@ class SynoFileSharedFolder:
 
 
 @dataclass
-class SynoFileAdditionalTime:
+class SynoFileFileAdditionalPermission:
+    """Representation of an Synology FileStation additionl permission data."""
+
+    acl: dict
+    is_acl_mode: bool
+    posix: int
+
+
+@dataclass
+class SynoFileFileAdditionalTime:
     """Representation of an Synology FileStation additionl permission data."""
 
     atime: int
@@ -83,10 +96,10 @@ class SynoFileFileAdditional:
 
     mount_point_type: str
     owner: SynoFileAdditionalOwner
-    perm: SynoFileAdditionalPermission
+    perm: SynoFileFileAdditionalPermission
     real_path: str
     size: int
-    time: SynoFileAdditionalTime
+    time: SynoFileFileAdditionalTime
     type: str
 
 
@@ -94,7 +107,7 @@ class SynoFileFileAdditional:
 class SynoFileFile:
     """Representation of an Synology FileStation File."""
 
-    addidtionan: SynoFileFileAdditional
+    additional: SynoFileFileAdditional
     is_dir: bool
     name: str
     path: str
