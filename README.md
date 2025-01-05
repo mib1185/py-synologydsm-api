@@ -213,9 +213,34 @@ async def do(session: aiohttp.ClientSession):
     api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
     await api.login()
 
+    # upload file direct from local
     await api.file.upload_file(path="/home", filename="myfile.name", source="/workspace/myfile.name")
 
+    # upload file from a stream reader
+    await api.file.upload_file(path="/home", filename="myfile.name", source=open("/workspace/myfile.name", "rb"))
+
+    # upload file from an AsyncIterator[bytes]
+    loop = asyncio.get_running_loop()
+    async def send_backup() -> AsyncIterator[bytes]:
+        f = await loop.run_in_executor(None, open, "/workspace/myfile.name", "rb")
+        try:
+            while chunk := await loop.run_in_executor(None, f.read, 2**20):
+                yield chunk
+        finally:
+            await loop.run_in_executor(None, f.close)
+
+    async def open_backup() -> AsyncIterator[bytes]:
+        return send_backup()
+    await api.file.upload_file(path="/home", filename="myfile.name", source=await open_backup())
+
+    # download file direct to local
     await api.file.download_file(path="/home", filename="myfile.name", target_file="/tmp/download.file")
+
+    # download file via stream reader
+    stream_reader = await api.file.download_file(path="/home", filename="myfile.name")
+    with open("/tmp/download.file", "wb") as fh:
+        async for data in stream_reader.iter_chunked(8192):
+            fh.write(data)
 
     await api.file.delete_file(path="/home", filename="myfile.name")
 
