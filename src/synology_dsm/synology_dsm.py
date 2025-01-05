@@ -404,7 +404,9 @@ class SynologyDSM:
                     part.headers.add(hdrs.CONTENT_TYPE, "application/octet-stream")
 
                     response = await self._session.post(
-                        url_encoded, timeout=self._aiohttp_timeout, data=mp
+                        url_encoded,
+                        timeout=ClientTimeout(connect=10.0, total=43200.0),
+                        data=mp,
                     )
             elif method == "POST":
                 data = {}
