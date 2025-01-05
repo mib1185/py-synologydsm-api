@@ -45,11 +45,11 @@ class SynoPhotos(SynoBaseApi):
         return albums
 
     def _raw_data_to_items(  # noqa: S107
-        self, raw_data: bytes | dict | str, passphrase: str = ""
+        self, raw_data: dict, passphrase: str = ""
     ) -> list[SynoPhotosItem] | None:
         """Parse the raw data response to a list of photo items."""
         items: list[SynoPhotosItem] = []
-        if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
+        if (data := raw_data.get("data")) is None:
             return None
 
         for item in data["list"]:
@@ -93,6 +93,8 @@ class SynoPhotos(SynoBaseApi):
             "list",
             params,
         )
+        if not isinstance(raw_data, dict):
+            return None
         return self._raw_data_to_items(raw_data, album.passphrase)
 
     async def get_items_from_shared_space(
@@ -108,6 +110,8 @@ class SynoPhotos(SynoBaseApi):
                 "additional": '["thumbnail"]',
             },
         )
+        if not isinstance(raw_data, dict):
+            return None
         return self._raw_data_to_items(raw_data)
 
     async def get_items_from_search(
@@ -124,6 +128,8 @@ class SynoPhotos(SynoBaseApi):
                 "additional": '["thumbnail"]',
             },
         )
+        if not isinstance(raw_data, dict):
+            return None
         return self._raw_data_to_items(raw_data)
 
     async def download_item(self, item: SynoPhotosItem) -> bytes | None:
