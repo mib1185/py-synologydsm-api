@@ -424,7 +424,9 @@ class SynologyDSM:
                     if params is not None and params.get(param):
                         response_url = response_url.update_query({param: "*********"})
                 self._debuglog("Request url: " + str(response_url))
-                self._debuglog("Request headers: " + str(response.request_info.headers))
+                self._debuglog(
+                    "Request headers: " + str(dict(response.request_info.headers))
+                )
                 self._debuglog("Response status_code: " + str(response.status))
                 self._debuglog("Response headers: " + str(dict(response.headers)))
 

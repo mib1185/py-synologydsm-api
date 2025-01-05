@@ -1,1 +1,0 @@
-"""Synology FileStation API constants."""
