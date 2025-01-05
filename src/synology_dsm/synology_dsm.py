@@ -342,14 +342,11 @@ class SynologyDSM:
         self, method: str, url: URL, params: dict, **kwargs: Any
     ) -> bytes | dict | str:
         """Function to execute and handle a request."""
-        if params:
-            # special handling for spaces in parameters
-            # because yarl.URL does encode a space as + instead of %20
-            # safe extracted from yarl.URL._QUERY_PART_QUOTER
-            query = urlencode(params, safe="?/:@-._~!$'()*,", quote_via=quote)
-            url_encoded = url.join(URL(f"?{query}", encoded=True))
-        else:
-            url_encoded = url
+        # special handling for spaces in parameters
+        # because yarl.URL does encode a space as + instead of %20
+        # safe extracted from yarl.URL._QUERY_PART_QUOTER
+        query = urlencode(params, safe="?/:@-._~!$'()*,", quote_via=quote)
+        url_encoded = url.join(URL(f"?{query}", encoded=True))
 
         try:
             if method == "GET":
