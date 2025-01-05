@@ -5,12 +5,15 @@ from __future__ import annotations
 import asyncio
 import logging
 import socket
+from collections.abc import AsyncIterator
+from hashlib import md5
+from io import BufferedReader
 from ipaddress import IPv6Address
 from json import JSONDecodeError
-from typing import Any, Coroutine, TypedDict
+from typing import TYPE_CHECKING, Any, Coroutine, TypedDict
 from urllib.parse import quote, urlencode
 
-from aiohttp import ClientError, ClientSession, ClientTimeout
+from aiohttp import ClientError, ClientSession, ClientTimeout, MultipartWriter, hdrs
 from yarl import URL
 
 from .api import SynoBaseApi
@@ -23,6 +26,7 @@ from .api.core.utilization import SynoCoreUtilization
 from .api.download_station import SynoDownloadStation
 from .api.dsm.information import SynoDSMInformation
 from .api.dsm.network import SynoDSMNetwork
+from .api.file_station import SynoFileStation
 from .api.photos import SynoPhotos
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
@@ -95,6 +99,7 @@ class SynologyDSM:
         }
         self._download: SynoDownloadStation | None = None
         self._external_usb: SynoCoreExternalUSB | None = None
+        self._file: SynoFileStation | None = None
         self._information: SynoDSMInformation | None = None
         self._network: SynoDSMNetwork | None = None
         self._photos: SynoPhotos | None = None
@@ -246,6 +251,26 @@ class SynologyDSM:
         """Handles API POST request."""
         return await self._request("POST", api, method, params, **kwargs)
 
+    async def post_upload(
+        self,
+        api: str,
+        method: str,
+        filepath: str,
+        filename: str,
+        content: bytes | BufferedReader | AsyncIterator[bytes],
+        **kwargs: Any,
+    ) -> bytes | dict | str:
+        """Handles an upload API POST request."""
+        return await self._request(
+            "POST",
+            api,
+            method,
+            filepath=filepath,
+            filename=filename,
+            content=content,
+            **kwargs,
+        )
+
     async def generate_url(
         self,
         api: str,
@@ -313,6 +338,7 @@ class SynologyDSM:
         url, params, kwargs = await self._prepare_request(api, method, params, **kwargs)
 
         # Request data
+        self._debuglog("---------------------------------------------------------")
         self._debuglog("API: " + api)
         self._debuglog("Request Method: " + request_method)
         response = await self._execute_request(request_method, url, params, **kwargs)
@@ -352,6 +378,34 @@ class SynologyDSM:
                 response = await self._session.get(
                     url_encoded, timeout=self._aiohttp_timeout, **kwargs
                 )
+            elif (
+                method == "POST"
+                and (content := kwargs.get("content"))
+                and (filepath := kwargs.get("filepath"))
+                and (filename := kwargs.get("filename"))
+            ):
+                if TYPE_CHECKING:
+                    assert isinstance(content, bytes)  # noqa: S101
+                    assert isinstance(filename, str)  # noqa: S101
+
+                boundary = md5(
+                    str(url_encoded).encode("utf-8"), usedforsecurity=False
+                ).hexdigest()
+                with MultipartWriter("form-data", boundary=boundary) as mp:
+                    part = mp.append(filepath)
+                    part.headers.pop(hdrs.CONTENT_TYPE)
+                    part.set_content_disposition("form-data", name="path")
+
+                    part = mp.append(content)
+                    part.headers.pop(hdrs.CONTENT_TYPE)
+                    part.set_content_disposition(
+                        "form-data", name="file", filename=filename
+                    )
+                    part.headers.add(hdrs.CONTENT_TYPE, "application/octet-stream")
+
+                    response = await self._session.post(
+                        url_encoded, timeout=self._aiohttp_timeout, data=mp
+                    )
             elif method == "POST":
                 data = {}
                 if params is not None:
@@ -366,12 +420,13 @@ class SynologyDSM:
                 )
 
             # mask sesitive parameters
-            if _LOGGER.isEnabledFor(logging.DEBUG):
+            if _LOGGER.isEnabledFor(logging.DEBUG) or self._debugmode:
                 response_url = response.url  # pylint: disable=E0606
                 for param in SENSITIV_PARAMS:
                     if params is not None and params.get(param):
                         response_url = response_url.update_query({param: "*********"})
                 self._debuglog("Request url: " + str(response_url))
+                self._debuglog("Request headers: " + str(response.request_info.headers))
                 self._debuglog("Response status_code: " + str(response.status))
                 self._debuglog("Response headers: " + str(dict(response.headers)))
 
@@ -455,6 +510,9 @@ class SynologyDSM:
             if api == SynoCoreExternalUSB.API_KEY:
                 self._external_usb = None
                 return True
+            if api == SynoFileStation.API_KEY:
+                self._file = None
+                return True
             if api == SynoCoreSecurity.API_KEY:
                 self._security = None
                 return True
@@ -487,6 +545,9 @@ class SynologyDSM:
                 return True
         if isinstance(api, SynoCoreExternalUSB):
             self._external_usb = None
+            return True
+        if isinstance(api, SynoFileStation):
+            self._file = None
             return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
@@ -533,6 +594,13 @@ class SynologyDSM:
         if not self._external_usb:
             self._external_usb = SynoCoreExternalUSB(self)
         return self._external_usb
+
+    @property
+    def file(self) -> SynoFileStation:
+        """Gets NAS files."""
+        if not self._file:
+            self._file = SynoFileStation(self)
+        return self._file
 
     @property
     def information(self) -> SynoDSMInformation:
