@@ -28,6 +28,7 @@ class SynoFileStation(SynoBaseApi):
     LIST_API_KEY = "SYNO.FileStation.List"
     DOWNLOAD_API_KEY = "SYNO.FileStation.Download"
     UPLOAD_API_KEY = "SYNO.FileStation.Upload"
+    DELETE_API_KEY = "SYNO.FileStation.Delete"
 
     async def get_shared_folders(
         self, offset: int = 0, limit: int = 100, only_writable: bool = False
@@ -149,3 +150,14 @@ class SynoFileStation(SynoBaseApi):
             return True
 
         return response_content
+
+    async def delete_file(self, path: str, filename: str) -> bool | None:
+        """Delete a file."""
+        raw_data = await self._dsm.get(
+            self.DELETE_API_KEY,
+            "delete",
+            {"path": f"{path}/{filename}", "recursive": False},
+        )
+        if not isinstance(raw_data, dict):
+            return None
+        return raw_data.get("success")
