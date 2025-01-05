@@ -179,7 +179,9 @@ class SynologyDSMMock(SynologyDSM):
         self.error = False
         self.with_surveillance = False
 
-    async def _execute_request(self, method, url, params, **kwargs):
+    async def _execute_request(
+        self, method, url, params, raw_response_content, **kwargs
+    ):
         url = str(url)
         url += urlencode(params or {})
 
