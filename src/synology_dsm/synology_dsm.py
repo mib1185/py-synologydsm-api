@@ -5,12 +5,10 @@ from __future__ import annotations
 import asyncio
 import logging
 import socket
-from collections.abc import AsyncIterator
 from hashlib import md5
-from io import BufferedReader
 from ipaddress import IPv6Address
 from json import JSONDecodeError
-from typing import TYPE_CHECKING, Any, Coroutine, TypedDict
+from typing import Any, Coroutine, TypedDict
 from urllib.parse import quote, urlencode
 
 from aiohttp import ClientError, ClientSession, ClientTimeout, MultipartWriter, hdrs
@@ -251,26 +249,6 @@ class SynologyDSM:
         """Handles API POST request."""
         return await self._request("POST", api, method, params, **kwargs)
 
-    async def post_upload(
-        self,
-        api: str,
-        method: str,
-        filepath: str,
-        filename: str,
-        content: bytes | BufferedReader | AsyncIterator[bytes],
-        **kwargs: Any,
-    ) -> bytes | dict | str:
-        """Handles an upload API POST request."""
-        return await self._request(
-            "POST",
-            api,
-            method,
-            filepath=filepath,
-            filename=filename,
-            content=content,
-            **kwargs,
-        )
-
     async def generate_url(
         self,
         api: str,
@@ -361,7 +339,7 @@ class SynologyDSM:
         return response
 
     async def _execute_request(
-        self, method: str, url: URL, params: dict | None, **kwargs: Any
+        self, method: str, url: URL, params: dict, **kwargs: Any
     ) -> bytes | dict | str:
         """Function to execute and handle a request."""
         if params:
@@ -379,20 +357,17 @@ class SynologyDSM:
                     url_encoded, timeout=self._aiohttp_timeout, **kwargs
                 )
             elif (
-                method == "POST"
-                and (content := kwargs.get("content"))
-                and (filepath := kwargs.get("filepath"))
-                and (filename := kwargs.get("filename"))
+                method == "POST" and params.get("api") == SynoFileStation.UPLOAD_API_KEY
             ):
-                if TYPE_CHECKING:
-                    assert isinstance(content, bytes)  # noqa: S101
-                    assert isinstance(filename, str)  # noqa: S101
+                content = kwargs.pop("content")
+                path = kwargs.pop("path")
+                filename = kwargs.pop("filename")
 
                 boundary = md5(
                     str(url_encoded).encode("utf-8"), usedforsecurity=False
                 ).hexdigest()
                 with MultipartWriter("form-data", boundary=boundary) as mp:
-                    part = mp.append(filepath)
+                    part = mp.append(path)
                     part.headers.pop(hdrs.CONTENT_TYPE)
                     part.set_content_disposition("form-data", name="path")
 
@@ -599,7 +574,7 @@ class SynologyDSM:
 
     @property
     def file(self) -> SynoFileStation:
-        """Gets NAS files."""
+        """Gets NAS FileStation."""
         if not self._file:
             self._file = SynoFileStation(self)
         return self._file

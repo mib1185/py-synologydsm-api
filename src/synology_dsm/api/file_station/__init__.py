@@ -117,8 +117,8 @@ class SynoFileStation(SynoBaseApi):
         content: bytes | BufferedReader | AsyncIterator[bytes],
     ) -> bool | None:
         """Upload a file to a folder."""
-        raw_data = await self._dsm.post_upload(
-            self.UPLOAD_API_KEY, "upload", path, filename, content
+        raw_data = await self._dsm.post(
+            self.UPLOAD_API_KEY, "upload", path=path, filename=filename, content=content
         )
         if not isinstance(raw_data, dict):
             return None
