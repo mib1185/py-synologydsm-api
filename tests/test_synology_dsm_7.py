@@ -296,6 +296,98 @@ class TestSynologyDSM7:
         assert items[2].thumbnail_cache_key == "96_1628323786"
 
     @pytest.mark.asyncio
+    async def test_file_station(self, dsm_7):
+        """Test File Station."""
+        assert await dsm_7.login()
+        assert dsm_7.file
+
+        folders = await dsm_7.file.get_shared_folders()
+
+        assert folders
+        assert len(folders) == 2
+
+        assert folders[0].name == "backup"
+        assert folders[0].path == "/backup"
+        assert folders[0].is_dir is True
+        assert folders[0].additional.mount_point_type == ""
+        assert folders[0].additional.owner.gid == 0
+        assert folders[0].additional.owner.group == "root"
+        assert folders[0].additional.owner.uid == 0
+        assert folders[0].additional.owner.user == "root"
+        assert isinstance(folders[0].additional.perm.acl, dict)
+        assert isinstance(folders[0].additional.perm.adv_right, dict)
+        assert folders[0].additional.perm.acl_enable is True
+        assert folders[0].additional.perm.is_acl_mode is True
+        assert folders[0].additional.perm.is_share_readonly is False
+        assert folders[0].additional.perm.posix == 777
+        assert folders[0].additional.perm.share_right == "RW"
+        assert folders[0].additional.volume_status.freespace == 1553335107584
+        assert folders[0].additional.volume_status.totalspace == 3821146505216
+        assert folders[0].additional.volume_status.readonly is False
+
+        assert folders[1].name == "home"
+        assert folders[1].path == "/home"
+        assert folders[1].is_dir is True
+        assert folders[1].additional.mount_point_type == ""
+        assert folders[1].additional.owner.gid == 100
+        assert folders[1].additional.owner.group == "users"
+        assert folders[1].additional.owner.uid == 1046
+        assert folders[1].additional.owner.user == "hass"
+        assert isinstance(folders[1].additional.perm.acl, dict)
+        assert isinstance(folders[1].additional.perm.adv_right, dict)
+        assert folders[1].additional.perm.acl_enable is True
+        assert folders[1].additional.perm.is_acl_mode is True
+        assert folders[1].additional.perm.is_share_readonly is False
+        assert folders[1].additional.perm.posix == 777
+        assert folders[1].additional.perm.share_right == "RW"
+        assert folders[1].additional.volume_status.freespace == 1553335107584
+        assert folders[1].additional.volume_status.totalspace == 3821146505216
+        assert folders[1].additional.volume_status.readonly is False
+
+        files = await dsm_7.file.get_files("/home")
+
+        assert files
+        assert len(files) == 2
+
+        assert files[0].name == "Photos"
+        assert files[0].path == "/home/Photos"
+        assert files[0].is_dir is True
+        assert files[0].additional.mount_point_type == ""
+        assert files[0].additional.owner.gid == 105733
+        assert files[0].additional.owner.group == "SynologyPhotos"
+        assert files[0].additional.owner.uid == 1046
+        assert files[0].additional.owner.user == "hass"
+        assert isinstance(files[0].additional.perm.acl, dict)
+        assert files[0].additional.perm.is_acl_mode is True
+        assert files[0].additional.perm.posix == 711
+        assert files[0].additional.real_path == "/volume1/homes/hass/Photos"
+        assert files[0].additional.size == 50
+        assert files[0].additional.time.atime == 1735700476
+        assert files[0].additional.time.ctime == 1723653464
+        assert files[0].additional.time.crtime == 1723653032
+        assert files[0].additional.time.mtime == 1723653464
+        assert files[0].additional.type == ""
+
+        assert files[1].name == "3e57d06c.tar"
+        assert files[1].path == "/home/3e57d06c.tar"
+        assert files[1].is_dir is False
+        assert files[1].additional.mount_point_type == ""
+        assert files[1].additional.owner.gid == 100
+        assert files[1].additional.owner.group == "users"
+        assert files[1].additional.owner.uid == 1046
+        assert files[1].additional.owner.user == "hass"
+        assert isinstance(files[1].additional.perm.acl, dict)
+        assert files[1].additional.perm.is_acl_mode is True
+        assert files[1].additional.perm.posix == 711
+        assert files[1].additional.real_path == "/volume1/homes/hass/3e57d06c.tar"
+        assert files[1].additional.size == 1660753920
+        assert files[1].additional.time.atime == 1736105132
+        assert files[1].additional.time.ctime == 1736105132
+        assert files[1].additional.time.crtime == 1736105128
+        assert files[1].additional.time.mtime == 1736105132
+        assert files[1].additional.type == "TAR"
+
+    @pytest.mark.asyncio
     async def test_virtual_machine_manager(self, dsm_7):
         """Test vmm."""
         assert await dsm_7.login()

@@ -5,12 +5,20 @@ from __future__ import annotations
 import asyncio
 import logging
 import socket
+from hashlib import md5
 from ipaddress import IPv6Address
 from json import JSONDecodeError
 from typing import Any, Coroutine, TypedDict
 from urllib.parse import quote, urlencode
 
-from aiohttp import ClientError, ClientSession, ClientTimeout
+from aiohttp import (
+    ClientError,
+    ClientSession,
+    ClientTimeout,
+    MultipartWriter,
+    StreamReader,
+    hdrs,
+)
 from yarl import URL
 
 from .api import SynoBaseApi
@@ -23,6 +31,7 @@ from .api.core.utilization import SynoCoreUtilization
 from .api.download_station import SynoDownloadStation
 from .api.dsm.information import SynoDSMInformation
 from .api.dsm.network import SynoDSMNetwork
+from .api.file_station import SynoFileStation
 from .api.photos import SynoPhotos
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
@@ -95,6 +104,7 @@ class SynologyDSM:
         }
         self._download: SynoDownloadStation | None = None
         self._external_usb: SynoCoreExternalUSB | None = None
+        self._file: SynoFileStation | None = None
         self._information: SynoDSMInformation | None = None
         self._network: SynoDSMNetwork | None = None
         self._photos: SynoPhotos | None = None
@@ -236,13 +246,13 @@ class SynologyDSM:
 
     async def get(
         self, api: str, method: str, params: dict | None = None, **kwargs: Any
-    ) -> bytes | dict | str:
+    ) -> bytes | dict | str | StreamReader:
         """Handles API GET request."""
         return await self._request("GET", api, method, params, **kwargs)
 
     async def post(
         self, api: str, method: str, params: dict | None = None, **kwargs: Any
-    ) -> bytes | dict | str:
+    ) -> bytes | dict | str | StreamReader:
         """Handles API POST request."""
         return await self._request("POST", api, method, params, **kwargs)
 
@@ -307,17 +317,22 @@ class SynologyDSM:
         method: str,
         params: dict | None = None,
         retry_once: bool = True,
+        raw_response_content: bool = False,
         **kwargs: Any,
-    ) -> bytes | dict | str:
+    ) -> bytes | dict | str | StreamReader:
         """Handles API request."""
         url, params, kwargs = await self._prepare_request(api, method, params, **kwargs)
 
         # Request data
+        self._debuglog("---------------------------------------------------------")
         self._debuglog("API: " + api)
         self._debuglog("Request Method: " + request_method)
-        response = await self._execute_request(request_method, url, params, **kwargs)
+        response = await self._execute_request(
+            request_method, url, params, raw_response_content, **kwargs
+        )
         self._debuglog("Successful returned data")
-        self._debuglog("RESPONSE: " + str(response))
+        if not raw_response_content:
+            self._debuglog("RESPONSE: " + str(response))
 
         # Handle data errors
         if isinstance(response, dict) and response.get("error") and api != API_AUTH:
@@ -335,23 +350,66 @@ class SynologyDSM:
         return response
 
     async def _execute_request(
-        self, method: str, url: URL, params: dict | None, **kwargs: Any
-    ) -> bytes | dict | str:
+        self,
+        method: str,
+        url: URL,
+        params: dict,
+        raw_response_content: bool = False,
+        **kwargs: Any,
+    ) -> bytes | dict | str | StreamReader:
         """Function to execute and handle a request."""
-        if params:
-            # special handling for spaces in parameters
-            # because yarl.URL does encode a space as + instead of %20
-            # safe extracted from yarl.URL._QUERY_PART_QUOTER
-            query = urlencode(params, safe="?/:@-._~!$'()*,", quote_via=quote)
-            url_encoded = url.join(URL(f"?{query}", encoded=True))
+        # special handling for spaces in parameters
+        # because yarl.URL does encode a space as + instead of %20
+        # safe extracted from yarl.URL._QUERY_PART_QUOTER
+        query = urlencode(params, safe="?/:@-._~!$'()*,", quote_via=quote)
+        url_encoded = url.join(URL(f"?{query}", encoded=True))
+
+        if params.get("api") in [
+            SynoFileStation.UPLOAD_API_KEY,
+            SynoFileStation.DOWNLOAD_API_KEY,
+        ]:
+            timeout = ClientTimeout(connect=10.0, total=43200.0)
         else:
-            url_encoded = url
+            timeout = self._aiohttp_timeout
 
         try:
             if method == "GET":
                 response = await self._session.get(
-                    url_encoded, timeout=self._aiohttp_timeout, **kwargs
+                    url_encoded, timeout=timeout, **kwargs
                 )
+            elif (
+                method == "POST" and params.get("api") == SynoFileStation.UPLOAD_API_KEY
+            ):
+                content = kwargs.pop("content")
+                path = kwargs.pop("path")
+                filename = kwargs.pop("filename")
+                create_parents = kwargs.pop("create_parents", None)
+
+                boundary = md5(
+                    str(url_encoded).encode("utf-8"), usedforsecurity=False
+                ).hexdigest()
+                with MultipartWriter("form-data", boundary=boundary) as mp:
+                    part = mp.append(path)
+                    part.headers.pop(hdrs.CONTENT_TYPE)
+                    part.set_content_disposition("form-data", name="path")
+
+                    if create_parents:
+                        part = mp.append("true")
+                        part.headers.pop(hdrs.CONTENT_TYPE)
+                        part.set_content_disposition("form-data", name="create_parents")
+
+                    part = mp.append(content)
+                    part.headers.pop(hdrs.CONTENT_TYPE)
+                    part.set_content_disposition(
+                        "form-data", name="file", filename=filename
+                    )
+                    part.headers.add(hdrs.CONTENT_TYPE, "application/octet-stream")
+
+                    response = await self._session.post(
+                        url_encoded,
+                        timeout=timeout,
+                        data=mp,
+                    )
             elif method == "POST":
                 data = {}
                 if params is not None:
@@ -362,22 +420,28 @@ class SynologyDSM:
                 self._debuglog("POST data: " + str(data))
 
                 response = await self._session.post(
-                    url_encoded, timeout=self._aiohttp_timeout, **kwargs
+                    url_encoded, timeout=timeout, **kwargs
                 )
 
             # mask sesitive parameters
-            if _LOGGER.isEnabledFor(logging.DEBUG):
+            if _LOGGER.isEnabledFor(logging.DEBUG) or self._debugmode:
                 response_url = response.url  # pylint: disable=E0606
                 for param in SENSITIV_PARAMS:
                     if params is not None and params.get(param):
                         response_url = response_url.update_query({param: "*********"})
                 self._debuglog("Request url: " + str(response_url))
+                self._debuglog(
+                    "Request headers: " + str(dict(response.request_info.headers))
+                )
                 self._debuglog("Response status_code: " + str(response.status))
                 self._debuglog("Response headers: " + str(dict(response.headers)))
 
             if response.status == 200:
                 # We got a DSM response
                 content_type = response.headers.get("Content-Type", "").split(";")[0]
+
+                if raw_response_content:
+                    return response.content
 
                 if content_type in [
                     "application/json",
@@ -455,6 +519,9 @@ class SynologyDSM:
             if api == SynoCoreExternalUSB.API_KEY:
                 self._external_usb = None
                 return True
+            if api == SynoFileStation.API_KEY:
+                self._file = None
+                return True
             if api == SynoCoreSecurity.API_KEY:
                 self._security = None
                 return True
@@ -487,6 +554,9 @@ class SynologyDSM:
                 return True
         if isinstance(api, SynoCoreExternalUSB):
             self._external_usb = None
+            return True
+        if isinstance(api, SynoFileStation):
+            self._file = None
             return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
@@ -533,6 +603,13 @@ class SynologyDSM:
         if not self._external_usb:
             self._external_usb = SynoCoreExternalUSB(self)
         return self._external_usb
+
+    @property
+    def file(self) -> SynoFileStation:
+        """Gets NAS FileStation."""
+        if not self._file:
+            self._file = SynoFileStation(self)
+        return self._file
 
     @property
     def information(self) -> SynoDSMInformation:

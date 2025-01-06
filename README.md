@@ -156,6 +156,101 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## File Station usage
+
+### List folders and files in specific folder
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    shared_folders = await api.file.get_shared_folders()
+    for folder in shared_folders:
+        print(f"############### {folder.name} ###############")
+        print(f"path: {folder.path}")
+        print(f"freespace: {folder.additional.volume_status.freespace}")
+        print(f"totalspace: {folder.additional.volume_status.totalspace}")
+        print(f"readonly: {folder.additional.volume_status.readonly}")
+
+    files = await api.file.get_files(path="/home")
+    for file in files:
+        print(f"path: {file.path}")
+        print(f"size: {file.additional.size}")
+        print(f"is dir: {file.is_dir}")
+        print(f"owner user: {file.additional.owner.user}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Upload, Download and Delete files
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    # upload file direct from local
+    await api.file.upload_file(path="/home", filename="myfile.name", source="/workspace/myfile.name")
+
+    # upload file direct from local, create parent folder(s) if none exist.
+    await api.file.upload_file(path="/home/new_folder", filename="myfile.name", source="/workspace/myfile.name", create_parents=True)
+
+    # upload file from a stream reader
+    await api.file.upload_file(path="/home", filename="myfile.name", source=open("/workspace/myfile.name", "rb"))
+
+    # upload file from an AsyncIterator[bytes]
+    loop = asyncio.get_running_loop()
+    async def send_backup() -> AsyncIterator[bytes]:
+        f = await loop.run_in_executor(None, open, "/workspace/myfile.name", "rb")
+        try:
+            while chunk := await loop.run_in_executor(None, f.read, 2**20):
+                yield chunk
+        finally:
+            await loop.run_in_executor(None, f.close)
+
+    async def open_backup() -> AsyncIterator[bytes]:
+        return send_backup()
+    await api.file.upload_file(path="/home", filename="myfile.name", source=await open_backup())
+
+    # download file direct to local
+    await api.file.download_file(path="/home", filename="myfile.name", target_file="/tmp/download.file")
+
+    # download file via stream reader
+    stream_reader = await api.file.download_file(path="/home", filename="myfile.name")
+    with open("/tmp/download.file", "wb") as fh:
+        async for data in stream_reader.iter_chunked(8192):
+            fh.write(data)
+
+    await api.file.delete_file(path="/home", filename="myfile.name")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## External USB storage usage
 
 ```python

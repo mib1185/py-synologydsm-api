@@ -15,6 +15,7 @@ from synology_dsm.api.core.utilization import SynoCoreUtilization
 from synology_dsm.api.download_station import SynoDownloadStation
 from synology_dsm.api.dsm.information import SynoDSMInformation
 from synology_dsm.api.dsm.network import SynoDSMNetwork
+from synology_dsm.api.file_station import SynoFileStation
 from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
@@ -70,6 +71,8 @@ from .api_data.dsm_7 import (
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB,
     DSM_7_CORE_UPGRADE_TRUE,
     DSM_7_DSM_INFORMATION,
+    DSM_7_FILE_STATION_FILES,
+    DSM_7_FILE_STATION_FOLDERS,
     DSM_7_FOTO_ALBUMS,
     DSM_7_FOTO_ITEMS,
     DSM_7_FOTO_ITEMS_SEARCHED,
@@ -179,7 +182,9 @@ class SynologyDSMMock(SynologyDSM):
         self.error = False
         self.with_surveillance = False
 
-    async def _execute_request(self, method, url, params, **kwargs):
+    async def _execute_request(
+        self, method, url, params, raw_response_content, **kwargs
+    ):
         url = str(url)
         url += urlencode(params or {})
 
@@ -285,14 +290,19 @@ class SynologyDSMMock(SynologyDSM):
                 if "List" in url:
                     return DSM_6_DOWNLOAD_STATION_TASK_LIST
 
+            if SynoFileStation.LIST_API_KEY in url:
+                if "list_share" in url:
+                    return DSM_7_FILE_STATION_FOLDERS
+                if "list" in url:
+                    return DSM_7_FILE_STATION_FILES
+
             if SynoPhotos.BROWSE_ALBUMS_API_KEY in url:
                 return DSM_7_FOTO_ALBUMS
 
             if SynoPhotos.BROWSE_ITEM_API_KEY in url:
                 if "passphrase" in url:
                     return DSM_7_FOTO_ITEMS_SHARED_ALBUM
-                else:
-                    return DSM_7_FOTO_ITEMS
+                return DSM_7_FOTO_ITEMS
 
             if SynoPhotos.SEARCH_API_KEY in url:
                 return DSM_7_FOTO_ITEMS_SEARCHED

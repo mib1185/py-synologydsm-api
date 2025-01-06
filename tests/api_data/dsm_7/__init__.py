@@ -11,6 +11,10 @@ from .core.const_7_core_external_usb import (
 )
 from .core.const_7_core_upgrade import DSM_7_CORE_UPGRADE_FALSE, DSM_7_CORE_UPGRADE_TRUE
 from .dsm.const_7_dsm_info import DSM_7_DSM_INFORMATION
+from .file_station.const_7_file_station import (
+    DSM_7_FILE_STATION_FILES,
+    DSM_7_FILE_STATION_FOLDERS,
+)
 from .photos.const_7_photo import (
     DSM_7_FOTO_ALBUMS,
     DSM_7_FOTO_ITEMS,
@@ -29,6 +33,8 @@ __all__ = [
     "DSM_7_CORE_UPGRADE_FALSE",
     "DSM_7_CORE_UPGRADE_TRUE",
     "DSM_7_DSM_INFORMATION",
+    "DSM_7_FILE_STATION_FILES",
+    "DSM_7_FILE_STATION_FOLDERS",
     "DSM_7_FOTO_ALBUMS",
     "DSM_7_FOTO_ITEMS",
     "DSM_7_FOTO_ITEMS_SHARED_ALBUM",
