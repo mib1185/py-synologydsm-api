@@ -383,6 +383,7 @@ class SynologyDSM:
                 content = kwargs.pop("content")
                 path = kwargs.pop("path")
                 filename = kwargs.pop("filename")
+                create_parents = kwargs.pop("create_parents", None)
 
                 boundary = md5(
                     str(url_encoded).encode("utf-8"), usedforsecurity=False
@@ -391,6 +392,11 @@ class SynologyDSM:
                     part = mp.append(path)
                     part.headers.pop(hdrs.CONTENT_TYPE)
                     part.set_content_disposition("form-data", name="path")
+
+                    if create_parents:
+                        part = mp.append("true")
+                        part.headers.pop(hdrs.CONTENT_TYPE)
+                        part.set_content_disposition("form-data", name="create_parents")
 
                     part = mp.append(content)
                     part.headers.pop(hdrs.CONTENT_TYPE)

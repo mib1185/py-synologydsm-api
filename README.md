@@ -216,6 +216,9 @@ async def do(session: aiohttp.ClientSession):
     # upload file direct from local
     await api.file.upload_file(path="/home", filename="myfile.name", source="/workspace/myfile.name")
 
+    # upload file direct from local, create parent folder(s) if none exist.
+    await api.file.upload_file(path="/home/new_folder", filename="myfile.name", source="/workspace/myfile.name", create_parents=True)
+
     # upload file from a stream reader
     await api.file.upload_file(path="/home", filename="myfile.name", source=open("/workspace/myfile.name", "rb"))
 

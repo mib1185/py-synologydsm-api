@@ -119,13 +119,19 @@ class SynoFileStation(SynoBaseApi):
         path: str,
         filename: str,
         source: bytes | BufferedReader | AsyncIterator[bytes] | str,
+        create_parents: bool = False,
     ) -> bool | None:
         """Upload a file to a folder from eather a local source_file or content."""
         if isinstance(source, str):
             source = open(source, "rb")
 
         raw_data = await self._dsm.post(
-            self.UPLOAD_API_KEY, "upload", path=path, filename=filename, content=source
+            self.UPLOAD_API_KEY,
+            "upload",
+            path=path,
+            filename=filename,
+            content=source,
+            create_parents=create_parents,
         )
         if not isinstance(raw_data, dict):
             return None
