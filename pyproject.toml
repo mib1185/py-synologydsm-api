@@ -27,7 +27,7 @@ classifiers = [
 ]
 keywords=["synology-dsm", "synology"]
 requires-python = ">=3.9"
-dependencies  = ["aiohttp"]
+dependencies  = ["aiohttp", "aiofiles"]
 
 [project.urls]
 Changelog = "https://github.com/mib1185/py-synologydsm-api/releases"
