@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from io import BufferedReader
 
+import aiofiles
 from aiohttp import StreamReader
 
 from synology_dsm.api import SynoBaseApi
@@ -151,9 +152,9 @@ class SynoFileStation(SynoBaseApi):
             return None
 
         if target_file:
-            with open(target_file, "wb") as fh:
-                async for data in response_content.iter_chunked(8192):
-                    fh.write(data)
+            async with aiofiles.open(target_file, "wb") as fh:
+                async for data, _ in response_content.iter_chunks():
+                    await fh.write(data)
             return True
 
         return response_content

@@ -1,4 +1,6 @@
 aiohttp
+aiofiles
+types-aiofiles
 black==24.10.0
 coverage[toml]
 flake8-bandit==4.1.1
