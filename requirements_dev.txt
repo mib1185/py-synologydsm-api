@@ -1,7 +1,7 @@
 aiohttp
 aiofiles
 types-aiofiles
-black==24.10.0
+black==25.1.0
 coverage[toml]
 flake8-bandit==4.1.1
 flake8-bugbear==24.12.12
@@ -11,9 +11,9 @@ flake8==7.1.1
 mypy==1.14.1
 pep8-naming==0.14.1
 pre-commit-hooks==5.0.0
-pre-commit==4.0.1
-Pygments==2.18.0
-pylint==3.3.3
-pytest-asyncio==0.25.0
+pre-commit==4.1.0
+Pygments==2.19.1
+pylint==3.3.4
+pytest-asyncio==0.25.3
 pytest==8.3.4
 reorder-python-imports==3.14.0
