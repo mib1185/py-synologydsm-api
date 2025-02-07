@@ -54,22 +54,30 @@ class SynoFileStation(SynoBaseApi):
 
         shared_folders: list[SynoFileSharedFolder] = []
         for folder in data["shares"]:
-            additional = folder["additional"]
-            shared_folders.append(
-                SynoFileSharedFolder(
-                    SynoFileSharedFolderAdditional(
-                        additional["mount_point_type"],
-                        SynoFileAdditionalOwner(**additional["owner"]),
-                        SynoFileSharedFolderAdditionalPermission(**additional["perm"]),
-                        SynoFileSharedFolderAdditionalVolumeStatus(
-                            **additional["volume_status"],
+            if (additional := folder.get("additional")) is not None:
+                shared_folders.append(
+                    SynoFileSharedFolder(
+                        SynoFileSharedFolderAdditional(
+                            additional["mount_point_type"],
+                            SynoFileAdditionalOwner(**additional["owner"]),
+                            SynoFileSharedFolderAdditionalPermission(
+                                **additional["perm"]
+                            ),
+                            SynoFileSharedFolderAdditionalVolumeStatus(
+                                **additional["volume_status"],
+                            ),
                         ),
-                    ),
-                    folder["isdir"],
-                    folder["name"],
-                    folder["path"],
+                        folder["isdir"],
+                        folder["name"],
+                        folder["path"],
+                    )
                 )
-            )
+            else:
+                shared_folders.append(
+                    SynoFileSharedFolder(
+                        None, folder["isdir"], folder["name"], folder["path"]
+                    )
+                )
 
         return shared_folders
 
@@ -95,23 +103,27 @@ class SynoFileStation(SynoBaseApi):
 
         files: list[SynoFileFile] = []
         for file in data["files"]:
-            additional = file["additional"]
-            files.append(
-                SynoFileFile(
-                    SynoFileFileAdditional(
-                        additional["mount_point_type"],
-                        SynoFileAdditionalOwner(**additional["owner"]),
-                        SynoFileFileAdditionalPermission(**additional["perm"]),
-                        additional["real_path"],
-                        additional["size"],
-                        SynoFileFileAdditionalTime(**additional["time"]),
-                        additional["type"],
-                    ),
-                    file["isdir"],
-                    file["name"],
-                    file["path"],
+            if (additional := file.get("additional")) is not None:
+                files.append(
+                    SynoFileFile(
+                        SynoFileFileAdditional(
+                            additional["mount_point_type"],
+                            SynoFileAdditionalOwner(**additional["owner"]),
+                            SynoFileFileAdditionalPermission(**additional["perm"]),
+                            additional["real_path"],
+                            additional["size"],
+                            SynoFileFileAdditionalTime(**additional["time"]),
+                            additional["type"],
+                        ),
+                        file["isdir"],
+                        file["name"],
+                        file["path"],
+                    )
                 )
-            )
+            else:
+                files.append(
+                    SynoFileFile(None, file["isdir"], file["name"], file["path"])
+                )
 
         return files
 
