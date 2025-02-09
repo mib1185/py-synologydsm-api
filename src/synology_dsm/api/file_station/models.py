@@ -60,7 +60,7 @@ class SynoFileSharedFolderAdditional:
 class SynoFileSharedFolder:
     """Representation of an Synology FileStation Shared Folder."""
 
-    additional: SynoFileSharedFolderAdditional
+    additional: SynoFileSharedFolderAdditional | None
     is_dir: bool
     name: str
     path: str
@@ -107,7 +107,7 @@ class SynoFileFileAdditional:
 class SynoFileFile:
     """Representation of an Synology FileStation File."""
 
-    additional: SynoFileFileAdditional
+    additional: SynoFileFileAdditional | None
     is_dir: bool
     name: str
     path: str
