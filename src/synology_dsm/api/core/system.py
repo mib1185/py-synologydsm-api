@@ -130,6 +130,7 @@ class SynoCoreSystem(SynoBaseApi[SystemDataType]):
         await self._dsm.get(
             self.API_KEY,
             "shutdown",
+            {"local": "true"},
             max_version=1,  # shutdown method is only available on api version 1
         )
 
