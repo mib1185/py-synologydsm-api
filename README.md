@@ -554,6 +554,49 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Hyperbackup usage
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+    print("=== Hyperbackup ===")
+    hyperbackup = api.hyperbackup
+    await hyperbackup.update()
+
+    for task in hyperbackup.get_all_tasks():
+        print("task_id:                 " + str(task.task_id))
+        print("name                     " + str(task.name))
+        print("status:                  " + str(task.status))
+        print("health:                  " + str(task.health))
+        print("is_backing_up            " + str(task.is_backing_up))
+        print("backup_progress          " + str(task.backup_progress))
+        print("state                    " + str(task.state))
+        print("target_online            " + str(task.target_online))
+        print("used_size                " + str(task.used_size(True)))
+        print("previous_result          " + str(task.previous_result))
+        print("has_schedule             " + str(task.has_schedule))
+        print("next_backup_time         " + str(task.next_backup_time))
+        print("previous_backup_time     " + str(task.previous_backup_time))
+        print("previous_backup_end_time " + str(task.previous_backup_end_time))
+        print("previous_success_time    " + str(task.previous_success_time))
+        print("--")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 # Credits / Special Thanks
 
 - [@florianeinfalt](https://github.com/florianeinfalt)
