@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import re
 from typing import TypedDict
 
+from awesomeversion import AwesomeVersion
+
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMException
 
 
 class DsmInformationDataType(TypedDict, total=False):
@@ -71,3 +75,27 @@ class SynoDSMInformation(SynoBaseApi[DsmInformationDataType]):
     def version_string(self) -> str:
         """Version of the NAS."""
         return self._data["version_string"]
+
+    @property
+    def awesome_version(self) -> AwesomeVersion:
+        """Awesome version representation."""
+        pattern = (
+            r"DSM (?P<major>\d+)\.(?P<minor>\d+)"
+            r"(\.(?P<micro>\d+))?-(?P<buildnumber>\d+)"
+            r"( Update (?P<smallfixnumber>\d+))?"
+        )
+        match = re.match(pattern, self.version_string)
+        if not match:
+            raise SynologyDSMException(
+                api=self.API_KEY,
+                code=0,
+                details=f"Could not parse version string {self.version_string}",
+            )
+        parts = match.groupdict()
+        version = f"{parts['major']}.{parts['minor']}"
+        if (micro := parts.get("micro")) is not None:
+            version += f".{micro}"
+        if (smallfixnumber := parts.get("smallfixnumber")) is not None:
+            version += f".{smallfixnumber}"
+
+        return AwesomeVersion(version)

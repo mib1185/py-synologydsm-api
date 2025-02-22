@@ -92,6 +92,7 @@ class TestSynologyDSM6:
         assert dsm_6.information.uptime == 155084
         assert dsm_6.information.version == "24922"
         assert dsm_6.information.version_string == "DSM 6.2.2-24922 Update 4"
+        assert dsm_6.information.awesome_version == "6.2.2.4"
 
     @pytest.mark.asyncio
     async def test_network(self, dsm_6):
