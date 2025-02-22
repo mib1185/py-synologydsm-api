@@ -84,7 +84,7 @@ class TestSynologyDSM5:
         assert dsm_5.information.uptime == 3897
         assert dsm_5.information.version == "5967"
         assert dsm_5.information.version_string == "DSM 5.2-5967 Update 9"
-        assert dsm_5.information.awesome_version == "5.2.9"
+        assert dsm_5.information.awesome_version == "5.2.0.9"
 
     @pytest.mark.asyncio
     async def test_network(self, dsm_5):

@@ -92,9 +92,7 @@ class SynoDSMInformation(SynoBaseApi[DsmInformationDataType]):
                 details=f"Could not parse version string {self.version_string}",
             )
         parts = match.groupdict()
-        version = f"{parts['major']}.{parts['minor']}"
-        if (micro := parts.get("micro")) is not None:
-            version += f".{micro}"
+        version = f"{parts['major']}.{parts['minor']}.{parts['micro'] or '0'}"
         if (smallfixnumber := parts.get("smallfixnumber")) is not None:
             version += f".{smallfixnumber}"
 

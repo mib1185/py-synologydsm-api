@@ -102,7 +102,7 @@ class TestSynologyDSM7:
         assert dsm_7.information.uptime == 155084
         assert dsm_7.information.version == "24922"
         assert dsm_7.information.version_string == "DSM 7.0-41222"
-        assert dsm_7.information.awesome_version == "7.0"
+        assert dsm_7.information.awesome_version == "7.0.0"
 
     @pytest.mark.asyncio
     async def test_external_usb(self, dsm_7):
