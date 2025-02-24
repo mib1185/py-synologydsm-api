@@ -79,6 +79,10 @@ async def do(session: aiohttp.ClientSession):
     print("Temp. warning:   " + str(api.information.temperature_warn))
     print("Uptime:          " + str(api.information.uptime))
     print("Full DSM version:" + str(api.information.version_string))
+    print("Major DSM version:" + str(api.information.awesome_version.major))
+    print("Minor DSM version:" + str(api.information.awesome_version.minor))
+    print("Micro DSM version:" + str(api.information.awesome_version.micro))
+    print("Patch DSM version:" + str(api.information.awesome_version.patch))
     print("--")
 
     print("=== Utilisation ===")

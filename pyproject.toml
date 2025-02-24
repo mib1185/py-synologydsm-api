@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-synologydsm-api"
-version = "2.6.3"
+version = "2.7.0"
 description = "Python API for communication with Synology DSM"
 authors = [
     {name="Michael Brussk (mib1185)"},
@@ -27,7 +27,7 @@ classifiers = [
 ]
 keywords=["synology-dsm", "synology"]
 requires-python = ">=3.9"
-dependencies  = ["aiohttp", "aiofiles"]
+dependencies  = ["aiohttp", "aiofiles", "awesomeversion"]
 
 [project.urls]
 Changelog = "https://github.com/mib1185/py-synologydsm-api/releases"

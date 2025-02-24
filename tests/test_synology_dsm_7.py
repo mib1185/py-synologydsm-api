@@ -91,6 +91,22 @@ class TestSynologyDSM7:
         assert dsm_7.device_token == DEVICE_TOKEN
 
     @pytest.mark.asyncio
+    async def test_information(self, dsm_7):
+        """Test information."""
+        assert await dsm_7.login()
+        assert dsm_7.information
+        await dsm_7.information.update()
+        assert dsm_7.information.model == "DS918+"
+        assert dsm_7.information.ram == 4096
+        assert dsm_7.information.serial == "1920PDN001501"
+        assert dsm_7.information.temperature == 40
+        assert not dsm_7.information.temperature_warn
+        assert dsm_7.information.uptime == 155084
+        assert dsm_7.information.version == "24922"
+        assert dsm_7.information.version_string == "DSM 7.0-41222"
+        assert dsm_7.information.awesome_version == "7.0.0"
+
+    @pytest.mark.asyncio
     async def test_external_usb(self, dsm_7):
         """Test external USB storage devices."""
         assert await dsm_7.login()
