@@ -51,9 +51,9 @@ class SynoDSMInformation(SynoBaseApi[DsmInformationDataType]):
         return self._data["serial"]
 
     @property
-    def temperature(self) -> int:
+    def temperature(self) -> int | None:
         """Temperature of the NAS."""
-        return self._data["temperature"]
+        return self._data.get("temperature")
 
     @property
     def temperature_warn(self) -> bool:
