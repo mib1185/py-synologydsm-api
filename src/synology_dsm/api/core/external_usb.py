@@ -47,7 +47,7 @@ class SynoCoreExternalUSB(SynoBaseApi["dict[str, SynoCoreExternalUSBDevice]"]):
 
     async def update(self) -> None:
         """Updates external USB storage device data."""
-        self._data = {}
+        self._data: dict[str, SynoCoreExternalUSBDevice] = {}
         raw_data = await self._dsm.post(self.API_KEY, "list", data=self.REQUEST_DATA)
         if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
             for device in data["devices"]:
