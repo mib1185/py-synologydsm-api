@@ -177,6 +177,12 @@ class TestSynologyDSM7:
         assert partition.partition_size_used(False) is None
         assert partition.partition_percentage_used is None
 
+        # Verify devices is cleared before update
+        dsm_7.usb_device_connected = False
+        await dsm_7.external_usb.update()
+        devices = dsm_7.external_usb.get_devices
+        assert len(devices) == 0
+
     @pytest.mark.asyncio
     async def test_login_2sa_new_session(self):
         """Test login with 2SA and a new session with granted device."""

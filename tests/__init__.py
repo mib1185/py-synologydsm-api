@@ -69,6 +69,7 @@ from .api_data.dsm_7 import (
     DSM_7_AUTH_LOGIN_2SA,
     DSM_7_AUTH_LOGIN_2SA_OTP,
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB,
+    DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB,
     DSM_7_CORE_UPGRADE_TRUE,
     DSM_7_DSM_INFORMATION,
     DSM_7_FILE_STATION_FILES,
@@ -181,6 +182,7 @@ class SynologyDSMMock(SynologyDSM):
         self.disks_redundancy = "RAID"  # RAID or SHR[number][_EXPANSION]
         self.error = False
         self.with_surveillance = False
+        self.usb_device_connected = True
 
     async def _execute_request(
         self, method, url, params, raw_response_content, **kwargs
@@ -252,7 +254,10 @@ class SynologyDSMMock(SynologyDSM):
                 return ERROR_INSUFFICIENT_USER_PRIVILEGE
 
             if SynoCoreExternalUSB.API_KEY in url:
-                return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB
+                if self.usb_device_connected:
+                    return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB
+                if not self.usb_device_connected:
+                    return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB
 
             if SynoCoreSecurity.API_KEY in url:
                 if self.error:
