@@ -178,6 +178,7 @@ class TestSynologyDSM7:
         assert partition.partition_percentage_used is None
 
         # Verify devices is cleared before update
+        dsm_7.usb_device_connected = False
         await dsm_7.external_usb.update()
         devices = dsm_7.external_usb.get_devices
         assert len(devices) == 0
