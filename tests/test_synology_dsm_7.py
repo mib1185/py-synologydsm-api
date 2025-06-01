@@ -12,6 +12,7 @@ from synology_dsm.api.core.utilization import SynoCoreUtilization
 from synology_dsm.api.download_station import SynoDownloadStation
 from synology_dsm.api.dsm.information import SynoDSMInformation
 from synology_dsm.api.dsm.network import SynoDSMNetwork
+from synology_dsm.api.hyperbackup import SynoHyperBackup
 from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
@@ -57,6 +58,7 @@ class TestSynologyDSM7:
         assert isinstance(dsm_7.upgrade, SynoCoreUpgrade)
         assert isinstance(dsm_7.utilisation, SynoCoreUtilization)
         assert isinstance(dsm_7.virtual_machine_manager, SynoVirtualMachineManager)
+        assert isinstance(dsm_7.hyperbackup, SynoHyperBackup)
 
     @pytest.mark.asyncio
     async def test_login_2sa(self):
