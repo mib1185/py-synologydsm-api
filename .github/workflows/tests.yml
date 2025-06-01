@@ -117,7 +117,7 @@ jobs:
           coverage xml
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v5.4.2
+        uses: codecov/codecov-action@v5.4.3
 
   build:
     runs-on: ubuntu-latest
