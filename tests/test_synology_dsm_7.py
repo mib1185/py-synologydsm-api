@@ -2,6 +2,7 @@
 
 # pylint: disable=protected-access
 import pytest
+from syrupy.assertion import SnapshotAssertion
 
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
@@ -105,36 +106,15 @@ class TestSynologyDSM7:
         assert dsm_7.information.awesome_version == "7.0.0"
 
     @pytest.mark.asyncio
-    async def test_external_usb(self, dsm_7):
+    async def test_external_usb(self, dsm_7, snapshot: SnapshotAssertion):
         """Test external USB storage devices."""
         assert await dsm_7.login()
         assert dsm_7.external_usb
         await dsm_7.external_usb.update()
 
         devices = dsm_7.external_usb.get_devices
-        assert len(devices) == 7
-
-        for device in dsm_7.external_usb.get_devices.values():
-            assert device.device_name
-            assert device.device_type
-            assert device.device_status
-            assert device.device_size_total()
-            assert device.device_size_total(True)
-            assert device.device_manufacturer
-            assert device.device_product_name
-            assert device.device_formatable
-            assert not device.device_progress
-            for partition in device.device_partitions.values():
-                assert partition.name_id
-                assert partition.partition_title
-                assert partition.fstype
-                assert partition.status
-                if partition.is_mounted:
-                    assert partition.share_name
-                if partition.is_supported:
-                    assert partition.filesystem
-                    assert partition.partition_size_used(True)
-                    assert partition.partition_size_total(True)
+        assert len(devices) == 9
+        assert devices == snapshot
 
         device = dsm_7.external_usb.get_device("usb1")
         assert device.device_name == "USB Disk 1"
