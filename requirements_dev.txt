@@ -18,3 +18,4 @@ pylint==3.3.7
 pytest-asyncio==0.26.0
 pytest==8.3.5
 reorder-python-imports==3.15.0
+syrupy

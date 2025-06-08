@@ -30,7 +30,7 @@ ExternalUsbDeviceDataType = TypedDict(
         "formatable": bool,
         "partitions": "dict[str, SynoUSBStoragePartition]",
         "producer": str,
-        "product": str,
+        "product": "str | None",
         "progress": str,
         "status": str,
         "total_size_mb": int,
@@ -114,9 +114,9 @@ class SynoCoreExternalUSBDevice:
         return self._data["progress"]
 
     @property
-    def device_product_name(self) -> str:
+    def device_product_name(self) -> str | None:
         """The product name of the external USB storage device."""
-        return self._data["product"]
+        return self._data.get("product")
 
     @property
     def device_manufacturer(self) -> str:
