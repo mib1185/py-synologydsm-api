@@ -1,5 +1,6 @@
 aiohttp
 aiofiles
+dacite
 types-aiofiles
 awesomeversion
 black==25.1.0

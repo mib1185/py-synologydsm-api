@@ -22,9 +22,8 @@ from aiohttp import (
 from yarl import URL
 
 from .api import SynoBaseApi
-from .api.core.external_usb import SynoCoreExternalUSB
-
 from .api.audio_station import SynoAudioStation, SynoAudioStationApi
+from .api.core.external_usb import SynoCoreExternalUSB
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
 from .api.core.system import SynoCoreSystem

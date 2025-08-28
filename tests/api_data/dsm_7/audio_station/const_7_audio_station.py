@@ -15,7 +15,7 @@ DSM_7_AUDIO_STATION_INFOS = {
             "remote_player": True,
             "sharing": True,
             "tag_edit": True,
-            "upnp_browse": True
+            "upnp_browse": True,
         },
         "remote_controller": False,
         "same_subnet": True,
@@ -25,7 +25,7 @@ DSM_7_AUDIO_STATION_INFOS = {
             "disable_upnp": False,
             "enable_download": False,
             "prefer_using_html5": True,
-            "transcode_to_mp3": True
+            "transcode_to_mp3": True,
         },
         "sid": "mySid",
         "support_bluetooth": False,
@@ -33,9 +33,9 @@ DSM_7_AUDIO_STATION_INFOS = {
         "support_virtual_library": True,
         "transcode_capability": ["wav", "mp3"],
         "version": 5068,
-        "version_string": "7.0.0-5068"
+        "version_string": "7.0.0-5068",
     },
-    "success": True
+    "success": True,
 }
 
 DSM_7_AUDIO_STATION_PLAYER_LIST = {
@@ -48,7 +48,7 @@ DSM_7_AUDIO_STATION_PLAYER_LIST = {
                 "password_protected": False,
                 "support_seek": True,
                 "support_set_volume": True,
-                "type": "upnp"
+                "type": "upnp",
             },
             {
                 "id": "uuid:bf56262a-d0ae-4e86-b32a-e26d61f6de6e",
@@ -57,7 +57,7 @@ DSM_7_AUDIO_STATION_PLAYER_LIST = {
                 "password_protected": False,
                 "support_seek": True,
                 "support_set_volume": True,
-                "type": "upnp"
+                "type": "upnp",
             },
             {
                 "id": "0006785AC8AE",
@@ -66,7 +66,7 @@ DSM_7_AUDIO_STATION_PLAYER_LIST = {
                 "password_protected": False,
                 "support_seek": True,
                 "support_set_volume": True,
-                "type": "airplay"
+                "type": "airplay",
             },
             {
                 "id": "__SYNO_Multiple_AirPlay__",
@@ -76,20 +76,17 @@ DSM_7_AUDIO_STATION_PLAYER_LIST = {
                 "support_seek": True,
                 "support_set_volume": True,
                 "type": "airplay",
-                "additional": {"subplayer_list": []}
-            }
+                "additional": {"subplayer_list": []},
+            },
         ]
     },
-    "success": True
+    "success": True,
 }
 
 DSM_7_AUDIO_STATION_PLAYER_STATUS = {
     "data": {
         "index": 0,
-        "play_mode": {
-            "repeat": "none",
-            "shuffle": False
-        },
+        "play_mode": {"repeat": "none", "shuffle": False},
         "playlist_timestamp": 1650661485,
         "playlist_total": 20,
         "position": 0,
@@ -100,7 +97,7 @@ DSM_7_AUDIO_STATION_PLAYER_STATUS = {
                     "channel": 1,
                     "duration": 295,
                     "filesize": 1,
-                    "frequency": 0
+                    "frequency": 0,
                 },
                 "song_tag": {
                     "album": "25",
@@ -111,18 +108,18 @@ DSM_7_AUDIO_STATION_PLAYER_STATUS = {
                     "disc": 1,
                     "genre": "Pop",
                     "track": 1,
-                    "year": 2015
-                }
+                    "year": 2015,
+                },
             },
             "id": "music_20508",
             "path": "music/Adele/25 [2015]/CD1 - 01 - Hello.mp3",
             "title": "Hello",
-            "type": "file"
+            "type": "file",
         },
         "state": "transitioning",
         "stop_index": 0,
         "subplayer_volume": None,
-        "volume": 42
+        "volume": 42,
     },
-    "success": True
+    "success": True,
 }

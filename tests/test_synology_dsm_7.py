@@ -5,6 +5,7 @@ import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from synology_dsm.api.audio_station import SynoAudioStation
+from synology_dsm.api.audio_station.models import PlaylistStatus
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
@@ -444,7 +445,7 @@ class TestSynologyDSM7:
         assert player is not None
         assert player.player.name == "Denon AVR-X2700H (DLNA)"
 
-        assert player.status.state == "transitioning"
+        assert player.status.state == PlaylistStatus.transitioning
         assert player.status.stop_index == 0
         assert player.status.subplayer_volume is None
         assert player.status.volume == 42
@@ -461,7 +462,10 @@ class TestSynologyDSM7:
         assert player.status.song.additional.song_tag.album_artist == "Adele"
         assert player.status.song.additional.song_tag.artist == "Adele"
         assert player.status.song.additional.song_tag.comment == "Some random comment"
-        assert player.status.song.additional.song_tag.composer == "Adele Adkins & Greg Kurstin"
+        assert (
+            player.status.song.additional.song_tag.composer
+            == "Adele Adkins & Greg Kurstin"
+        )
         assert player.status.song.additional.song_tag.disc == 1
         assert player.status.song.additional.song_tag.genre == "Pop"
         assert player.status.song.additional.song_tag.track == 1
