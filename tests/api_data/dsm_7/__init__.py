@@ -1,5 +1,11 @@
 """DSM 7 datas."""
 
+from .audio_station.const_7_audio_station import (
+    DSM_7_AUDIO_STATION_INFOS,
+    DSM_7_AUDIO_STATION_PLAYER_LIST,
+    DSM_7_AUDIO_STATION_PLAYER_STATUS
+)
+
 from .const_7_api_auth import (
     DSM_7_AUTH_LOGIN,
     DSM_7_AUTH_LOGIN_2SA,
@@ -26,6 +32,9 @@ from .photos.const_7_photo import (
 from .virtual_machine_manager.const_7_vmm import DSM_7_VMM_GUESTS
 
 __all__ = [
+    "DSM_7_AUDIO_STATION_INFOS",
+    "DSM_7_AUDIO_STATION_PLAYER_LIST",
+    "DSM_7_AUDIO_STATION_PLAYER_STATUS",
     "DSM_7_AUTH_LOGIN",
     "DSM_7_AUTH_LOGIN_2SA",
     "DSM_7_AUTH_LOGIN_2SA_OTP",

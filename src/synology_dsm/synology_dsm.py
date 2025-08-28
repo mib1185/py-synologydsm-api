@@ -23,6 +23,8 @@ from yarl import URL
 
 from .api import SynoBaseApi
 from .api.core.external_usb import SynoCoreExternalUSB
+
+from .api.audio_station import SynoAudioStation, SynoAudioStationApi
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
 from .api.core.system import SynoCoreSystem
@@ -102,6 +104,7 @@ class SynologyDSM:
         self._apis: dict[str, ApiType] = {
             "SYNO.API.Info": {"maxVersion": 1, "minVersion": 1, "path": "query.cgi"}
         }
+        self._audio: SynoAudioStation | None = None
         self._download: SynoDownloadStation | None = None
         self._external_usb: SynoCoreExternalUSB | None = None
         self._file: SynoFileStation | None = None
@@ -470,6 +473,9 @@ class SynologyDSM:
         """Updates the various instanced modules."""
         update_methods: list[Coroutine[Any, Any, None]] = []
 
+        if self._audio:
+            update_methods.append(self._audio.update())
+
         if self._download:
             update_methods.append(self._download.update())
 
@@ -516,6 +522,9 @@ class SynologyDSM:
             if hasattr(self, "_" + api):
                 setattr(self, "_" + api, None)
                 return True
+            if api == SynoAudioStationApi.API_KEY:
+                self._audio = None
+                return True
             if api == SynoCoreExternalUSB.API_KEY:
                 self._external_usb = None
                 return True
@@ -552,6 +561,9 @@ class SynologyDSM:
             if api == SynoVirtualMachineManager.API_KEY:
                 self._vmm = None
                 return True
+        if isinstance(api, SynoAudioStation):
+            self._audio = None
+            return True
         if isinstance(api, SynoCoreExternalUSB):
             self._external_usb = None
             return True
@@ -589,6 +601,13 @@ class SynologyDSM:
             self._vmm = None
             return True
         return False
+
+    @property
+    def audio_station(self) -> SynoAudioStation:
+        """Gets NAS AudioStation."""
+        if not self._audio:
+            self._audio = SynoAudioStation(self)
+        return self._audio
 
     @property
     def download_station(self) -> SynoDownloadStation:

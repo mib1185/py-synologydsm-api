@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 import aiohttp
 
 from synology_dsm import SynologyDSM
+from synology_dsm.api.audio_station import SynoAudioStation, SynoAudioStationApi
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
@@ -80,6 +81,9 @@ from .api_data.dsm_7 import (
     DSM_7_FOTO_ITEMS_SHARED_ALBUM,
     DSM_7_FOTO_SHARED_ITEMS,
     DSM_7_VMM_GUESTS,
+    DSM_7_AUDIO_STATION_INFOS,
+    DSM_7_AUDIO_STATION_PLAYER_LIST,
+    DSM_7_AUDIO_STATION_PLAYER_STATUS,
 )
 from .const import (
     DEVICE_TOKEN,
@@ -131,9 +135,11 @@ API_SWITCHER = {
         "FOTO_ALBUMS": DSM_7_FOTO_ALBUMS,
         "FOTO_ITEMS": DSM_7_FOTO_ITEMS,
         "VMM_GUESTS": DSM_7_VMM_GUESTS,
+        "AUDIO_STATION_INFOS": DSM_7_AUDIO_STATION_INFOS,
+        "AUDIO_STATION_PLAYER_LIST": DSM_7_AUDIO_STATION_PLAYER_LIST,
+        "AUDIO_STATION_PLAYER_STATUS": DSM_7_AUDIO_STATION_PLAYER_STATUS,
     },
 }
-
 
 VALID_HOST = "nas.mywebsite.me"
 VALID_PORT = "5001"
@@ -153,16 +159,16 @@ class SynologyDSMMock(SynologyDSM):
     API_URI = "api="
 
     def __init__(
-        self,
-        session,
-        dsm_ip,
-        dsm_port,
-        username,
-        password,
-        use_https=False,
-        timeout=10,
-        device_token=None,
-        debugmode=False,
+            self,
+            session,
+            dsm_ip,
+            dsm_port,
+            username,
+            password,
+            use_https=False,
+            timeout=10,
+            device_token=None,
+            debugmode=False,
     ):
         """Constructor method."""
         SynologyDSM.__init__(
@@ -185,7 +191,7 @@ class SynologyDSMMock(SynologyDSM):
         self.usb_device_connected = True
 
     async def _execute_request(
-        self, method, url, params, raw_response_content, **kwargs
+            self, method, url, params, raw_response_content, **kwargs
     ):
         url = str(url)
         url += urlencode(params or {})
@@ -309,6 +315,14 @@ class SynologyDSMMock(SynologyDSM):
                     return DSM_7_FOTO_ITEMS_SHARED_ALBUM
                 return DSM_7_FOTO_ITEMS
 
+            if SynoAudioStationApi.INFO_API_KEY in url:
+                return DSM_7_AUDIO_STATION_INFOS
+            if SynoAudioStationApi.REMOTE_PLAYER_STATUS_KEY in url:
+                return DSM_7_AUDIO_STATION_PLAYER_STATUS
+            if SynoAudioStationApi.REMOTE_PLAYER_KEY in url:
+                return DSM_7_AUDIO_STATION_PLAYER_LIST
+
+
             if SynoPhotos.SEARCH_API_KEY in url:
                 return DSM_7_FOTO_ITEMS_SEARCHED
 
@@ -341,16 +355,16 @@ class SynologyDSMMock(SynologyDSM):
                     return DSM_6_SURVEILLANCE_STATION_HOME_MODE_SWITCH
 
             if (
-                "SYNO.FileStation.Upload" in url
-                and "upload" in url
-                and "file_already_exists" in kwargs["files"]["file"]
+                    "SYNO.FileStation.Upload" in url
+                    and "upload" in url
+                    and "file_already_exists" in kwargs["files"]["file"]
             ):
                 return {"error": {"code": 1805}, "success": False}
 
             if (
-                "SYNO.DownloadStation2.Task" in url
-                and "create" in url
-                and "test_not_exists" in url
+                    "SYNO.DownloadStation2.Task" in url
+                    and "create" in url
+                    and "test_not_exists" in url
             ):
                 return {"error": {"code": 408}, "success": False}
 
