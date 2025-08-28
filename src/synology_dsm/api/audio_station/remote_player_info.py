@@ -5,7 +5,6 @@ from synology_dsm.api.audio_station.models import RepeatMode, ShuffleMode, Remot
     Playlist, RemotePlayerStatus
 
 
-
 class RemotePlayerInfo:
     """Model used by library to store info about a remote player."""
 

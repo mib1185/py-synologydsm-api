@@ -9,6 +9,7 @@ from .. import SynoBaseApi
 def comma_join(value) -> str:
     return ",".join(value) if isinstance(value, list) else value
 
+
 class SynoAudioStationApi(SynoBaseApi):
     API_KEY = "SYNO.AudioStation.*"
     INFO_API_KEY = "SYNO.AudioStation.Info"
