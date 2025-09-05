@@ -1,1 +1,1 @@
-"""Synology Storage API models."""
+"""Synology Audio Station API models."""
