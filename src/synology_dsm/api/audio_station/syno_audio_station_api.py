@@ -90,7 +90,7 @@ class SynoAudioStationApi(SynoBaseApi):
         if current is None:
             return False
 
-        if playlist_queue_mode == QueueMode.replace:
+        if playlist_queue_mode == QueueMode.REPLACE:
             base_opts["offset"] = 0
             base_opts["limit"] = current.total
             base_opts["keep_shuffle_order"] = "false"
@@ -110,7 +110,7 @@ class SynoAudioStationApi(SynoBaseApi):
         """Clear current playlist."""
         opts = {"updated_index": -1}
 
-        return await self.__remote_update_playlist(player_id, QueueMode.replace, opts)
+        return await self.__remote_update_playlist(player_id, QueueMode.REPLACE, opts)
 
     async def remote_player_play_songs(
         self,
@@ -122,7 +122,7 @@ class SynoAudioStationApi(SynoBaseApi):
         """Play songs using their ids."""
         opts = {
             "songs": comma_join(song_ids),
-            "library": LibraryShareType.shared.value,
+            "library": LibraryShareType.SHARED.value,
             "play": play_directly,
         }
 
@@ -147,7 +147,7 @@ class SynoAudioStationApi(SynoBaseApi):
         }
 
         opts = {
-            "library": LibraryShareType.shared.value,
+            "library": LibraryShareType.SHARED.value,
             "play": play_directly,
             "containers_json": json.dumps([container_json]),
         }
@@ -173,7 +173,7 @@ class SynoAudioStationApi(SynoBaseApi):
         }
 
         opts = {
-            "library": LibraryShareType.shared.value,
+            "library": LibraryShareType.SHARED.value,
             "play": play_directly,
             "containers_json": json.dumps([container_json]),
         }
@@ -189,7 +189,7 @@ class SynoAudioStationApi(SynoBaseApi):
             "control",
             data={
                 "id": player_id,
-                "action": RemotePlayerAction.play.value,
+                "action": RemotePlayerAction.PLAY.value,
                 "value": position_in_playlist,
             },
         )

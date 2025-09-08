@@ -564,13 +564,15 @@ if __name__ == "__main__":
 import asyncio
 import aiohttp
 from synology_dsm import SynologyDSM
-from synology_dsm.api.audio_station import SongSortMode, RemotePlayerAction, ShuffleMode, RepeatMode
+from synology_dsm.api.audio_station import SongSortMode, RemotePlayerAction, 
+ShuffleMode, RepeatMode
 from synology_dsm.api.audio_station.models.queue_mode import QueueMode
+
 
 async def main():
     print("Creating Valid API")
     async with aiohttp.ClientSession(
-        connector=aiohttp.TCPConnector(verify_ssl=False)
+            connector=aiohttp.TCPConnector(verify_ssl=False)
     ) as session:
         await do(session)
 
@@ -582,13 +584,15 @@ async def do(session: aiohttp.ClientSession):
     await api.audio_station.update()
 
     for remote_player in api.audio_station.remote_players:
-        print("Player name:     : " + str(remote_player.player.name))
+        print("Player name:     : " + str(remote_player.player.NAME))
         print("Player id:       : " + str(remote_player.player.id))
         if remote_player.status.song is None:
             print("Song playing     : None")
         else:
-            print("Song playing     : " + str(remote_player.status.song.additional.song_tag.artist) +
-                  " - " + str(remote_player.status.song.additional.song_tag.album) +
+            print("Song playing     : " + str(
+                remote_player.status.song.additional.song_tag.artist) +
+                  " - " + str(
+                remote_player.status.song.additional.song_tag.ALBUM) +
                   " - " + str(remote_player.status.song.title))
         print("--")
 
@@ -604,31 +608,33 @@ async def do(session: aiohttp.ClientSession):
     print("--")
 
     for index, song in enumerate(playlist.songs):
-        print(str(index)+" - "+str(song.additional.song_tag.artist) + " - "+str(song.title))
+        print(str(index) + " - " + str(
+            song.additional.song_tag.artist) + " - " + str(song.title))
 
     # Clear playlist
     player.clear_playlist()
 
     # Play all songs of an artist
-    player.play_artist("Artist", SongSortMode.album, QueueMode.enqueue)
+    player.play_artist("Artist", SongSortMode.ALBUM, QueueMode.ENQUEUE)
 
     # Play an album
-    player.play_album("Album", "Artist", SongSortMode.track, QueueMode.enqueue)
+    player.play_album("Album", "Artist", SongSortMode.TRACK, QueueMode.ENQUEUE)
 
     # Got to track in playlist
     player.jump_to_song(10)
 
     # Interact with queue (play, pause, stop, next, prev)
-    player.control(RemotePlayerAction.pause)
+    player.control(RemotePlayerAction.PAUSE)
 
     # Set volume (from 0 to 100)
     player.volume(50)
 
     # Set shuffle mode
-    player.shuffle(ShuffleMode.none)
+    player.shuffle(ShuffleMode.NONE)
 
     # Set repeat mode (all, none, one)
-    player.repeat(RepeatMode.all)
+    player.repeat(RepeatMode.ALL)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

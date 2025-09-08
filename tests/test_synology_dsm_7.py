@@ -436,16 +436,17 @@ class TestSynologyDSM7:
         assert await dsm_7.login()
         assert dsm_7.audio_station
         await dsm_7.audio_station.update()
-        players = dsm_7.audio_station.remote_players
+        players = dsm_7.audio_station.players
 
         assert len(players) == 4
 
         # get first player
-        player = dsm_7.audio_station.get_remote_player(players[0].player.id)
+        player = await dsm_7.audio_station.get_remote_player(players[0].id)
         assert player is not None
+        await player.update()
         assert player.player.name == "Denon AVR-X2700H (DLNA)"
 
-        assert player.status.state == PlaylistStatus.transitioning
+        assert player.status.state == PlaylistStatus.TRANSITIONING
         assert player.status.stop_index == 0
         assert player.status.subplayer_volume is None
         assert player.status.volume == 42

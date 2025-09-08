@@ -1,64 +1,80 @@
 """Data models for Synology AudioStation Module."""
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum, IntEnum
 from typing import Optional
 
 
-class RemotePlayerAction(Enum):
+class RemotePlayerAction(StrEnum):
     """Representation of a Synology AudioStation remote player action."""
 
-    play = "play"
-    pause = "pause"
-    stop = "stop"
-    next = "next"
-    prev = "prev"
+    PLAY = "play"
+    PAUSE = "pause"
+    STOP = "stop"
+    NEXT = "next"
+    PREV = "prev"
 
 
-class LibraryShareType(Enum):
+class LibraryShareType(StrEnum):
     """Representation of a Synology AudioStation Music Library Share Type."""
 
-    personal = "personal"
-    shared = "shared"
+    PERSONAL = "personal"
+    SHARED = "shared"
 
 
-class PlaylistStatus(Enum):
-    """Representation of a Synology AudioStation Playlist current status."""
-
-    transitioning = "transitioning"
-    playing = "playing"
-    stopped = "stopped"
-    pause = "pause"
-
-
-class QueueMode(Enum):
-    """Internal Enum, indicates if songs should be added to queue or replace."""
-
-    enqueue = "enqueue"
-    replace = "replace"
-
-
-class RepeatMode(Enum):
-    """Representation of a Synology AudioStation Playlist repeat mode."""
-
-    all = "all"
-    none = "none"
-    one = "one"
-
-
-class ShuffleMode(Enum):
+class PlaylistShuffle(IntEnum):
     """Representation of a Synology AudioStation Playlist shuffle mode."""
 
-    auto = "auto"
-    none = "none"
+    AUTO = 1
+    NONE = 0
 
 
-class SongSortMode(Enum):
+class PlaylistStatus(StrEnum):
+    """Representation of a Synology AudioStation Playlist current status."""
+
+    TRANSITIONING = "transitioning"
+    PLAYING = "playing"
+    STOPPED = "stopped"
+    PAUSE = "pause"
+    NONE = "none"
+
+
+class QueueMode(StrEnum):
+    """Internal Enum, indicates if songs should be added to queue or replace."""
+
+    ENQUEUE = "enqueue"
+    REPLACE = "replace"
+
+
+class RepeatMode(StrEnum):
+    """Representation of a Synology AudioStation Playlist repeat mode."""
+
+    ALL = "all"
+    ONE = "one"
+    NORMAL = "normal"
+    NONE = "none"
+
+
+class ShuffleMode(StrEnum):
+    """Representation of a Synology AudioStation Playlist shuffle mode."""
+
+    AUTO = "auto"
+    NONE = "none"
+
+
+class SongSortMode(StrEnum):
     """Representation of a Synology AudioStation Playlist track sort mode."""
 
-    track = "track"
-    album = "album"
-    name = "name"
+    TRACK = "track"
+    ALBUM = "album"
+    NAME = "name"
+
+
+class PlayerType(StrEnum):
+    """Representation of a Synology AudioStation Playlist player type."""
+
+    UPNP = "upnp"
+    AIRPLAY = "airplay"
 
 
 @dataclass
@@ -79,7 +95,7 @@ class Player:
     password_protected: bool
     support_seek: bool
     support_set_volume: bool
-    type: str
+    type: PlayerType
 
 
 @dataclass
@@ -188,8 +204,8 @@ class Playlist:
 
     songs: list[Song]
     current: int
-    mode: str
-    shuffle: bool
+    mode: RepeatMode
+    shuffle: int
     timestamp: int
     total: int
 

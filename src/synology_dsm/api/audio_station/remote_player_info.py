@@ -44,9 +44,7 @@ class RemotePlayerInfo:
 
     async def clear_playlist(self) -> bool:
         """Clear current playlist."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_clear_playlist(self._player.id)
-        )
+        return await self._api.remote_player_clear_playlist(self._player.id)
 
     async def play_songs(
         self,
@@ -55,10 +53,8 @@ class RemotePlayerInfo:
         play_directly: bool = True,
     ) -> bool:
         """Play songs using their ids."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_play_songs(
-                self._player.id, song_ids, playlist_playlist_queue_mode, play_directly
-            )
+        return await self._api.remote_player_play_songs(
+            self._player.id, song_ids, playlist_playlist_queue_mode, play_directly
         )
 
     async def play_artist(
@@ -69,10 +65,8 @@ class RemotePlayerInfo:
         play_directly: bool = True,
     ) -> bool:
         """Play all song of an artist."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_play_artist(
-                self._player.id, artist, sort, playlist_queue_mode, play_directly
-            )
+        return await self._api.remote_player_play_artist(
+            self._player.id, artist, sort, playlist_queue_mode, play_directly
         )
 
     async def play_album(
@@ -84,51 +78,33 @@ class RemotePlayerInfo:
         play_directly: bool = True,
     ) -> bool:
         """Play an album using album name and album artist."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_play_album(
-                self._player.id,
-                album_name,
-                album_artist,
-                sort,
-                playlist_queue_mode,
-                play_directly,
-            )
+        return await self._api.remote_player_play_album(
+            self._player.id,
+            album_name,
+            album_artist,
+            sort,
+            playlist_queue_mode,
+            play_directly,
         )
 
     async def jump_to_song(self, position_in_playlist: int) -> bool:
         """Change player current song to index in playlist."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_jump_to_song(
-                self._player.id, position_in_playlist
-            )
+        return await self._api.remote_player_jump_to_song(
+            self._player.id, position_in_playlist
         )
 
     async def control(self, action: RemotePlayerAction) -> bool:
         """Change player current playing status."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_control(self._player.id, action)
-        )
+        return await self._api.remote_player_control(self._player.id, action)
 
     async def volume(self, volume: int) -> bool:
         """Change player current volume."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_volume(self._player.id, volume)
-        )
+        return await self._api.remote_player_volume(self._player.id, volume)
 
     async def shuffle(self, shuffle: ShuffleMode) -> bool:
         """Change player current shuffle mode."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_shuffle(self._player.id, shuffle)
-        )
+        return await self._api.remote_player_shuffle(self._player.id, shuffle)
 
     async def repeat(self, repeat: RepeatMode) -> bool:
         """Change player current repeat mode."""
-        return await self.__return_success_and_update(
-            await self._api.remote_player_repeat(self._player.id, repeat)
-        )
-
-    async def __return_success_and_update(self, success: bool) -> bool:
-        """Update status after successfull api call."""
-        if success:
-            await self.update()
-        return success
+        return await self._api.remote_player_repeat(self._player.id, repeat)
