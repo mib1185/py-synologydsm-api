@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import datetime
+
 from synology_dsm.api import SynoBaseApi
 
 from .model import SynoPhotosAlbum, SynoPhotosItem
@@ -19,6 +21,153 @@ class SynoPhotos(SynoBaseApi):
     THUMBNAIL_API_KEY = "SYNO.Foto.Thumbnail"
     THUMBNAIL_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Thumbnail"
     BROWSE_ITEM_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Browse.Item"
+
+    async def get_memories_full(
+        self,
+        min_year: int = 1990,
+        excluded_folders: list[int] | None = None,
+        excluded_extensions: tuple[str, ...] = (".raw", ".rw1", ".rw2"),
+        excluded_persons: list[int] | None = None,
+    ) -> list[dict] | None:
+        """Get memories with additional information.
+
+        A memory is an item (photo/video) recorded the same day (day and month)
+        but in the previous years. Compared to get_memories(), this function
+        returns additional information, e.g. recognized persons, exif data,
+        etc.
+
+        Arguments:
+            min_year: earliest year considered.
+            excluded_folders: folder_ids to exclude.
+            excluded_extensions: file extensions to exclude.
+            excluded_persons: person_ids to exclude.
+
+        Returns:
+            Memories with the most recent ones first. Within the same year,
+            memories are sorted by descending recording time (i.e. from morning
+            to evening). Duplicates (based on file name, file size, and
+            recording time) are removed from result.
+        """
+        if excluded_folders is None:
+            excluded_folders = []
+        if excluded_persons is None:
+            excluded_persons = []
+
+        all_photos = []
+        limit = 1000
+
+        current_date = datetime.date.today()
+        current_day = current_date.day
+        current_month = current_date.month
+        current_year = current_date.year
+
+        for i in range(current_year, min_year - 1, -1):
+            year_photos: list[dict] = []
+            has_more = True
+            offset = 0
+
+            start_date = datetime.datetime(
+                i, current_month, current_day, 0, 0, 0, tzinfo=datetime.timezone.utc
+            ).timestamp()
+            end_date = datetime.datetime(
+                i, current_month, current_day, 23, 59, 59, tzinfo=datetime.timezone.utc
+            ).timestamp()
+
+            while has_more:
+                raw_data = await self._dsm.get(
+                    self.BROWSE_ITEM_API_KEY,
+                    method="list_with_filter",
+                    params={
+                        "version": 2,
+                        "offset": offset,
+                        "limit": limit,
+                        "time": (
+                            f'[{{"start_time":{start_date:.0f},'
+                            f'"end_time":{end_date:.0f}}}]'
+                        ),
+                        "additional": (
+                            '["thumbnail", "resolution", "exif", "person", ',
+                            '"address","gps"]',
+                        ),
+                    },
+                )
+                if (
+                    not isinstance(raw_data, dict)
+                    or (data := raw_data.get("data")) is None
+                ):
+                    has_more = False
+                    continue
+                if "list" in data and len(data["list"]) > 0:
+                    year_photos += data["list"]
+                    offset += limit
+                else:
+                    has_more = False
+
+            # sort by time photo was taken
+            year_photos.sort(key=lambda x: x["time"])
+
+            # basic duplicate check
+            final_year_photos = []
+            seen: set[tuple] = set()
+            for photo in year_photos:
+                key = (photo["filename"], photo["filesize"], photo["time"])
+                if (
+                    key not in seen  # exclude duplicates
+                    # exclude based on folder
+                    and photo["folder_id"] not in excluded_folders
+                    and not photo["filename"].lower()
+                    # exclude based on extension
+                    .endswith(excluded_extensions)
+                    and not any(
+                        sub.get("id") in excluded_persons
+                        for sub in photo["additional"]["person"]
+                    )
+                ):  # exclude based on person(s)
+                    final_year_photos.append(photo)
+                    seen.add(key)
+
+            if len(final_year_photos) == 0:
+                continue
+
+            all_photos.extend(final_year_photos)
+
+        return all_photos
+
+    async def get_memories(
+        self,
+        min_year: int = 1990,
+        excluded_folders: list[int] | None = None,
+        excluded_extensions: tuple[str, ...] = (".raw", ".rw1", ".rw2"),
+        excluded_persons: list[int] | None = None,
+    ) -> list[SynoPhotosItem] | None:
+        """Get memories with additional information.
+
+        A memory is an item (photo/video) recorded the same day (day and month)
+        but in the previous years. Compared to get_memories(), this function
+        returns additional information, e.g. recognized persons, exif data,
+        etc.
+
+        Arguments:
+            min_year: earliest year considered.
+            excluded_folders: folder_ids to exclude.
+            excluded_extensions: file extensions to exclude.
+            excluded_persons: person_ids to exclude.
+
+        Returns:
+            Memories with the most recent ones first. Within the same year,
+            memories are sorted by descending recording time (i.e. from morning
+            to evening). Duplicates (based on file name, file size, and
+            recording time) are removed from result.
+        """
+        all_photos: list[SynoPhotosItem] = []
+        photos = await self.get_memories_full(
+            min_year, excluded_folders, excluded_extensions, excluded_persons
+        )
+        items = self._raw_data_to_items({"data": {"list": photos}})
+        if items is not None:
+            all_photos.extend(items)
+
+        return all_photos
 
     async def get_albums(
         self, offset: int = 0, limit: int = 100
