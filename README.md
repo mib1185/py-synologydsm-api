@@ -329,6 +329,13 @@ async def do(session: aiohttp.ClientSession):
         with open(item.file_name, "wb") as fh:
             fh.write(await api.photos.download_item(item))
 
+    # collect memories and download them
+    items = await api.photos.get_memories()
+    for item in items:
+        with open(item.file_name, "wb") as fh:
+            fh.write(await api.photos.download_item(item))
+
+
 if __name__ == "__main__":
     asyncio.run(main())
 ```
