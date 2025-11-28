@@ -297,6 +297,51 @@ class TestSynologyDSM7:
         assert items[2].file_name == "shared_3.jpg"
         assert items[2].thumbnail_cache_key == "96_1628323786"
 
+        items = await dsm_7.photos.get_memories()
+        assert items
+        assert len(items) == 4
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184227
+        assert items[1].file_name == "DSC08722.JPG"
+        assert items[1].item_type == "photo"
+        assert items[2].file_name == "Video.MP4"
+        assert items[2].item_type == "video"
+        assert items[3].file_name == "P0001.JPG"
+
+        items = await dsm_7.photos.get_memories(excluded_extensions=(".mp4", ".rw1"))
+        assert items
+        assert len(items) == 3
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184227
+        assert items[1].file_name == "DSC08722.JPG"
+        assert items[1].item_type == "photo"
+        assert items[2].file_name == "P0001.JPG"
+
+        items = await dsm_7.photos.get_memories(excluded_folders=[3538, 50])
+        assert items
+        assert len(items) == 1
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184500
+
+        items = await dsm_7.photos.get_memories(excluded_persons=[105, 293])
+        assert items
+        assert len(items) == 3
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184227
+        assert items[1].file_name == "Video.MP4"
+        assert items[1].item_type == "video"
+        assert items[2].file_name == "P0001.JPG"
+
+        items = await dsm_7.photos.get_memories(min_year=1999)
+        assert items
+        assert len(items) == 3
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184227
+        assert items[1].file_name == "DSC08722.JPG"
+        assert items[1].item_type == "photo"
+        assert items[2].file_name == "Video.MP4"
+        assert items[2].item_type == "video"
+
     @pytest.mark.asyncio
     async def test_file_station(self, dsm_7):
         """Test File Station."""

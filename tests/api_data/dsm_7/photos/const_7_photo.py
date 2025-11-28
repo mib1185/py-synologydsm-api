@@ -273,3 +273,292 @@ DSM_7_FOTO_ITEMS_SEARCHED = {
         ]
     },
 }
+
+DSM_7_FOTO_MEMORIES = {
+    "success": True,
+    "data": {
+        "list": [
+            {
+                "id": 184226,
+                "filename": "Video.MP4",
+                "filesize": 128935585,
+                "time": 1709467834,
+                "indexed_time": 1709753187654,
+                "owner_user_id": 2,
+                "folder_id": 3538,
+                "type": "video",
+                "additional": {
+                    "person": [],
+                    "exif": {
+                        "aperture": "",
+                        "camera": "",
+                        "exposure_time": "",
+                        "focal_length": "",
+                        "iso": "",
+                        "lens": "",
+                    },
+                    "resolution": {"width": 1920, "height": 1080},
+                    "thumbnail": {
+                        "m": "ame_defect",
+                        "xl": "ame_defect",
+                        "preview": "broken",
+                        "sm": "ame_defect",
+                        "cache_key": "184226_1709749239",
+                        "unit_id": 184226,
+                    },
+                    "orientation": 1,
+                    "orientation_original": 1,
+                },
+            },
+            {
+                "id": 184169,
+                "filename": "DSC08722.JPG",
+                "filesize": 12435915,
+                "time": 1709467634,
+                "indexed_time": 1709752974232,
+                "owner_user_id": 2,
+                "folder_id": 3538,
+                "type": "photo",
+                "additional": {
+                    "person": [
+                        {
+                            "id": 104,
+                            "name": "PersonName104",
+                            "item_count": 1,
+                            "show": True,
+                            "additional": {
+                                "thumbnail": {"cache_key": "110959_1672225218"}
+                            },
+                        },
+                        {
+                            "id": 105,
+                            "name": "PersonName105",
+                            "item_count": 1,
+                            "show": True,
+                            "additional": {
+                                "thumbnail": {"cache_key": "110494_1672224530"}
+                            },
+                        },
+                        {
+                            "id": 293,
+                            "name": "PersonName293",
+                            "item_count": 1,
+                            "show": True,
+                            "additional": {
+                                "thumbnail": {"cache_key": "207572_1760712037"}
+                            },
+                        },
+                    ],
+                    "exif": {
+                        "aperture": "F2.8",
+                        "camera": "CameraName",
+                        "exposure_time": "1/500 s",
+                        "focal_length": "22.4 mm",
+                        "iso": "125",
+                        "lens": "",
+                    },
+                    "resolution": {"width": 5472, "height": 3648},
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "184169_1709749248",
+                        "unit_id": 184169,
+                    },
+                    "orientation": 1,
+                    "orientation_original": 1,
+                },
+            },
+            {
+                "id": 184168,
+                "filename": "DSC08722.rw1",
+                "filesize": 12435915,
+                "time": 1709467634,
+                "indexed_time": 1709752974232,
+                "owner_user_id": 2,
+                "folder_id": 3538,
+                "type": "photo",
+                "additional": {
+                    "person": [
+                        {
+                            "id": 104,
+                            "name": "PersonName104",
+                            "item_count": 1,
+                            "show": True,
+                            "additional": {
+                                "thumbnail": {"cache_key": "110959_1672225218"}
+                            },
+                        },
+                        {
+                            "id": 105,
+                            "name": "PersonName105",
+                            "item_count": 1,
+                            "show": True,
+                            "additional": {
+                                "thumbnail": {"cache_key": "110494_1672224530"}
+                            },
+                        },
+                        {
+                            "id": 293,
+                            "name": "PersonName293",
+                            "item_count": 1,
+                            "show": True,
+                            "additional": {
+                                "thumbnail": {"cache_key": "207572_1760712037"}
+                            },
+                        },
+                    ],
+                    "exif": {
+                        "aperture": "F2.8",
+                        "camera": "CameraName",
+                        "exposure_time": "1/500 s",
+                        "focal_length": "22.4 mm",
+                        "iso": "125",
+                        "lens": "",
+                    },
+                    "resolution": {"width": 5472, "height": 3648},
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "184169_1709749248",
+                        "unit_id": 184168,
+                    },
+                    "orientation": 1,
+                    "orientation_original": 1,
+                },
+            },
+            {
+                "id": 184227,
+                "filename": "DSC08721.JPG",
+                "filesize": 12933174,
+                "time": 1709467629,
+                "indexed_time": 1709753188707,
+                "owner_user_id": 2,
+                "folder_id": 3538,
+                "type": "photo",
+                "additional": {
+                    "person": [
+                        {
+                            "id": 104,
+                            "name": "PersonName104",
+                            "item_count": 1,
+                            "show": True,
+                            "additional": {
+                                "thumbnail": {"cache_key": "110959_1672225218"}
+                            },
+                        }
+                    ],
+                    "exif": {
+                        "aperture": "F4",
+                        "camera": "CameraName",
+                        "exposure_time": "1/320 s",
+                        "focal_length": "14.3 mm",
+                        "iso": "125",
+                        "lens": "",
+                    },
+                    "resolution": {"width": 5472, "height": 3648},
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "184227_1709749256",
+                        "unit_id": 184227,
+                    },
+                    "orientation": 1,
+                    "orientation_original": 1,
+                },
+            },
+            {
+                "id": 184500,
+                "filename": "DSC08721.JPG",
+                "filesize": 12933174,
+                "time": 1709467629,
+                "indexed_time": 1709753188707,
+                "owner_user_id": 2,
+                "folder_id": 3540,
+                "type": "photo",
+                "additional": {
+                    "person": [
+                        {
+                            "id": 104,
+                            "name": "PersonName104",
+                            "item_count": 1,
+                            "show": True,
+                            "additional": {
+                                "thumbnail": {"cache_key": "110959_1672225218"}
+                            },
+                        }
+                    ],
+                    "exif": {
+                        "aperture": "F4",
+                        "camera": "CameraName",
+                        "exposure_time": "1/320 s",
+                        "focal_length": "14.3 mm",
+                        "iso": "125",
+                        "lens": "",
+                    },
+                    "resolution": {"width": 5472, "height": 3648},
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "184500_1709749256",
+                        "unit_id": 184500,
+                    },
+                    "orientation": 1,
+                    "orientation_original": 1,
+                },
+            },
+        ]
+    },
+}
+
+DSM_7_FOTO_MEMORIES_EMPTY = {
+    "success": True,
+    "data": {"list": []},
+}
+
+DSM_7_FOTO_MEMORIES_OLD = {
+    "success": True,
+    "data": {
+        "list": [
+            {
+                "id": 1234,
+                "filename": "P0001.JPG",
+                "filesize": 153498,
+                "time": 900245716,
+                "indexed_time": 900245716,
+                "owner_user_id": 1,
+                "folder_id": 50,
+                "type": "photo",
+                "additional": {
+                    "person": [],
+                    "exif": {
+                        "aperture": "F4",
+                        "camera": "CameraName",
+                        "exposure_time": "1/320 s",
+                        "focal_length": "14.3 mm",
+                        "iso": "125",
+                        "lens": "",
+                    },
+                    "resolution": {"width": 5472, "height": 3648},
+                    "thumbnail": {
+                        "m": "ready",
+                        "xl": "ready",
+                        "preview": "broken",
+                        "sm": "ready",
+                        "cache_key": "184500_1709749256",
+                        "unit_id": 184500,
+                    },
+                    "orientation": 1,
+                    "orientation_original": 1,
+                },
+            }
+        ]
+    },
+}
