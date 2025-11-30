@@ -55,9 +55,7 @@ class SynoPhotos(SynoBaseApi):
 
         all_photos: list[SynoPhotosItem] = []
         limit = 1000
-        additional_items = (
-            '["thumbnail", "resolution", "exif", "person", "address","gps"]'
-        )
+        add = '["thumbnail","resolution","exif","person","address","gps"]'
 
         current_date = datetime.date.today()
         current_day = current_date.day
@@ -88,7 +86,7 @@ class SynoPhotos(SynoBaseApi):
                             f'[{{"start_time":{start_date:.0f},'
                             f'"end_time":{end_date:.0f}}}]'
                         ),
-                        "additional": additional_items,
+                        "additional": add,
                     },
                 )
                 if (
