@@ -22,14 +22,14 @@ class SynoPhotos(SynoBaseApi):
     THUMBNAIL_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Thumbnail"
     BROWSE_ITEM_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Browse.Item"
 
-    async def get_memories_full(
+    async def get_memories(
         self,
         min_year: int = 1990,
         excluded_folders: list[int] | None = None,
         excluded_extensions: tuple[str, ...] = (".raw", ".rw1", ".rw2"),
         excluded_persons: list[int] | None = None,
-    ) -> list[dict] | None:
-        """Get memories with additional information.
+    ) -> list[SynoPhotosItem] | None:
+        """Get memories.
 
         A memory is an item (photo/video) recorded the same day (day and month)
         but in the previous years. Compared to get_memories(), this function
@@ -53,7 +53,7 @@ class SynoPhotos(SynoBaseApi):
         if excluded_persons is None:
             excluded_persons = []
 
-        all_photos = []
+        all_photos: list[SynoPhotosItem] = []
         limit = 1000
 
         current_date = datetime.date.today()
@@ -62,7 +62,7 @@ class SynoPhotos(SynoBaseApi):
         current_year = current_date.year
 
         for i in range(current_year, min_year - 1, -1):
-            year_photos: list[dict] = []
+            year_photos: list[SynoPhotosItem] = []
             has_more = True
             offset = 0
 
@@ -93,79 +93,36 @@ class SynoPhotos(SynoBaseApi):
                 )
                 if (
                     not isinstance(raw_data, dict)
-                    or (data := raw_data.get("data")) is None
+                    or (items := self._raw_data_to_items(raw_data)) is None
+                    or len(items) == 0
                 ):
                     has_more = False
                     continue
-                if "list" in data and len(data["list"]) > 0:
-                    year_photos += data["list"]
-                    offset += limit
-                else:
-                    has_more = False
+                year_photos.extend(items)
+                offset += limit
 
             # sort by time photo was taken
-            year_photos.sort(key=lambda x: x["time"])
+            year_photos.sort(key=lambda x: x.time)
 
             # basic duplicate check
             final_year_photos = []
             seen: set[tuple] = set()
             for photo in year_photos:
-                key = (photo["filename"], photo["filesize"], photo["time"])
+                key = (photo.file_name, photo.file_size, photo.time)
                 if (
-                    key not in seen  # exclude duplicates
-                    # exclude based on folder
-                    and photo["folder_id"] not in excluded_folders
-                    and not photo["filename"].lower()
-                    # exclude based on extension
-                    .endswith(excluded_extensions)
-                    and not any(
-                        sub.get("id") in excluded_persons
-                        for sub in photo["additional"]["person"]
-                    )
-                ):  # exclude based on person(s)
-                    final_year_photos.append(photo)
-                    seen.add(key)
+                    key in seen
+                    or photo.folder_id in excluded_folders
+                    or photo.file_name.lower().endswith(excluded_extensions)
+                    or any(sub.get("id") in excluded_persons for sub in photo.person)
+                ):
+                    continue
+                final_year_photos.append(photo)
+                seen.add(key)
 
             if len(final_year_photos) == 0:
                 continue
 
             all_photos.extend(final_year_photos)
-
-        return all_photos
-
-    async def get_memories(
-        self,
-        min_year: int = 1990,
-        excluded_folders: list[int] | None = None,
-        excluded_extensions: tuple[str, ...] = (".raw", ".rw1", ".rw2"),
-        excluded_persons: list[int] | None = None,
-    ) -> list[SynoPhotosItem] | None:
-        """Get memories with additional information.
-
-        A memory is an item (photo/video) recorded the same day (day and month)
-        but in the previous years. Compared to get_memories(), this function
-        returns additional information, e.g. recognized persons, exif data,
-        etc.
-
-        Arguments:
-            min_year: earliest year considered.
-            excluded_folders: folder_ids to exclude.
-            excluded_extensions: file extensions to exclude.
-            excluded_persons: person_ids to exclude.
-
-        Returns:
-            Memories with the most recent ones first. Within the same year,
-            memories are sorted by descending recording time (i.e. from morning
-            to evening). Duplicates (based on file name, file size, and
-            recording time) are removed from result.
-        """
-        all_photos: list[SynoPhotosItem] = []
-        photos = await self.get_memories_full(
-            min_year, excluded_folders, excluded_extensions, excluded_persons
-        )
-        items = self._raw_data_to_items({"data": {"list": photos}})
-        if items is not None:
-            all_photos.extend(items)
 
         return all_photos
 
@@ -219,6 +176,17 @@ class SynoPhotos(SynoBaseApi):
                     size,
                     item["owner_user_id"] == 0,
                     passphrase,
+                    item["time"],
+                    item["folder_id"],
+                    item.get("additional", {}).get("exif", {}),
+                    item.get("resolution", {}).get("width"),
+                    item.get("resolution", {}).get("height"),
+                    item.get("orientation"),
+                    item.get("orientation_original"),
+                    item.get("additional", {}).get("person"),
+                    item.get("gps", {}).get("latitude"),
+                    item.get("gps", {}).get("longitude"),
+                    item.get("address"),
                 )
             )
         return items
