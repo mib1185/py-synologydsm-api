@@ -32,6 +32,7 @@ from .api.download_station import SynoDownloadStation
 from .api.dsm.information import SynoDSMInformation
 from .api.dsm.network import SynoDSMNetwork
 from .api.file_station import SynoFileStation
+from .api.hyperbackup import SynoHyperBackup
 from .api.photos import SynoPhotos
 from .api.storage.storage import SynoStorage
 from .api.surveillance_station import SynoSurveillanceStation
@@ -105,6 +106,7 @@ class SynologyDSM:
         self._download: SynoDownloadStation | None = None
         self._external_usb: SynoCoreExternalUSB | None = None
         self._file: SynoFileStation | None = None
+        self._hyperbackup: SynoHyperBackup | None = None
         self._information: SynoDSMInformation | None = None
         self._network: SynoDSMNetwork | None = None
         self._photos: SynoPhotos | None = None
@@ -476,6 +478,9 @@ class SynologyDSM:
         if self._external_usb:
             update_methods.append(self._external_usb.update())
 
+        if self._hyperbackup:
+            update_methods.append(self._hyperbackup.update())
+
         if self._information and with_information:
             update_methods.append(self._information.update())
 
@@ -540,6 +545,9 @@ class SynologyDSM:
             if api == SynoDownloadStation.API_KEY:
                 self._download = None
                 return True
+            if api == SynoHyperBackup.API_KEY:
+                self._hyperbackup = None
+                return True
             if api == SynoPhotos.API_KEY:
                 self._photos = None
                 return True
@@ -576,6 +584,9 @@ class SynologyDSM:
         if isinstance(api, SynoDownloadStation):
             self._download = None
             return True
+        if isinstance(api, SynoHyperBackup):
+            self._hyperbackup = None
+            return True
         if isinstance(api, SynoPhotos):
             self._photos = None
             return True
@@ -610,6 +621,13 @@ class SynologyDSM:
         if not self._file:
             self._file = SynoFileStation(self)
         return self._file
+
+    @property
+    def hyperbackup(self) -> SynoHyperBackup:
+        """Gets NAS HyperBackup task information."""
+        if not self._hyperbackup:
+            self._hyperbackup = SynoHyperBackup(self)
+        return self._hyperbackup
 
     @property
     def information(self) -> SynoDSMInformation:

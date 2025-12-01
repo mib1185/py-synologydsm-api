@@ -16,12 +16,18 @@ from synology_dsm.api.download_station import SynoDownloadStation
 from synology_dsm.api.dsm.information import SynoDSMInformation
 from synology_dsm.api.dsm.network import SynoDSMNetwork
 from synology_dsm.api.file_station import SynoFileStation
+from synology_dsm.api.hyperbackup import SynoHyperBackup
 from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.api.virtual_machine_manager import SynoVirtualMachineManager
 from synology_dsm.const import API_AUTH, API_INFO
 from synology_dsm.exceptions import SynologyDSMRequestException
+from tests.api_data.dsm_7.hyperbackup.const_7_hyperbackup import (
+    DSM_7_HYPERBACKUP_LIST,
+    DSM_7_STATUSES,
+    TARGET_DATA_ONLINE,
+)
 
 from .api_data.dsm_5 import (
     DSM_5_API_INFO,
@@ -353,6 +359,18 @@ class SynologyDSMMock(SynologyDSM):
                 and "test_not_exists" in url
             ):
                 return {"error": {"code": 408}, "success": False}
+
+            if params["api"] == SynoHyperBackup.API_KEY:
+                if "method=list" in url:
+                    return DSM_7_HYPERBACKUP_LIST
+                if "method=status" in url:
+                    try:
+                        return DSM_7_STATUSES[params["task_id"]]
+                    except KeyError:
+                        return {"success": False}
+
+            if params["api"] == SynoHyperBackup.API_KEY_TARGET:
+                return TARGET_DATA_ONLINE
 
             return {"success": False}
 
