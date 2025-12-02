@@ -78,6 +78,9 @@ from .api_data.dsm_7 import (
     DSM_7_FOTO_ITEMS,
     DSM_7_FOTO_ITEMS_SEARCHED,
     DSM_7_FOTO_ITEMS_SHARED_ALBUM,
+    DSM_7_FOTO_MEMORIES,
+    DSM_7_FOTO_MEMORIES_EMPTY,
+    DSM_7_FOTO_MEMORIES_OLD,
     DSM_7_FOTO_SHARED_ITEMS,
     DSM_7_VMM_GUESTS,
 )
@@ -307,6 +310,19 @@ class SynologyDSMMock(SynologyDSM):
             if SynoPhotos.BROWSE_ITEM_API_KEY in url:
                 if "passphrase" in url:
                     return DSM_7_FOTO_ITEMS_SHARED_ALBUM
+                if "list_with_filter" in url and "offset=0" in url:
+                    start_index = url.find("start_time%22%3A")
+                    end_index = url.find("%2C%", start_index)
+                    start_time = int(
+                        url[start_index + len("start_time%22%3A") : end_index]
+                    )
+                    if start_time > 1704063600 and start_time <= 1735685999:
+                        return DSM_7_FOTO_MEMORIES
+                    elif start_time > 883609200 and start_time <= 915145199:
+                        return DSM_7_FOTO_MEMORIES_OLD
+                    return DSM_7_FOTO_MEMORIES_EMPTY
+                if "list_with_filter" in url:
+                    return DSM_7_FOTO_MEMORIES_EMPTY
                 return DSM_7_FOTO_ITEMS
 
             if SynoPhotos.SEARCH_API_KEY in url:
