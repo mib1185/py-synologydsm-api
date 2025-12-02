@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 import aiohttp
 
 from synology_dsm import SynologyDSM
+from synology_dsm.api.audio_station import SynoAudioStationApi
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
@@ -65,6 +66,9 @@ from .api_data.dsm_6 import (
 )
 from .api_data.dsm_7 import (
     DSM_7_API_INFO,
+    DSM_7_AUDIO_STATION_INFOS,
+    DSM_7_AUDIO_STATION_PLAYER_LIST,
+    DSM_7_AUDIO_STATION_PLAYER_STATUS,
     DSM_7_AUTH_LOGIN,
     DSM_7_AUTH_LOGIN_2SA,
     DSM_7_AUTH_LOGIN_2SA_OTP,
@@ -131,9 +135,11 @@ API_SWITCHER = {
         "FOTO_ALBUMS": DSM_7_FOTO_ALBUMS,
         "FOTO_ITEMS": DSM_7_FOTO_ITEMS,
         "VMM_GUESTS": DSM_7_VMM_GUESTS,
+        "AUDIO_STATION_INFOS": DSM_7_AUDIO_STATION_INFOS,
+        "AUDIO_STATION_PLAYER_LIST": DSM_7_AUDIO_STATION_PLAYER_LIST,
+        "AUDIO_STATION_PLAYER_STATUS": DSM_7_AUDIO_STATION_PLAYER_STATUS,
     },
 }
-
 
 VALID_HOST = "nas.mywebsite.me"
 VALID_PORT = "5001"
@@ -308,6 +314,13 @@ class SynologyDSMMock(SynologyDSM):
                 if "passphrase" in url:
                     return DSM_7_FOTO_ITEMS_SHARED_ALBUM
                 return DSM_7_FOTO_ITEMS
+
+            if SynoAudioStationApi.INFO_API_KEY in url:
+                return DSM_7_AUDIO_STATION_INFOS
+            if SynoAudioStationApi.REMOTE_PLAYER_STATUS_KEY in url:
+                return DSM_7_AUDIO_STATION_PLAYER_STATUS
+            if SynoAudioStationApi.REMOTE_PLAYER_KEY in url:
+                return DSM_7_AUDIO_STATION_PLAYER_LIST
 
             if SynoPhotos.SEARCH_API_KEY in url:
                 return DSM_7_FOTO_ITEMS_SEARCHED

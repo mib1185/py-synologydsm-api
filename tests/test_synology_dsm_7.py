@@ -4,6 +4,8 @@
 import pytest
 from syrupy.assertion import SnapshotAssertion
 
+from synology_dsm.api.audio_station import SynoAudioStation
+from synology_dsm.api.audio_station.models import PlaylistStatus
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
@@ -45,6 +47,7 @@ class TestSynologyDSM7:
         assert dsm_7._syno_token == SYNO_TOKEN
         assert dsm_7.device_token is None
         assert dsm_7.apis == DSM_7_API_INFO["data"]
+        assert isinstance(dsm_7.audio_station, SynoAudioStation)
         assert isinstance(dsm_7.download_station, SynoDownloadStation)
         assert isinstance(dsm_7.external_usb, SynoCoreExternalUSB)
         assert isinstance(dsm_7.information, SynoDSMInformation)
@@ -388,6 +391,91 @@ class TestSynologyDSM7:
         assert files[1].additional.time.crtime == 1736105128
         assert files[1].additional.time.mtime == 1736105132
         assert files[1].additional.type == "TAR"
+
+    @pytest.mark.asyncio
+    async def test_audio_station(self, dsm_7):
+        """Test Audio Station infos."""
+        assert await dsm_7.login()
+        assert dsm_7.audio_station
+
+        await dsm_7.audio_station.update()
+
+        info = dsm_7.audio_station.info
+        assert info.browse_personal_library == "all"
+        assert info.dsd_decode_capability is True
+        assert info.enable_equalizer is False
+        assert info.enable_personal_library is False
+        assert info.enable_user_home is True
+        assert info.has_music_share is True
+        assert info.is_manager is True
+        assert info.playing_queue_max == 8192
+        assert info.privilege.playlist_edit is True
+        assert info.privilege.remote_player is True
+        assert info.privilege.sharing is True
+        assert info.privilege.tag_edit is True
+        assert info.privilege.upnp_browse is True
+        assert info.remote_controller is False
+        assert info.same_subnet is True
+        assert info.serial_number == "mySerialNumber"
+        assert info.settings.audio_show_virtual_library is True
+        assert info.settings.disable_upnp is False
+        assert info.settings.enable_download is False
+        assert info.settings.prefer_using_html5 is True
+        assert info.settings.transcode_to_mp3 is True
+        assert info.sid == "mySid"
+        assert info.support_bluetooth is False
+        assert info.support_usb is False
+        assert info.support_virtual_library is True
+        assert info.transcode_capability == ["wav", "mp3"]
+        assert info.version == 5068
+        assert info.version_string == "7.0.0-5068"
+
+    @pytest.mark.asyncio
+    async def test_audio_station_remote_player_list(self, dsm_7):
+        """Test Audio Station remote players."""
+        assert await dsm_7.login()
+        assert dsm_7.audio_station
+        await dsm_7.audio_station.update()
+        players = dsm_7.audio_station.players
+
+        assert len(players) == 4
+
+        # get first player
+        player = await dsm_7.audio_station.get_remote_player(players[0].id)
+        assert player is not None
+        await player.update()
+        assert player.player.name == "Denon AVR-X2700H (DLNA)"
+
+        assert player.status.state == PlaylistStatus.TRANSITIONING
+        assert player.status.stop_index == 0
+        assert player.status.subplayer_volume is None
+        assert player.status.volume == 42
+        assert player.status.position == 0
+        assert player.status.playlist_timestamp == 1650661485
+
+        assert player.status.song.additional.song_audio.bitrate == 320000
+        assert player.status.song.additional.song_audio.channel == 1
+        assert player.status.song.additional.song_audio.duration == 295
+        assert player.status.song.additional.song_audio.filesize == 1
+        assert player.status.song.additional.song_audio.frequency == 0
+
+        assert player.status.song.additional.song_tag.album == "25"
+        assert player.status.song.additional.song_tag.album_artist == "Adele"
+        assert player.status.song.additional.song_tag.artist == "Adele"
+        assert player.status.song.additional.song_tag.comment == "Some random comment"
+        assert (
+            player.status.song.additional.song_tag.composer
+            == "Adele Adkins & Greg Kurstin"
+        )
+        assert player.status.song.additional.song_tag.disc == 1
+        assert player.status.song.additional.song_tag.genre == "Pop"
+        assert player.status.song.additional.song_tag.track == 1
+        assert player.status.song.additional.song_tag.year == 2015
+
+        assert player.status.song.id == "music_20508"
+        assert player.status.song.path == "music/Adele/25 [2015]/CD1 - 01 - Hello.mp3"
+        assert player.status.song.title == "Hello"
+        assert player.status.song.type == "file"
 
     @pytest.mark.asyncio
     async def test_virtual_machine_manager(self, dsm_7):
