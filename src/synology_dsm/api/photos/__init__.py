@@ -100,7 +100,7 @@ class SynoPhotos(SynoBaseApi):
                 offset += limit
 
             # sort by time photo was taken
-            year_photos.sort(key=lambda x: x.time)
+            year_photos.sort(key=lambda x: (x.time is None, x.time))
 
             # basic duplicate check
             final_year_photos = []
@@ -111,7 +111,15 @@ class SynoPhotos(SynoBaseApi):
                     key in seen
                     or photo.folder_id in excluded_folders
                     or photo.file_name.lower().endswith(excluded_extensions)
-                    or any(sub.get("id") in excluded_persons for sub in photo.person)
+                    or (
+                        photo.person is not None
+                        and (
+                            any(
+                                sub.get("id") in excluded_persons
+                                for sub in photo.person
+                            )
+                        )
+                    )
                 ):
                     continue
                 final_year_photos.append(photo)
@@ -177,14 +185,14 @@ class SynoPhotos(SynoBaseApi):
                     item["time"],
                     item["folder_id"],
                     item.get("additional", {}).get("exif", {}),
-                    item.get("resolution", {}).get("width"),
-                    item.get("resolution", {}).get("height"),
-                    item.get("orientation"),
-                    item.get("orientation_original"),
+                    item.get("additional", {}).get("resolution", {}).get("width"),
+                    item.get("additional", {}).get("resolution", {}).get("height"),
+                    item.get("additional", {}).get("orientation"),
+                    item.get("additional", {}).get("orientation_original"),
                     item.get("additional", {}).get("person"),
-                    item.get("gps", {}).get("latitude"),
-                    item.get("gps", {}).get("longitude"),
-                    item.get("address"),
+                    item.get("additional", {}).get("gps", {}).get("latitude"),
+                    item.get("additional", {}).get("gps", {}).get("longitude"),
+                    item.get("additional", {}).get("address"),
                 )
             )
         return items
