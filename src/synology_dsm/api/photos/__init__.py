@@ -303,26 +303,6 @@ class SynoPhotos(SynoBaseApi):
             return raw_data
         return None
 
-    async def get_item_image_url(self, item: SynoPhotosItem) -> str:
-        """Get the url of the full-sized image of the given item."""
-        download_api = self.DOWNLOAD_API_KEY
-        if item.is_shared:
-            download_api = self.DOWNLOAD_FOTOTEAM_API_KEY
-
-        params = {
-            "unit_id": f"[{item.item_id}]",
-            "cache_key": item.thumbnail_cache_key,
-        }
-
-        if item.passphrase:
-            params["passphrase"] = item.passphrase
-
-        return await self._dsm.generate_url(
-            download_api,
-            "download",
-            params,
-        )
-
     async def get_item_thumbnail_url(self, item: SynoPhotosItem) -> str:
         """Get the url of given items thumbnail."""
         download_api = self.THUMBNAIL_API_KEY
