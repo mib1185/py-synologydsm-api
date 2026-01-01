@@ -16,7 +16,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v6.0.0
+        uses: actions/checkout@v6.0.1
         with:
           fetch-depth: 2
 
@@ -90,7 +90,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.0
+        uses: actions/checkout@v6.0.1
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
