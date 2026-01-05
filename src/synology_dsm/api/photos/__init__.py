@@ -32,9 +32,7 @@ class SynoPhotos(SynoBaseApi):
         """Get memories.
 
         A memory is an item (photo/video) recorded the same day (day and month)
-        but in the previous years. Compared to get_memories(), this function
-        returns additional information, e.g. recognized persons, exif data,
-        etc.
+        but in previous years.
 
         Arguments:
             min_year: earliest year considered.
