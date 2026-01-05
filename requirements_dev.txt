@@ -2,14 +2,14 @@ aiohttp
 aiofiles
 types-aiofiles
 awesomeversion
-black==25.9.0
+black==25.11.0
 coverage[toml]
 flake8-bandit==4.1.1
 flake8-bugbear==24.12.12
 flake8-docstrings==1.7.0
 flake8-rst-docstrings==0.4.0
 flake8==7.3.0
-mypy==1.18.2
+mypy==1.19.0
 pep8-naming==0.15.1
 pre-commit-hooks==6.0.0
 pre-commit==4.3.0
