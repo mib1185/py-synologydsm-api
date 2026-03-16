@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import datetime
+
 from synology_dsm.api import SynoBaseApi
 
 from .model import SynoPhotosAlbum, SynoPhotosItem
@@ -19,6 +21,114 @@ class SynoPhotos(SynoBaseApi):
     THUMBNAIL_API_KEY = "SYNO.Foto.Thumbnail"
     THUMBNAIL_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Thumbnail"
     BROWSE_ITEM_FOTOTEAM_API_KEY = "SYNO.FotoTeam.Browse.Item"
+
+    async def get_memories(
+        self,
+        min_year: int = 1990,
+        excluded_folders: list[int] | None = None,
+        excluded_extensions: tuple[str, ...] = (".raw", ".rw1", ".rw2"),
+        excluded_persons: list[int] | None = None,
+    ) -> list[SynoPhotosItem] | None:
+        """Get memories.
+
+        A memory is an item (photo/video) recorded the same day (day and month)
+        but in previous years.
+
+        Arguments:
+            min_year: earliest year considered.
+            excluded_folders: folder_ids to exclude.
+            excluded_extensions: file extensions to exclude.
+            excluded_persons: person_ids to exclude.
+
+        Returns:
+            Memories with the most recent ones first. Within the same year,
+            memories are sorted by descending recording time (i.e. from morning
+            to evening). Duplicates (based on file name, file size, and
+            recording time) are removed from result.
+        """
+        if excluded_folders is None:
+            excluded_folders = []
+        if excluded_persons is None:
+            excluded_persons = []
+
+        all_photos: list[SynoPhotosItem] = []
+        limit = 1000
+        add = '["thumbnail","resolution","exif","person","address","gps"]'
+
+        current_date = datetime.date.today()
+        current_day = current_date.day
+        current_month = current_date.month
+        current_year = current_date.year
+
+        for i in range(current_year, min_year - 1, -1):
+            year_photos: list[SynoPhotosItem] = []
+            has_more = True
+            offset = 0
+
+            start_date = datetime.datetime(
+                i, current_month, current_day, 0, 0, 0, tzinfo=datetime.timezone.utc
+            ).timestamp()
+            end_date = datetime.datetime(
+                i, current_month, current_day, 23, 59, 59, tzinfo=datetime.timezone.utc
+            ).timestamp()
+
+            while has_more:
+                raw_data = await self._dsm.get(
+                    self.BROWSE_ITEM_API_KEY,
+                    method="list_with_filter",
+                    params={
+                        "version": 2,
+                        "offset": offset,
+                        "limit": limit,
+                        "time": (
+                            f'[{{"start_time":{start_date:.0f},'
+                            f'"end_time":{end_date:.0f}}}]'
+                        ),
+                        "additional": add,
+                    },
+                )
+                if (
+                    not isinstance(raw_data, dict)
+                    or (items := self._raw_data_to_items(raw_data)) is None
+                    or len(items) == 0
+                ):
+                    has_more = False
+                    continue
+                year_photos.extend(items)
+                offset += limit
+
+            # sort by time photo was taken
+            year_photos.sort(key=lambda x: (x.time is None, x.time))
+
+            # basic duplicate check
+            final_year_photos = []
+            seen: set[tuple] = set()
+            for photo in year_photos:
+                key = (photo.file_name, photo.file_size, photo.time)
+                if (
+                    key in seen
+                    or photo.folder_id in excluded_folders
+                    or photo.file_name.lower().endswith(excluded_extensions)
+                    or (
+                        photo.person is not None
+                        and (
+                            any(
+                                sub.get("id") in excluded_persons
+                                for sub in photo.person
+                            )
+                        )
+                    )
+                ):
+                    continue
+                final_year_photos.append(photo)
+                seen.add(key)
+
+            if len(final_year_photos) == 0:
+                continue
+
+            all_photos.extend(final_year_photos)
+
+        return all_photos
 
     async def get_albums(
         self, offset: int = 0, limit: int = 100
@@ -70,6 +180,17 @@ class SynoPhotos(SynoBaseApi):
                     size,
                     item["owner_user_id"] == 0,
                     passphrase,
+                    item["time"],
+                    item["folder_id"],
+                    item.get("additional", {}).get("exif", {}),
+                    item.get("additional", {}).get("resolution", {}).get("width"),
+                    item.get("additional", {}).get("resolution", {}).get("height"),
+                    item.get("additional", {}).get("orientation"),
+                    item.get("additional", {}).get("orientation_original"),
+                    item.get("additional", {}).get("person"),
+                    item.get("additional", {}).get("gps", {}).get("latitude"),
+                    item.get("additional", {}).get("gps", {}).get("longitude"),
+                    item.get("additional", {}).get("address"),
                 )
             )
         return items

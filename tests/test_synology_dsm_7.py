@@ -297,6 +297,82 @@ class TestSynologyDSM7:
         assert items[2].file_name == "shared_3.jpg"
         assert items[2].thumbnail_cache_key == "96_1628323786"
 
+        items = await dsm_7.photos.get_memories()
+        assert items
+        assert len(items) == 4
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184227
+        assert items[0].width == 5472
+        assert items[0].height == 3648
+        assert items[0].orientation == 1
+        assert items[0].orientation_original == 1
+        assert items[0].exif["aperture"] == "F4"
+        assert items[0].exif["camera"] == "CameraName"
+        assert items[0].exif["exposure_time"] == "1/320 s"
+        assert items[0].exif["focal_length"] == "14.3 mm"
+        assert items[0].exif["iso"] == "125"
+        assert items[0].exif["lens"] == "LensName"
+        assert items[0].latitude == 1.234
+        assert items[0].longitude == 2.345
+        assert items[0].address["country"] == "CountryName"
+        assert items[0].address["country_id"] == "CountryID"
+        assert items[0].address["state"] == "StateName"
+        assert items[0].address["state_id"] == "StateID"
+        assert items[0].address["county"] == "CountyName"
+        assert items[0].address["county_id"] == "CountyID"
+        assert items[0].address["city"] == "CityName"
+        assert items[0].address["city_id"] == "CityID"
+        assert items[0].address["town"] == "TownName"
+        assert items[0].address["town_id"] == "TownID"
+        assert items[0].address["district"] == "DistrictName"
+        assert items[0].address["district_id"] == "DistrictID"
+        assert items[0].address["village"] == "VillageName"
+        assert items[0].address["village_id"] == "VillageID"
+        assert items[0].address["route"] == "RouteName"
+        assert items[0].address["route_id"] == "RouteID"
+        assert items[0].address["landmark"] == "LandmarkName"
+        assert items[0].address["landmark_id"] == "LandmarkID"
+
+        assert items[1].file_name == "DSC08722.JPG"
+        assert items[1].item_type == "photo"
+        assert items[2].file_name == "Video.MP4"
+        assert items[2].item_type == "video"
+        assert items[3].file_name == "P0001.JPG"
+
+        items = await dsm_7.photos.get_memories(excluded_extensions=(".mp4", ".rw1"))
+        assert items
+        assert len(items) == 3
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184227
+        assert items[1].file_name == "DSC08722.JPG"
+        assert items[1].item_type == "photo"
+        assert items[2].file_name == "P0001.JPG"
+
+        items = await dsm_7.photos.get_memories(excluded_folders=[3538, 50])
+        assert items
+        assert len(items) == 1
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184500
+
+        items = await dsm_7.photos.get_memories(excluded_persons=[105, 293])
+        assert items
+        assert len(items) == 3
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184227
+        assert items[1].file_name == "Video.MP4"
+        assert items[1].item_type == "video"
+        assert items[2].file_name == "P0001.JPG"
+
+        items = await dsm_7.photos.get_memories(min_year=1999)
+        assert items
+        assert len(items) == 3
+        assert items[0].file_name == "DSC08721.JPG"
+        assert items[0].item_id == 184227
+        assert items[1].file_name == "DSC08722.JPG"
+        assert items[1].item_type == "photo"
+        assert items[2].file_name == "Video.MP4"
+        assert items[2].item_type == "video"
+
     @pytest.mark.asyncio
     async def test_file_station(self, dsm_7):
         """Test File Station."""
