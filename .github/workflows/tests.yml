@@ -22,28 +22,6 @@ jobs:
         run: |
           pip install -r requirements_dev.txt -e .
 
-      - name: Compute pre-commit cache key
-        id: pre-commit-cache
-        shell: python
-        run: |
-          import hashlib
-          import sys
-
-          python = "py{}.{}".format(*sys.version_info[:2])
-          payload = sys.version.encode() + sys.executable.encode()
-          digest = hashlib.sha256(payload).hexdigest()
-          result = "${{ runner.os }}-{}-{}-pre-commit".format(python, digest[:8])
-
-          print("::set-output name=result::{}".format(result))
-
-      - name: Restore pre-commit cache
-        uses: actions/cache@v5.0.4
-        with:
-          path: ~/.cache/pre-commit
-          key: ${{ steps.pre-commit-cache.outputs.result }}-${{ hashFiles('.pre-commit-config.yaml') }}
-          restore-keys: |
-            ${{ steps.pre-commit-cache.outputs.result }}-
-
       - name: Run pre-commit
         run: |
           pre-commit run --all-files --show-diff-on-failure
