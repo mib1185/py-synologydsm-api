@@ -2,7 +2,7 @@ aiohttp
 aiofiles
 types-aiofiles
 awesomeversion
-black==25.11.0
+black==26.3.1
 coverage[toml]
 flake8-bandit==4.1.1
 flake8-bugbear==24.12.12
