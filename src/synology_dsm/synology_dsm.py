@@ -179,7 +179,7 @@ class SynologyDSM:
             "account": self.username,
             "passwd": self._password,
             # "enable_syno_token": "yes",
-            "enable_device_token": "yes",
+            "enable_device_token": "yes",  # noqa: S105
             "device_name": socket.gethostname(),
         }
 

@@ -13,10 +13,10 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v6.0.0
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.14
         uses: actions/setup-python@v6.1.0
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Install dependencies
         run: |
@@ -60,6 +60,7 @@ jobs:
           - python-version: "3.11"
           - python-version: "3.12"
           - python-version: "3.13"
+          - python-version: "3.14"
 
     steps:
       - name: Check out the repository
@@ -93,10 +94,10 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v6.0.0
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.14
         uses: actions/setup-python@v6.1.0
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Install dependencies
         run: |
@@ -128,10 +129,10 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up Python
+      - name: Set up Python 3.14
         uses: actions/setup-python@v6.1.0
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Install build dependencies
         run: |
