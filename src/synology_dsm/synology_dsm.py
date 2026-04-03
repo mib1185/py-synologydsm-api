@@ -343,6 +343,12 @@ class SynologyDSM:
                 self._session_id = None
                 self._syno_token = None
                 return await self._request(request_method, api, method, params, False)
+
+            if response["error"]["code"] == 105:
+                # DSM 5.2 seems to lose login when user has insufficient user privileges, login
+                # again
+                await self.login()
+
             raise SynologyDSMAPIErrorException(
                 api, response["error"]["code"], response["error"].get("errors")
             )
