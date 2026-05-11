@@ -197,6 +197,51 @@ DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB = {
                 "status": "normal",
                 "total_size_mb": 29,
             },
+            {
+                "dev_id": "sdq",
+                "dev_title": "SD Card 1",
+                "dev_type": "sdCard",
+                "formatable": True,
+                "partitions": [
+                    {
+                        "dev_fstype": "vfat",
+                        "filesystem": "FAT32",
+                        "name_id": "sdq1",
+                        "partition_title": "SD Card 1 Partition 1",
+                        "share_name": "SDKarte",
+                        "status": "normal",
+                        "total_size_mb": 1903,
+                        "used_size_mb": 76,
+                    }
+                ],
+                "producer": "Genesys Logic, Inc.",
+                "progress": "",
+                "status": "normal",
+                "total_size_mb": 1903,
+            },
+            {
+                "dev_id": "sds",
+                "dev_title": "USB Disk 1",
+                "dev_type": "usbDisk",
+                "formatable": True,
+                "partitions": [
+                    {
+                        "dev_fstype": "ntfs",
+                        "filesystem": "ntfs",
+                        "name_id": "sds1",
+                        "partition_title": "USB Disk 1 Partition 1",
+                        "share_name": "usbshare1",
+                        "status": "usbbackup",
+                        "total_size_mb": 953868,
+                        "used_size_mb": 862289,
+                    }
+                ],
+                "producer": "Iomega Corp.",
+                "product": "Prestige Portable Hard Drive",
+                "progress": "",
+                "status": "usbbackup",
+                "total_size_mb": 953869,
+            },
         ]
     },
     "success": True,
