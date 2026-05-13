@@ -63,8 +63,8 @@ SynoHyperBackupTaskType = TypedDict(
         "last_bkp_time": str,
         "next_bkp_time": str,
         "is_online": bool,
-        "used_size": int,
-        "progress": int,
+        "used_size": int | None,
+        "progress": int | None,
     },
     total=False,
 )
@@ -189,6 +189,8 @@ class SynoHyperBackupTask:
         """Return bytes used for backup in destination."""
         try:
             return_data = self._data["used_size"]
+            if return_data is None:
+                return None
         except KeyError:
             return None
         return_data = return_data * 1024
@@ -249,7 +251,7 @@ class SynoHyperBackupTask:
         """Gets raw data of SynoHyperBackupTaskType."""
         return dict(self._data)
 
-    def to_datetime(self, syn_datetime: str) -> datetime | None:
+    def to_datetime(self, syn_datetime: str | None) -> datetime | None:
         """Takes a datetime string from YYYY/MM/DD HH:mm to a datetime."""
         if syn_datetime is None or "N/A" == syn_datetime:
             return None
