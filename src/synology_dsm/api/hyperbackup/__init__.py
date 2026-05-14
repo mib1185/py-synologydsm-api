@@ -135,6 +135,7 @@ class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
 
     # Tasks
 
+    @property
     def get_all_tasks(self) -> list[SynoHyperBackupTask]:
         """Return a list of tasks."""
         return list(self._data.values())
