@@ -14,6 +14,7 @@ from .core.const_6_core_share import DSM_6_CORE_SHARE
 from .core.const_6_core_system import (
     DSM_6_CORE_SYSTEM_DS218_PLAY,
     DSM_6_CORE_SYSTEM_DS918_PLUS,
+    DSM_6_CORE_SYSTEM_STORAGE,
 )
 from .core.const_6_core_upgrade import DSM_6_CORE_UPGRADE_FALSE, DSM_6_CORE_UPGRADE_TRUE
 from .core.const_6_core_utilization import (
@@ -62,6 +63,7 @@ __all__ = [
     "DSM_6_CORE_SHARE",
     "DSM_6_CORE_SYSTEM_DS218_PLAY",
     "DSM_6_CORE_SYSTEM_DS918_PLUS",
+    "DSM_6_CORE_SYSTEM_STORAGE",
     "DSM_6_CORE_UPGRADE_FALSE",
     "DSM_6_CORE_UPGRADE_TRUE",
     "DSM_6_CORE_UTILIZATION",

@@ -26,6 +26,7 @@ from .api.core.external_usb import SynoCoreExternalUSB
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
 from .api.core.system import SynoCoreSystem
+from .api.core.system_storage import SynoSystemStorage
 from .api.core.upgrade import SynoCoreUpgrade
 from .api.core.utilization import SynoCoreUtilization
 from .api.download_station import SynoDownloadStation
@@ -113,6 +114,7 @@ class SynologyDSM:
         self._storage: SynoStorage | None = None
         self._surveillance: SynoSurveillanceStation | None = None
         self._system: SynoCoreSystem | None = None
+        self._system_storage: SynoSystemStorage | None = None
         self._utilisation: SynoCoreUtilization | None = None
         self._upgrade: SynoCoreUpgrade | None = None
         self._vmm: SynoVirtualMachineManager | None = None
@@ -500,6 +502,9 @@ class SynologyDSM:
         if self._system:
             update_methods.append(self._system.update())
 
+        if self._system_storage:
+            update_methods.append(self._system_storage.update())
+
         if self._upgrade:
             update_methods.append(self._upgrade.update())
 
@@ -530,6 +535,7 @@ class SynologyDSM:
                 return True
             if api == SynoCoreSystem.API_KEY:
                 self._system = None
+                self._system_storage = None
                 return True
             if api == SynoCoreUpgrade.API_KEY:
                 self._upgrade = None
@@ -566,6 +572,9 @@ class SynologyDSM:
             return True
         if isinstance(api, SynoCoreSystem):
             self._system = None
+            return True
+        if isinstance(api, SynoSystemStorage):
+            self._system_storage = None
             return True
         if isinstance(api, SynoCoreUpgrade):
             self._upgrade = None
@@ -666,6 +675,13 @@ class SynologyDSM:
         if not self._system:
             self._system = SynoCoreSystem(self)
         return self._system
+
+    @property
+    def system_storage(self) -> SynoSystemStorage:
+        """Gets NAS System Storage information."""
+        if not self._system_storage:
+            self._system_storage = SynoSystemStorage(self)
+        return self._system_storage
 
     @property
     def upgrade(self) -> SynoCoreUpgrade:
