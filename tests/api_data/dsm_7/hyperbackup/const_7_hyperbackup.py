@@ -1,8 +1,10 @@
-"""DSM 7 SYNO.Core.Upgrade data."""
+"""DSM 7 HyperBackup data."""
+
+from typing import Any, Dict
 
 # Common definitions parts for backup tasks
 # =============================================
-DUMMY_SOURCE_DATA = (
+DUMMY_SOURCE_DATA: Dict[str, Any] = (
     {  # NB: mis-spellings match actual API in DSM 7 (e.g. "dataEncryped")
         "app_config": [],
         "app_list": ["HyperBackup"],
@@ -52,7 +54,7 @@ DUMMY_SOURCE_DATA = (
     }
 )
 
-SCHEDULE_VALID = {
+SCHEDULE_VALID: Dict[str, Any] = {
     "schedule_enable": True,
     "schedule": {
         "date": "2023/12/19",
@@ -97,10 +99,10 @@ SCHEDULE_DISABLED = SCHEDULE_VALID.copy()
 SCHEDULE_DISABLED["schedule_enable"] = False
 # =============================================
 
-# Backup task defintions with various states
+# Backup task definitions with various states
 # =============================================
 # Running backup, no schedule, backup_prepare step (0% progress)
-DSM_7_TASK_1_LIST_RUN_NO_SCHD_0_PCT = {
+DSM_7_TASK_1_LIST_RUN_NO_SCHD_0_PCT: Dict[str, Any] = {
     "name": "Run, no schd, 0%",
     "task_id": 1,
     "state": "backupable",
@@ -119,7 +121,7 @@ DSM_7_TASK_1_LIST_RUN_NO_SCHD_0_PCT = {
     "transfer_type": "image_remote",
     "type": "image:image_remote",
 }
-DSM_7_TASK_1_STATUS_RUN_NO_SCHD_0_PCT = {
+DSM_7_TASK_1_STATUS_RUN_NO_SCHD_0_PCT: Dict[str, Any] = {
     "success": True,
     "data": {
         "task_id": 1,
@@ -157,7 +159,7 @@ DSM_7_TASK_1_STATUS_RUN_NO_SCHD_0_PCT = {
 
 # Running backup, no schedule, data backup step (84% progress)
 PERCENT_MIDDLE = 84
-DSM_7_TASK_2_LIST_RUN_NO_SCHD_84_PCT = {
+DSM_7_TASK_2_LIST_RUN_NO_SCHD_84_PCT: Dict[str, Any] = {
     "name": "Run, no schd, 84%",
     "task_id": 2,
     "state": "backupable",
@@ -176,7 +178,7 @@ DSM_7_TASK_2_LIST_RUN_NO_SCHD_84_PCT = {
     "transfer_type": "image_remote",
     "type": "image:image_remote",
 }
-DSM_7_TASK_2_STATUS_RUN_NO_SCHD_84_PCT = {
+DSM_7_TASK_2_STATUS_RUN_NO_SCHD_84_PCT: Dict[str, Any] = {
     "success": True,
     "data": {
         "task_id": 2,
@@ -213,7 +215,7 @@ DSM_7_TASK_2_STATUS_RUN_NO_SCHD_84_PCT = {
 }
 
 # Running backup, with schedule
-DSM_7_TASK_3_LIST_RUN_WITH_SCHD_SIZE_CNT = {
+DSM_7_TASK_3_LIST_RUN_WITH_SCHD_SIZE_CNT: Dict[str, Any] = {
     "name": "Checking src file size",
     "task_id": 3,
     "status": "backup",
@@ -233,7 +235,7 @@ DSM_7_TASK_3_LIST_RUN_WITH_SCHD_SIZE_CNT = {
     "type": "image:image_local",
     "progress_title_type": "backingup",
 }
-DSM_7_TASK_3_STATUS_RUN_WITH_SCHD_SIZE_CNT = {
+DSM_7_TASK_3_STATUS_RUN_WITH_SCHD_SIZE_CNT: Dict[str, Any] = {
     "success": True,
     "data": {
         "task_id": 3,
@@ -269,7 +271,7 @@ DSM_7_TASK_3_STATUS_RUN_WITH_SCHD_SIZE_CNT = {
 }
 
 # Backup state is broken, destination corrupted
-DSM_7_TASK_4_LIST_BROKEN = {
+DSM_7_TASK_4_LIST_BROKEN: Dict[str, Any] = {
     "name": "Bad: Dest Corrupt",
     "task_id": 4,
     "status": "none",
@@ -288,7 +290,7 @@ DSM_7_TASK_4_LIST_BROKEN = {
     "transfer_type": "google_drive",
     "type": "cloud_image:google_drive",
 }
-DSM_7_TASK_4_STATUS_BROKEN = {
+DSM_7_TASK_4_STATUS_BROKEN: Dict[str, Any] = {
     "success": True,
     "data": {
         "task_id": 4,
@@ -306,7 +308,7 @@ DSM_7_TASK_4_STATUS_BROKEN = {
 }
 
 # Backup idle, no schedule, otherwise OK.
-DSM_7_TASK_5_LIST_IDLE_NO_SCHEDULE = {
+DSM_7_TASK_5_LIST_IDLE_NO_SCHEDULE: Dict[str, Any] = {
     "name": "Idle, no schedule",
     "task_id": 5,
     "status": "none",
@@ -325,7 +327,7 @@ DSM_7_TASK_5_LIST_IDLE_NO_SCHEDULE = {
     "transfer_type": "image_remote",
     "type": "image:image_remote",
 }
-DSM_7_TASK_5_STATUS_IDLE_NO_SCHEDULE = {
+DSM_7_TASK_5_STATUS_IDLE_NO_SCHEDULE: Dict[str, Any] = {
     "success": True,
     "data": {
         "task_id": 5,
@@ -344,7 +346,7 @@ DSM_7_TASK_5_STATUS_IDLE_NO_SCHEDULE = {
 }
 
 # Backup idle, with schedule, 100% good.
-DSM_7_TASK_6_LIST_IDLE_WITH_SCHEDULE = {
+DSM_7_TASK_6_LIST_IDLE_WITH_SCHEDULE: Dict[str, Any] = {
     "name": "Idle with schedule",
     "task_id": 6,
     "status": "none",
@@ -363,7 +365,7 @@ DSM_7_TASK_6_LIST_IDLE_WITH_SCHEDULE = {
     "transfer_type": "image_remote",
     "type": "image:image_remote",
 }
-DSM_7_TASK_6_STATUS_IDLE_WITH_SCHEDULE = {
+DSM_7_TASK_6_STATUS_IDLE_WITH_SCHEDULE: Dict[str, Any] = {
     "success": True,
     "data": {
         "task_id": 6,
@@ -381,7 +383,7 @@ DSM_7_TASK_6_STATUS_IDLE_WITH_SCHEDULE = {
 }
 
 # Detecting
-DSM_7_TASK_7_LIST_ERROR_DETECT = {
+DSM_7_TASK_7_LIST_ERROR_DETECT: Dict[str, Any] = {
     "name": "Detecting",
     "task_id": 7,
     "state": "error",
@@ -400,7 +402,7 @@ DSM_7_TASK_7_LIST_ERROR_DETECT = {
     "transfer_type": "image_remote",
     "type": "image:image_remote",
 }
-DSM_7_TASK_7_STATUS_ERROR_DETECT = {
+DSM_7_TASK_7_STATUS_ERROR_DETECT: Dict[str, Any] = {
     "success": True,
     "data": {
         "task_id": 7,
@@ -421,10 +423,9 @@ DSM_7_TASK_7_STATUS_ERROR_DETECT = {
 
 # Result of list endpoint with all backup tasks
 # =============================================
-DSM_7_HYPERBACKUP_LIST = {
+DSM_7_HYPERBACKUP_LIST: Dict[str, Any] = {
     "success": True,
     "data": {
-        "total": 6,
         "is_data_restoring": False,
         "is_downloading": False,
         "is_lun_restoring": False,
@@ -452,7 +453,7 @@ DSM_7_STATUSES = {
     7: DSM_7_TASK_7_STATUS_ERROR_DETECT,
 }
 
-TARGET_DATA_ONLINE = {
+TARGET_DATA_ONLINE: Dict[str, Any] = {
     "success": True,
     "data": {
         "capability": {
@@ -473,7 +474,7 @@ TARGET_DATA_ONLINE = {
         "used_size": 2000000000,
     },
 }
-TARGET_DATA_OFFLINE = {
+TARGET_DATA_OFFLINE: Dict[str, Any] = {
     "success": True,
     "data": {
         "capability": {

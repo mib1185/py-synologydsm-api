@@ -3,6 +3,7 @@
 import pytest
 import pytest_asyncio
 
+from synology_dsm.api.hyperbackup import SynoHyperBackup
 from synology_dsm.api.hyperbackup.const import (
     HEALTH_CRIT,
     HEALTH_GOOD,
@@ -69,7 +70,7 @@ class TestSynoHyperBackup:
         ],
     )
     async def test_status(self, task_id, expected_status, dsm_7):
-        """Test dervied status logic."""
+        """Test derived status logic."""
         assert dsm_7.hyperbackup.get_task(task_id).status == expected_status
 
     @pytest.mark.asyncio
@@ -125,3 +126,31 @@ class TestSynoHyperBackup:
     async def test_is_backing_up(self, task_id, expected_bool, dsm_7):
         """Test backup is backing up."""
         assert dsm_7.hyperbackup.get_task(task_id).is_backing_up == expected_bool
+
+    @pytest.mark.asyncio
+    @pytest.mark.usefixtures("call_update")
+    async def test_no_target_api_call_on_second_update_with_same_backup_time(
+        self, dsm_7
+    ):
+        """Ensure target API is not called when last backup time is unchanged."""
+        target_api_calls = 0
+        original_execute_request = dsm_7._execute_request
+
+        async def wrapped_execute_request(
+            method, url, params, raw_response_content, **kwargs
+        ):
+            nonlocal target_api_calls
+            if (
+                isinstance(params, dict)
+                and params.get("api") == SynoHyperBackup.API_KEY_TARGET
+            ):
+                target_api_calls += 1
+            return await original_execute_request(
+                method, url, params, raw_response_content, **kwargs
+            )
+
+        dsm_7._execute_request = wrapped_execute_request
+
+        await dsm_7.hyperbackup.update(get_all_target_data=False)
+
+        assert target_api_calls == 0

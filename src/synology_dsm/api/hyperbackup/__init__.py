@@ -56,7 +56,7 @@ class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
             return
 
         for task in data.get("task_list", []):
-            task_id = task[PROP_TASKID]
+            task_id: int = task[PROP_TASKID]
 
             raw_backup_status = await self._dsm.get(
                 self.API_KEY,
@@ -98,18 +98,20 @@ class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
         task: Dict,
         prev_data: dict[int, SynoHyperBackupTask],
         get_all_target_data: bool = False,
-    ) -> Dict:
-        backup_since_last_update = (
-            (task_id not in prev_data)
-            or (
-                task[PROP_LAST_BACKUP_TIME]
-                != prev_data[task_id].get_raw_data.get(PROP_LAST_BACKUP_TIME)
+    ) -> dict[str, Any]:
+        # Determine if the backup is new or changed since last update.
+        if task_id not in prev_data:
+            backup_since_last_update = True
+        else:
+            prev_raw = prev_data[task_id].get_raw_data
+            backup_since_last_update = bool(
+                task.get(PROP_LAST_BACKUP_TIME) != prev_raw.get(PROP_LAST_BACKUP_TIME)
+                or not bool(task.get(PROP_LAST_BACKUP_TIME))
             )
-            or not task[PROP_LAST_BACKUP_TIME]
-        )
         target_data: dict[str, Any] = {"is_online": False}
         # Target API calls can be expensive (1 - 3+ seconds each),
-        # so only get them if there has been a backup.
+        # so only get them for new tasks, when the backup timestamp changes,
+        # or when explicitly requested.
         if backup_since_last_update or get_all_target_data:
             try:
                 target_data_raw = await self._dsm.get(
@@ -142,7 +144,7 @@ class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
 
     def get_task(self, task_id: int) -> SynoHyperBackupTask | None:
         """Return task by id."""
-        return self._data[task_id]
+        return self._data.get(task_id)
 
     @property
     def task_ids(self) -> list[int]:
@@ -152,5 +154,5 @@ class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
     # Root
     @property
     def get_raw_data(self) -> dict[int, SynoHyperBackupTask]:
-        """Gets all external USB storage devices."""
+        """Return the raw HyperBackup tasks keyed by task ID."""
         return self._data
