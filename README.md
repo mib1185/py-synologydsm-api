@@ -439,7 +439,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## System Storage usage
+## Storage via SYNO.Core.System api usage
 
 Basic disk and volume information can also be obtained through the "SYNO.Core.System" API. The api.storage API requires connection as a user included in the administrators group. Starting with dsm 7.0, basic disk and volume information can be accessed by a user not in the administrators group via Delegated Administration -> System Monitoring.
 
