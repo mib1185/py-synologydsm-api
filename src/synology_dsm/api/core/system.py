@@ -93,9 +93,9 @@ class SynoCoreSystem(SynoBaseApi[SystemDataType]):
         return self._data["serial"]
 
     @property
-    def sys_temp(self) -> int:
+    def sys_temp(self) -> int | None:
         """Gets System temperature."""
-        return self._data["sys_temp"]
+        return self._data.get("sys_temp")
 
     @property
     def time(self) -> str:
