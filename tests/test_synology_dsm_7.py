@@ -5,6 +5,7 @@ import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
+from synology_dsm.api.core.hardware import SynoCoreHardware
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -47,6 +48,7 @@ class TestSynologyDSM7:
         assert dsm_7.apis == DSM_7_API_INFO["data"]
         assert isinstance(dsm_7.download_station, SynoDownloadStation)
         assert isinstance(dsm_7.external_usb, SynoCoreExternalUSB)
+        assert isinstance(dsm_7.hardware, SynoCoreHardware)
         assert isinstance(dsm_7.information, SynoDSMInformation)
         assert isinstance(dsm_7.network, SynoDSMNetwork)
         assert isinstance(dsm_7.photos, SynoPhotos)
