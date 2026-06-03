@@ -48,7 +48,7 @@ class SynoCoreHardware(SynoBaseApi[HardwareDataType]):
             fan_speed = HardwareFan(
                 all_disk_temp_fail=data["all_disk_temp_fail"] == "yes",
                 cool_fan=data["cool_fan"] == "yes",
-                dual_fan_speed=data["dual_fan_speed"],
+                dual_fan_speed=FanSpeed(data["dual_fan_speed"]),
                 fan_support_adjust_by_ext_nic=data["fan_support_adjust_by_ext_nic"]
                 == "yes",
                 fan_type=data["fan_type"],
@@ -64,7 +64,7 @@ class SynoCoreHardware(SynoBaseApi[HardwareDataType]):
     @property
     def fan_speed(self) -> FanSpeed:
         """Return current system fan speed mode."""
-        return FanSpeed(self._data["fan_speed"]["dual_fan_speed"])
+        return self._data["fan_speed"]["dual_fan_speed"]
 
     async def set_fan_speed(self, speed: FanSpeed) -> None:
         """Set system fan speed mode."""
