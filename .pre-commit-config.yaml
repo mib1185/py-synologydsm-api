@@ -6,6 +6,7 @@ repos:
         entry: black
         language: system
         types: [python]
+        files: ^(src|tests)/.+\.py$
         require_serial: true
       - id: check-added-large-files
         name: Check for added large files
@@ -32,6 +33,7 @@ repos:
         entry: flake8
         language: system
         types: [python]
+        files: ^(src|tests)/.+\.py$
         require_serial: true
       - id: trailing-whitespace
         name: Trim Trailing Whitespace
