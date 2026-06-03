@@ -33,13 +33,13 @@ class HardwareDataType(TypedDict):
 
 
 class SynoCoreHardware(SynoBaseApi[HardwareDataType]):
-    """Class containing System data and actions."""
+    """Class containing hardware data and actions."""
 
     API_KEY = "SYNO.Core.Hardware"
     API_KEY_FANSPEED = f"{API_KEY}.FanSpeed"
 
     async def update(self) -> None:
-        """Updates System data."""
+        """Updates hardware data."""
         raw_data_fan_speed = await self._dsm.get(self.API_KEY_FANSPEED, "get")
         if (
             isinstance(raw_data_fan_speed, dict)
