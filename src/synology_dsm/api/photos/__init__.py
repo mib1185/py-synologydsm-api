@@ -28,11 +28,10 @@ class SynoPhotos(SynoBaseApi):
         excluded_folders: list[int] | None = None,
         excluded_extensions: tuple[str, ...] = (".raw", ".rw1", ".rw2"),
         excluded_persons: list[int] | None = None,
-    ) -> list[SynoPhotosItem] | None:
+    ) -> list[SynoPhotosItem]:
         """Get memories.
 
-        A memory is an item (photo/video) recorded the same day (day and month)
-        but in previous years.
+        A memory is an item (photo/video) recorded the same day (day and month).
 
         Arguments:
             min_year: earliest year considered.
@@ -41,7 +40,7 @@ class SynoPhotos(SynoBaseApi):
             excluded_persons: person_ids to exclude.
 
         Returns:
-            Memories with the most recent ones first. Within the same year,
+            Memories with the most recent years first. Within the same year,
             memories are sorted by descending recording time (i.e. from morning
             to evening). Duplicates (based on file name, file size, and
             recording time) are removed from result.
@@ -61,16 +60,26 @@ class SynoPhotos(SynoBaseApi):
         current_year = current_date.year
 
         for i in range(current_year, min_year - 1, -1):
+            try:
+                start_date = datetime.datetime(
+                    i, current_month, current_day, 0, 0, 0, tzinfo=datetime.timezone.utc
+                ).timestamp()
+                end_date = datetime.datetime(
+                    i,
+                    current_month,
+                    current_day,
+                    23,
+                    59,
+                    59,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp()
+            except ValueError:
+                # skip invalid dates such as Feb 29 in non-leap years
+                continue
+
             year_photos: list[SynoPhotosItem] = []
             has_more = True
             offset = 0
-
-            start_date = datetime.datetime(
-                i, current_month, current_day, 0, 0, 0, tzinfo=datetime.timezone.utc
-            ).timestamp()
-            end_date = datetime.datetime(
-                i, current_month, current_day, 23, 59, 59, tzinfo=datetime.timezone.utc
-            ).timestamp()
 
             while has_more:
                 raw_data = await self._dsm.get(
