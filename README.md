@@ -293,6 +293,38 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Hardware usage
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+from synology_dsm.api.core.hardware import FanSpeed
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    hardware = api.hardware
+    await hardware.update() # First update is required
+
+    # Returns the current system fan speed mode
+    fan_speed = hardware.fan_speed
+
+    # Set the system fan speed mode to cool
+    await hardware.set_fan_speed(FanSpeed.COOL)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## Photos usage
 
 ```python

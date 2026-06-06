@@ -7,6 +7,7 @@ import aiohttp
 
 from synology_dsm import SynologyDSM
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
+from synology_dsm.api.core.hardware import SynoCoreHardware
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -70,6 +71,7 @@ from .api_data.dsm_7 import (
     DSM_7_AUTH_LOGIN_2SA_OTP,
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB,
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB,
+    DSM_7_CORE_HARDWARE_FANSPEED,
     DSM_7_CORE_UPGRADE_TRUE,
     DSM_7_DSM_INFORMATION,
     DSM_7_FILE_STATION_FILES,
@@ -261,6 +263,9 @@ class SynologyDSMMock(SynologyDSM):
                     return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB
                 if not self.usb_device_connected:
                     return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB
+
+            if SynoCoreHardware.API_KEY_FANSPEED in url:
+                return DSM_7_CORE_HARDWARE_FANSPEED
 
             if SynoCoreSecurity.API_KEY in url:
                 if self.error:

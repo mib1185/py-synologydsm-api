@@ -10,6 +10,7 @@ from .core.const_7_core_external_usb import (
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB,
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB,
 )
+from .core.const_7_core_hardware import DSM_7_CORE_HARDWARE_FANSPEED
 from .core.const_7_core_upgrade import DSM_7_CORE_UPGRADE_FALSE, DSM_7_CORE_UPGRADE_TRUE
 from .dsm.const_7_dsm_info import DSM_7_DSM_INFORMATION
 from .file_station.const_7_file_station import (
@@ -35,6 +36,7 @@ __all__ = [
     "DSM_7_API_INFO",
     "DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB",
     "DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB",
+    "DSM_7_CORE_HARDWARE_FANSPEED",
     "DSM_7_CORE_UPGRADE_FALSE",
     "DSM_7_CORE_UPGRADE_TRUE",
     "DSM_7_DSM_INFORMATION",
