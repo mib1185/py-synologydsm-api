@@ -72,6 +72,11 @@ class SynoDSMInformation(SynoBaseApi[DsmInformationDataType]):
         return self._data["version_string"]
 
     @property
+    def is_virtual(self) -> bool:
+        """Whether the NAS is a VirtualDSM."""
+        return self.model.lower() == "virtualdsm"
+
+    @property
     def awesome_version(self) -> AwesomeVersion:
         """Awesome version representation."""
         pattern = (
