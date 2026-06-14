@@ -109,13 +109,13 @@ class TestSynologyDSM7:
         assert data["fan_speed"]["fan_type"] == 11
 
     @pytest.mark.asyncio
-    async def test_hardware_no_data_error(self, dsm):
+    async def test_hardware_no_data_error(self, dsm_7):
         """Test hardware no data error."""
-        dsm.no_data_respons.append(SynoCoreHardware.API_KEY_FANSPEED)
-        assert await dsm.login()
-        assert dsm.hardware
+        dsm_7.no_data_respons.append(SynoCoreHardware.API_KEY_FANSPEED)
+        assert await dsm_7.login()
+        assert dsm_7.hardware
         with pytest.raises(SynologyDSMAPINoDataException):
-            await dsm.hardware.update()
+            await dsm_7.hardware.update()
 
     @pytest.mark.asyncio
     async def test_information(self, dsm_7):
