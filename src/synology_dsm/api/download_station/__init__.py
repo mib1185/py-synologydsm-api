@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMAPINoDataException
 
 from .task import SynoDownloadTask
 
@@ -23,7 +24,7 @@ class SynoDownloadStation(SynoBaseApi["dict[str, SynoDownloadTask]"]):
         self._data = {}
         raw_data = await self._dsm.get(self.TASK_API_KEY, "List", self.REQUEST_DATA)
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
-            return
+            raise SynologyDSMAPINoDataException(self.TASK_API_KEY)
 
         for task_data in data["tasks"]:
             if task_data["id"] in self._data:
