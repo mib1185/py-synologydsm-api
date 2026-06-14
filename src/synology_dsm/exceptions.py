@@ -1,5 +1,7 @@
 """Library exceptions."""
 
+# flake8: noqa: B042
+
 from __future__ import annotations
 
 from .const import (
