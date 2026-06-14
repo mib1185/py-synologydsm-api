@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import TypedDict, cast
 
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMAPINoDataException
 from synology_dsm.helpers import SynoFormatHelper
 
 
@@ -73,7 +74,19 @@ class SynoStorage(SynoBaseApi[StorageDataType]):
     """Class containing Storage data."""
 
     API_KEY = "SYNO.Storage.CGI.Storage"
-    UPDATE_METHOD = "load_info"
+
+    async def update(self) -> None:
+        """Updates storage data."""
+        raw_data = await self._dsm.get(self.API_KEY, "load_info")
+        if isinstance(raw_data, dict):
+            if (data := raw_data.get("data")) is not None:
+                self._data = data
+            elif "disks" in raw_data:
+                self._data = cast(StorageDataType, raw_data)
+            else:
+                raise SynologyDSMAPINoDataException(self.API_KEY)
+        else:
+            raise SynologyDSMAPINoDataException(self.API_KEY)
 
     # Root
     @property
