@@ -51,7 +51,6 @@ repos:
       - id: mypy
         name: mypy
         entry: mypy
-        args: [--show-traceback]
         language: system
         types: [python]
         files: ^src/.+\.py$
