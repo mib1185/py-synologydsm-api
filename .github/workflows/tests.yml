@@ -24,7 +24,7 @@ jobs:
 
       - name: Run pre-commit
         run: |
-          pre-commit run --all-files --show-diff-on-failure
+          pre-commit run --all-files --show-diff-on-failure --verbose
 
   tests:
     name: Python ${{ matrix.python-version }}
