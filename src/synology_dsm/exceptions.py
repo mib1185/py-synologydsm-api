@@ -74,6 +74,14 @@ class SynologyDSMAPINotExistsException(SynologyDSMException):
         super().__init__(api, -2, f"API {api} does not exists")
 
 
+class SynologyDSMAPINoDataException(SynologyDSMException):
+    """API no data exception."""
+
+    def __init__(self, api: str) -> None:
+        """Constructor method."""
+        super().__init__(api, -3, f"API {api} returned no data")
+
+
 class SynologyDSMAPIErrorException(SynologyDSMException):
     """API returns an error exception."""
 
