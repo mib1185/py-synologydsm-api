@@ -624,7 +624,7 @@ class TestSynologyDSM:
     @pytest.mark.asyncio
     async def test_utilisation_no_data_error(self, dsm):
         """Test utilisation no data error."""
-        dsm.no_data_respons.append(SynoCoreUtilization.API_KEY)
+        dsm.no_data_responses.append(SynoCoreUtilization.API_KEY)
         assert await dsm.login()
         assert dsm.utilisation
         with pytest.raises(SynologyDSMAPINoDataException):

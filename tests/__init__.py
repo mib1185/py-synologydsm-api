@@ -183,7 +183,7 @@ class SynologyDSMMock(SynologyDSM):
         self.dsm_version = 6  # 5 or 6
         self.disks_redundancy = "RAID"  # RAID or SHR[number][_EXPANSION]
         self.error = False
-        self.no_data_respons = []
+        self.no_data_responses = []
         self.with_surveillance = False
         self.usb_device_connected = True
 
@@ -263,7 +263,7 @@ class SynologyDSMMock(SynologyDSM):
                     return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB
 
             if SynoCoreHardware.API_KEY_FANSPEED in url:
-                if SynoCoreHardware.API_KEY_FANSPEED in self.no_data_respons:
+                if SynoCoreHardware.API_KEY_FANSPEED in self.no_data_responses:
                     return {"success": True}
                 return DSM_7_CORE_HARDWARE_FANSPEED
 
@@ -279,7 +279,7 @@ class SynologyDSMMock(SynologyDSM):
                 if SynoCoreUtilization.API_KEY in url:
                     if self.error:
                         return DSM_6_CORE_UTILIZATION_ERROR_1055
-                    if SynoCoreUtilization.API_KEY in self.no_data_respons:
+                    if SynoCoreUtilization.API_KEY in self.no_data_responses:
                         return {"success": True}
                     return API_SWITCHER[self.dsm_version]["CORE_UTILIZATION"]
                 return API_SWITCHER[self.dsm_version]["CORE_SYSTEM"]
@@ -288,7 +288,7 @@ class SynologyDSMMock(SynologyDSM):
                 return API_SWITCHER[self.dsm_version]["CORE_UPGRADE"]
 
             if SynoDSMInformation.API_KEY in url:
-                if SynoDSMInformation.API_KEY in self.no_data_respons:
+                if SynoDSMInformation.API_KEY in self.no_data_responses:
                     return {"success": True}
                 return API_SWITCHER[self.dsm_version]["DSM_INFORMATION"]
 

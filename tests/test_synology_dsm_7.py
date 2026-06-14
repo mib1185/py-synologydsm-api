@@ -111,7 +111,7 @@ class TestSynologyDSM7:
     @pytest.mark.asyncio
     async def test_hardware_no_data_error(self, dsm_7):
         """Test hardware no data error."""
-        dsm_7.no_data_respons.append(SynoCoreHardware.API_KEY_FANSPEED)
+        dsm_7.no_data_responses.append(SynoCoreHardware.API_KEY_FANSPEED)
         assert await dsm_7.login()
         assert dsm_7.hardware
         with pytest.raises(SynologyDSMAPINoDataException):
@@ -136,7 +136,7 @@ class TestSynologyDSM7:
     @pytest.mark.asyncio
     async def test_information_no_data_error(self, dsm_7):
         """Test information no data error."""
-        dsm_7.no_data_respons.append(SynoDSMInformation.API_KEY)
+        dsm_7.no_data_responses.append(SynoDSMInformation.API_KEY)
         with pytest.raises(SynologyDSMAPINoDataException):
             assert await dsm_7.login()
 
