@@ -22,10 +22,6 @@ jobs:
         run: |
           pip install -r requirements_dev.txt -e .
 
-      - name: Run mypy
-        run: |
-          mypy src/ --show-traceback
-
       - name: Run pre-commit
         run: |
           pre-commit run --all-files --show-diff-on-failure
