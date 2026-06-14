@@ -10,5 +10,3 @@ DSM_7_CORE_HARDWARE_FANSPEED = {
     },
     "success": True,
 }
-
-DSM_7_CORE_HARDWARE_FANSPEED_NO_DATA = {"success": True}

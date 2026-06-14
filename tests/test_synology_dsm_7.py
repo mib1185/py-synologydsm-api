@@ -111,7 +111,7 @@ class TestSynologyDSM7:
     @pytest.mark.asyncio
     async def test_hardware_no_data_error(self, dsm):
         """Test hardware no data error."""
-        dsm.error = True
+        dsm.no_data_respons.append(SynoCoreHardware.API_KEY_FANSPEED)
         assert await dsm.login()
         assert dsm.hardware
         with pytest.raises(SynologyDSMAPINoDataException):
@@ -132,6 +132,13 @@ class TestSynologyDSM7:
         assert dsm_7.information.version == "24922"
         assert dsm_7.information.version_string == "DSM 7.0-41222"
         assert dsm_7.information.awesome_version == "7.0.0"
+
+    @pytest.mark.asyncio
+    async def test_information_no_data_error(self, dsm_7):
+        """Test information no data error."""
+        dsm_7.no_data_respons.append(SynoDSMInformation.API_KEY)
+        with pytest.raises(SynologyDSMAPINoDataException):
+            assert await dsm_7.login()
 
     @pytest.mark.asyncio
     async def test_external_usb(self, dsm_7, snapshot: SnapshotAssertion):

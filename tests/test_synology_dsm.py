@@ -19,6 +19,7 @@ from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.const import API_AUTH, API_INFO
 from synology_dsm.exceptions import (
     SynologyDSMAPIErrorException,
+    SynologyDSMAPINoDataException,
     SynologyDSMAPINotExistsException,
     SynologyDSMLogin2SAFailedException,
     SynologyDSMLogin2SARequiredException,
@@ -619,6 +620,15 @@ class TestSynologyDSM:
         await dsm.login()
         assert dsm.utilisation
         await dsm.utilisation.update()
+
+    @pytest.mark.asyncio
+    async def test_utilisation_no_data_error(self, dsm):
+        """Test utilisation no data error."""
+        dsm.no_data_respons.append(SynoCoreUtilization.API_KEY)
+        assert await dsm.login()
+        assert dsm.utilisation
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm.utilisation.update()
 
     @pytest.mark.asyncio
     async def test_utilisation_cpu(self, dsm):
