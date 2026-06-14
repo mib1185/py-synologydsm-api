@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TypedDict, cast
+from typing import TypedDict
 
 from synology_dsm.api import SynoBaseApi
 from synology_dsm.helpers import SynoFormatHelper
@@ -73,14 +73,7 @@ class SynoStorage(SynoBaseApi[StorageDataType]):
     """Class containing Storage data."""
 
     API_KEY = "SYNO.Storage.CGI.Storage"
-
-    async def update(self) -> None:
-        """Updates storage data."""
-        raw_data = await self._dsm.get(self.API_KEY, "load_info")
-        if isinstance(raw_data, dict):
-            self._data = cast(StorageDataType, raw_data)
-            if (data := raw_data.get("data")) is not None:
-                self._data = data
+    UPDATE_METHOD = "load_info"
 
     # Root
     @property
