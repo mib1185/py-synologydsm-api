@@ -19,7 +19,10 @@ from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.api.virtual_machine_manager import SynoVirtualMachineManager
 from synology_dsm.const import API_AUTH
-from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
+from synology_dsm.exceptions import (
+    SynologyDSMAPINoDataException,
+    SynologyDSMLogin2SARequiredException,
+)
 
 from . import (
     VALID_HOST,
@@ -104,6 +107,15 @@ class TestSynologyDSM7:
         assert data["fan_speed"]["dual_fan_speed"] == FanSpeed.COOL
         assert data["fan_speed"]["fan_support_adjust_by_ext_nic"] is False
         assert data["fan_speed"]["fan_type"] == 11
+
+    @pytest.mark.asyncio
+    async def test_hardware_no_data_error(self, dsm):
+        """Test hardware no data error."""
+        dsm.error = True
+        assert await dsm.login()
+        assert dsm.hardware
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm.hardware.update()
 
     @pytest.mark.asyncio
     async def test_information(self, dsm_7):

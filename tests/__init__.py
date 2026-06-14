@@ -72,6 +72,7 @@ from .api_data.dsm_7 import (
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB,
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB,
     DSM_7_CORE_HARDWARE_FANSPEED,
+    DSM_7_CORE_HARDWARE_FANSPEED_NO_DATA,
     DSM_7_CORE_UPGRADE_TRUE,
     DSM_7_DSM_INFORMATION,
     DSM_7_FILE_STATION_FILES,
@@ -262,6 +263,8 @@ class SynologyDSMMock(SynologyDSM):
                     return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB
 
             if SynoCoreHardware.API_KEY_FANSPEED in url:
+                if self.error:
+                    return DSM_7_CORE_HARDWARE_FANSPEED_NO_DATA
                 return DSM_7_CORE_HARDWARE_FANSPEED
 
             if SynoCoreSecurity.API_KEY in url:
