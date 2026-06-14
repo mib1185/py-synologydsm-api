@@ -125,6 +125,9 @@ class TestSynologyDSM7:
         await dsm_7.information.update()
         assert dsm_7.information.model == "DS918+"
         assert dsm_7.information.is_virtual is False
+        dsm_7.information._data["model"] = "VirtualDSM"
+        assert dsm_7.information.model == "VirtualDSM"
+        assert dsm_7.information.is_virtual is True
         assert dsm_7.information.ram == 4096
         assert dsm_7.information.serial == "1920PDN001501"
         assert dsm_7.information.temperature == 40
