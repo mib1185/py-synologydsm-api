@@ -38,12 +38,7 @@ class SynoDSMNetwork(SynoBaseApi[DsmNetworkDataType]):
     """Class containing Network data."""
 
     API_KEY = "SYNO.DSM.Network"
-
-    async def update(self) -> None:
-        """Updates network data."""
-        raw_data = await self._dsm.get(self.API_KEY, "list")
-        if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
-            self._data = data
+    UPDATE_METHOD = "list"
 
     @property
     def dns(self) -> list[str]:

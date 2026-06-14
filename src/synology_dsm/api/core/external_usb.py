@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TypedDict, cast
 
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMAPINoDataException
 from synology_dsm.helpers import SynoFormatHelper
 
 ExternalUsbDevicePartitionDataType = TypedDict(
@@ -52,6 +53,8 @@ class SynoCoreExternalUSB(SynoBaseApi["dict[str, SynoCoreExternalUSBDevice]"]):
         if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
             for device in data["devices"]:
                 self._data[device["dev_id"]] = SynoCoreExternalUSBDevice(device)
+        else:
+            raise SynologyDSMAPINoDataException(self.API_KEY)
 
     # Root
     @property

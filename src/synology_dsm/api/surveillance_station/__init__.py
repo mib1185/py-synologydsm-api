@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TypedDict, cast
 
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMAPINoDataException
 
 from .camera import SynoCamera, SynoCameraLiveView
 from .const import (
@@ -80,7 +81,7 @@ class SynoSurveillanceStation(SynoBaseApi["dict[int, SynoCamera]"]):
         self._data: dict[int, SynoCamera] = {}
         raw_data = await self._dsm.get(self.CAMERA_API_KEY, "List", max_version=7)
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
-            return
+            raise SynologyDSMAPINoDataException(self.CAMERA_API_KEY)
 
         for camera_data in data["cameras"]:
             if camera_data["id"] in self._data:
@@ -199,7 +200,8 @@ class SynoSurveillanceStation(SynoBaseApi["dict[int, SynoCamera]"]):
             "TakeSnapshot",
             {
                 "camId": camera_id,
-                "blSave": int(save),  # API requires an integer instead of a boolean
+                # API requires an integer instead of a boolean
+                "blSave": int(save),
             },
         )
         if isinstance(raw_data, dict):
