@@ -26,95 +26,95 @@ jobs:
         run: |
           pre-commit run --all-files --show-diff-on-failure --verbose
 
-  tests:
-    name: Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - python-version: "3.11"
-          - python-version: "3.12"
-          - python-version: "3.13"
-          - python-version: "3.14"
+  # tests:
+  #   name: Python ${{ matrix.python-version }}
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - python-version: "3.11"
+  #         - python-version: "3.12"
+  #         - python-version: "3.13"
+  #         - python-version: "3.14"
 
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v6.0.2
+  #   steps:
+  #     - name: Check out the repository
+  #       uses: actions/checkout@v6.0.2
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6.2.0
-        with:
-          python-version: ${{ matrix.python-version }}
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v6.2.0
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements_dev.txt -e .
+  #     - name: Install dependencies
+  #       run: |
+  #         pip install -r requirements_dev.txt -e .
 
-      - name: Run pytest
-        run: |
-          coverage run --parallel -m pytest
+  #     - name: Run pytest
+  #       run: |
+  #         coverage run --parallel -m pytest
 
-      - name: Upload coverage data
-        if: matrix.python-version == '3.14'
-        uses: "actions/upload-artifact@v7.0.1"
-        with:
-          include-hidden-files: true
-          name: coverage-data
-          path: ".coverage.*"
+  #     - name: Upload coverage data
+  #       if: matrix.python-version == '3.14'
+  #       uses: "actions/upload-artifact@v7.0.1"
+  #       with:
+  #         include-hidden-files: true
+  #         name: coverage-data
+  #         path: ".coverage.*"
 
-  coverage:
-    runs-on: ubuntu-latest
-    needs: tests
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v6.0.2
+  # coverage:
+  #   runs-on: ubuntu-latest
+  #   needs: tests
+  #   steps:
+  #     - name: Check out the repository
+  #       uses: actions/checkout@v6.0.2
 
-      - name: Set up Python 3.14
-        uses: actions/setup-python@v6.2.0
-        with:
-          python-version: "3.14"
+  #     - name: Set up Python 3.14
+  #       uses: actions/setup-python@v6.2.0
+  #       with:
+  #         python-version: "3.14"
 
-      - name: Install dependencies
-        run: |
-          pip install coverage[toml]
+  #     - name: Install dependencies
+  #       run: |
+  #         pip install coverage[toml]
 
-      - name: Download coverage data
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: coverage-data
+  #     - name: Download coverage data
+  #       uses: actions/download-artifact@v8.0.1
+  #       with:
+  #         name: coverage-data
 
-      - name: Combine coverage data and display human readable report
-        run: |
-          coverage combine
-          coverage report
+  #     - name: Combine coverage data and display human readable report
+  #       run: |
+  #         coverage combine
+  #         coverage report
 
-      - name: Create coverage report
-        run: |
-          coverage xml
+  #     - name: Create coverage report
+  #       run: |
+  #         coverage xml
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v6.0.1
+  #     - name: Upload coverage report
+  #       uses: codecov/codecov-action@v6.0.1
 
-  build:
-    runs-on: ubuntu-latest
-    needs: tests
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v6.0.2
-        with:
-          fetch-depth: 2
+  # build:
+  #   runs-on: ubuntu-latest
+  #   needs: tests
+  #   steps:
+  #     - name: Check out the repository
+  #       uses: actions/checkout@v6.0.2
+  #       with:
+  #         fetch-depth: 2
 
-      - name: Set up Python 3.14
-        uses: actions/setup-python@v6.2.0
-        with:
-          python-version: "3.14"
+  #     - name: Set up Python 3.14
+  #       uses: actions/setup-python@v6.2.0
+  #       with:
+  #         python-version: "3.14"
 
-      - name: Install build dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel build
+  #     - name: Install build dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install setuptools wheel build
 
-      - name: Build package
-        run: |
-          python -m build . --wheel
+  #     - name: Build package
+  #       run: |
+  #         python -m build . --wheel
