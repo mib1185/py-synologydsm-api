@@ -396,7 +396,7 @@ class TestSynologyDSM:
 
         assert not dsm._hardware
         assert dsm.hardware
-        assert dsm.hardware
+        assert dsm._hardware
         assert dsm.reset("hardware")
         assert not dsm._hardware
 

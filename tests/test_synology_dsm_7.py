@@ -138,7 +138,7 @@ class TestSynologyDSM7:
         """Test information no data error."""
         dsm_7.no_data_responses.append(SynoDSMInformation.API_KEY)
         with pytest.raises(SynologyDSMAPINoDataException):
-            assert await dsm_7.login()
+            await dsm_7.login()
 
     @pytest.mark.asyncio
     async def test_external_usb(self, dsm_7, snapshot: SnapshotAssertion):
