@@ -28,12 +28,7 @@ class SynoDSMInformation(SynoBaseApi[DsmInformationDataType]):
     """Class containing Information data."""
 
     API_KEY = "SYNO.DSM.Info"
-
-    async def update(self) -> None:
-        """Updates information data."""
-        raw_data = await self._dsm.get(self.API_KEY, "getinfo")
-        if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
-            self._data = data
+    UPDATE_METHOD = "getinfo"
 
     @property
     def model(self) -> str:

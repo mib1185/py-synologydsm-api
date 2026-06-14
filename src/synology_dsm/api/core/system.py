@@ -32,16 +32,12 @@ class SynoCoreSystem(SynoBaseApi[SystemDataType]):
     """Class containing System data and actions."""
 
     API_KEY = "SYNO.Core.System"
-
-    async def update(self) -> None:
-        """Updates System data."""
-        raw_data = await self._dsm.get(self.API_KEY, "info")
-        if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
-            self._data = data
+    UPDATE_METHOD = "info"
 
     #
     # get information
     #
+
     @property
     def cpu_clock_speed(self) -> int:
         """Gets System CPU clock speed."""

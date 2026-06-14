@@ -5,6 +5,7 @@ import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
+from synology_dsm.api.core.hardware import FanSpeed, SynoCoreHardware
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -18,7 +19,10 @@ from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.api.virtual_machine_manager import SynoVirtualMachineManager
 from synology_dsm.const import API_AUTH
-from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
+from synology_dsm.exceptions import (
+    SynologyDSMAPINoDataException,
+    SynologyDSMLogin2SARequiredException,
+)
 
 from . import (
     VALID_HOST,
@@ -47,6 +51,7 @@ class TestSynologyDSM7:
         assert dsm_7.apis == DSM_7_API_INFO["data"]
         assert isinstance(dsm_7.download_station, SynoDownloadStation)
         assert isinstance(dsm_7.external_usb, SynoCoreExternalUSB)
+        assert isinstance(dsm_7.hardware, SynoCoreHardware)
         assert isinstance(dsm_7.information, SynoDSMInformation)
         assert isinstance(dsm_7.network, SynoDSMNetwork)
         assert isinstance(dsm_7.photos, SynoPhotos)
@@ -90,6 +95,29 @@ class TestSynologyDSM7:
         assert dsm_7.device_token == DEVICE_TOKEN
 
     @pytest.mark.asyncio
+    async def test_hardware(self, dsm_7):
+        """Test hardware."""
+        assert await dsm_7.login()
+        assert dsm_7.hardware
+        await dsm_7.hardware.update()
+        assert dsm_7.hardware.fan_speed == FanSpeed.COOL
+        data = dsm_7.hardware.data
+        assert data["fan_speed"]["all_disk_temp_fail"] is False
+        assert data["fan_speed"]["cool_fan"] is True
+        assert data["fan_speed"]["dual_fan_speed"] == FanSpeed.COOL
+        assert data["fan_speed"]["fan_support_adjust_by_ext_nic"] is False
+        assert data["fan_speed"]["fan_type"] == 11
+
+    @pytest.mark.asyncio
+    async def test_hardware_no_data_error(self, dsm_7):
+        """Test hardware no data error."""
+        dsm_7.no_data_responses.append(SynoCoreHardware.API_KEY_FANSPEED)
+        assert await dsm_7.login()
+        assert dsm_7.hardware
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.hardware.update()
+
+    @pytest.mark.asyncio
     async def test_information(self, dsm_7):
         """Test information."""
         assert await dsm_7.login()
@@ -104,6 +132,13 @@ class TestSynologyDSM7:
         assert dsm_7.information.version == "24922"
         assert dsm_7.information.version_string == "DSM 7.0-41222"
         assert dsm_7.information.awesome_version == "7.0.0"
+
+    @pytest.mark.asyncio
+    async def test_information_no_data_error(self, dsm_7):
+        """Test information no data error."""
+        dsm_7.no_data_responses.append(SynoDSMInformation.API_KEY)
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.login()
 
     @pytest.mark.asyncio
     async def test_external_usb(self, dsm_7, snapshot: SnapshotAssertion):
