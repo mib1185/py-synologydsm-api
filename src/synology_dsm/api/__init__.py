@@ -31,7 +31,7 @@ class SynoBaseApi(Generic[_DataT]):
         ):
             raise NotImplementedError(
                 f"{self.__class__.__name__} does not define API_KEY/UPDATE_METHOD, "
-                "so it need to implement its own update method."
+                "so it needs to implement its own update method."
             )
 
         raw_data = await self._dsm.get(self.API_KEY, self.UPDATE_METHOD)
