@@ -44,6 +44,7 @@ from .api_data.dsm_6 import (
     DSM_6_CORE_SECURITY_UPDATE_OUTOFDATE,
     DSM_6_CORE_SHARE,
     DSM_6_CORE_SYSTEM_DS918_PLUS,
+    DSM_6_CORE_SYSTEM_STORAGE,
     DSM_6_CORE_UPGRADE_TRUE,
     DSM_6_CORE_UTILIZATION,
     DSM_6_CORE_UTILIZATION_ERROR_1055,
@@ -114,6 +115,7 @@ API_SWITCHER = {
         "CORE_SECURITY": DSM_6_CORE_SECURITY,
         "CORE_SHARE": DSM_6_CORE_SHARE,
         "CORE_SYSTEM": DSM_6_CORE_SYSTEM_DS918_PLUS,
+        "CORE_SYSTEM_STORAGE": DSM_6_CORE_SYSTEM_STORAGE,
         "CORE_UTILIZATION": DSM_6_CORE_UTILIZATION,
         "CORE_UPGRADE": DSM_6_CORE_UPGRADE_TRUE,
         "STORAGE_STORAGE": {
@@ -282,6 +284,8 @@ class SynologyDSMMock(SynologyDSM):
                     if SynoCoreUtilization.API_KEY in self.no_data_responses:
                         return {"success": True}
                     return API_SWITCHER[self.dsm_version]["CORE_UTILIZATION"]
+                if "storage_v2" in url:
+                    return API_SWITCHER[self.dsm_version]["CORE_SYSTEM_STORAGE"]
                 return API_SWITCHER[self.dsm_version]["CORE_SYSTEM"]
 
             if SynoCoreUpgrade.API_KEY in url:

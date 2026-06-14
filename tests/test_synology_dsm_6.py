@@ -212,6 +212,93 @@ class TestSynologyDSM6:
             assert usb_dev.get("vid")
 
     @pytest.mark.asyncio
+    async def test_system_storage(self, dsm_6):
+        """Test system."""
+        assert await dsm_6.login()
+        assert dsm_6.system_storage
+
+        st = dsm_6.system_storage
+        await st.update()
+
+        assert st.disks
+        for disk_id in sorted(st.disks_ids):
+            assert st.disk_below_remain_life_thr(disk_id) is not None
+            assert st.disk_device(disk_id)
+            assert st.disk_firmware(disk_id)
+            assert st.disk_model(disk_id)
+            assert st.disk_name(disk_id)
+            assert st.disk_remain_life_danger(disk_id) is not None
+            assert st.disk_serial(disk_id)
+            assert st.disk_smart_status(disk_id)
+            assert st.disk_status(disk_id)
+            assert st.disk_size_total(disk_id)
+            assert st.disk_size_total(disk_id, human_readable=True)
+            assert st.disk_temp(disk_id)
+            assert st.disk_type(disk_id)
+            assert st.disk_vendor(disk_id)
+
+        # unknown disk
+        assert st.get_disk("not_a_disk") is None
+        assert st.disk_below_remain_life_thr("not_a_disk") is None
+        assert st.disk_device("not_a_disk") is None
+        assert st.disk_firmware("not_a_disk") is None
+        assert st.disk_model("not_a_disk") is None
+        assert st.disk_name("not_a_disk") is None
+        assert st.disk_remain_life_danger("not_a_disk") is None
+        assert st.disk_serial("not_a_disk") is None
+        assert st.disk_smart_status("not_a_disk") is None
+        assert st.disk_status("not_a_disk") is None
+        assert st.disk_size_total("not_a_disk") is None
+        assert st.disk_type("not_a_disk") is None
+        assert st.disk_vendor("not_a_disk") is None
+
+        # disk with name nvme0n1
+        assert st.disk_below_remain_life_thr("nvme0n1") is False
+        assert st.disk_device("nvme0n1") == "/dev/nvme0n1"
+        assert st.disk_firmware("nvme0n1") == "2B2QEXM1"
+        assert st.disk_model("nvme0n1") == "Samsung SSD 970 EVO Plus 500GB"
+        assert st.disk_name("nvme0n1") == "Drive M.2 1"
+        assert st.disk_remain_life_danger("nvme0n1") is False
+        assert st.disk_serial("nvme0n1") == "S4EVNX0W541182V"
+        assert st.disk_smart_status("nvme0n1") == "normal"
+        assert st.disk_status("nvme0n1") == "normal"
+        assert st.disk_size_total("nvme0n1") == 500107862016
+        assert st.disk_temp("nvme0n1") == 42
+        assert st.disk_type("nvme0n1") == "M.2 NVMe"
+        assert st.disk_vendor("nvme0n1") == "Samsung"
+
+        assert st.volumes
+        for volume_name in sorted(st.volumes_names):
+            assert st.get_volume(volume_name)
+            assert st.volume_description(volume_name) is not None
+            assert st.volume_is_encrypted(volume_name) is not None
+            assert st.volume_percentage_used(volume_name)
+            assert st.volume_size_total(volume_name)
+            assert st.volume_size_total(volume_name, True)
+            assert st.volume_size_used(volume_name)
+            assert st.volume_size_used(volume_name, True)
+            assert st.volume_status(volume_name)
+
+        # unknown volume
+        assert st.get_volume("not_a_volume") is None
+        assert st.volume_description("not_a_volume") is None
+        assert st.volume_is_encrypted("not_a_volume") is None
+        assert st.volume_percentage_used("not_a_volume") is None
+        assert st.volume_size_total("not_a_volume") is None
+        assert st.volume_size_used("not_a_volume") is None
+        assert st.volume_status("not_a_volume") is None
+
+        # volume with name volume_1
+        assert st.volume_description("volume_1") == "mainVol"
+        assert st.volume_is_encrypted("volume_1") is False
+        assert st.volume_percentage_used("volume_1") == 49.5
+        assert st.volume_size_total("volume_1") == 11500548030464
+        assert st.volume_size_total("volume_1", True) == "10.5Tb"
+        assert st.volume_size_used("volume_1") == 5691705286656
+        assert st.volume_size_used("volume_1", True) == "5.2Tb"
+        assert st.volume_status("volume_1") == "normal"
+
+    @pytest.mark.asyncio
     async def test_upgrade(self, dsm_6):
         """Test upgrade."""
         assert await dsm_6.login()
