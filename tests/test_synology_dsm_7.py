@@ -19,7 +19,10 @@ from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.api.virtual_machine_manager import SynoVirtualMachineManager
 from synology_dsm.const import API_AUTH
-from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
+from synology_dsm.exceptions import (
+    SynologyDSMAPINoDataException,
+    SynologyDSMLogin2SARequiredException,
+)
 
 from . import (
     VALID_HOST,
@@ -106,12 +109,25 @@ class TestSynologyDSM7:
         assert data["fan_speed"]["fan_type"] == 11
 
     @pytest.mark.asyncio
+    async def test_hardware_no_data_error(self, dsm_7):
+        """Test hardware no data error."""
+        dsm_7.no_data_responses.append(SynoCoreHardware.API_KEY_FANSPEED)
+        assert await dsm_7.login()
+        assert dsm_7.hardware
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.hardware.update()
+
+    @pytest.mark.asyncio
     async def test_information(self, dsm_7):
         """Test information."""
         assert await dsm_7.login()
         assert dsm_7.information
         await dsm_7.information.update()
         assert dsm_7.information.model == "DS918+"
+        assert dsm_7.information.is_virtual is False
+        dsm_7.information._data["model"] = "VirtualDSM"
+        assert dsm_7.information.model == "VirtualDSM"
+        assert dsm_7.information.is_virtual is True
         assert dsm_7.information.ram == 4096
         assert dsm_7.information.serial == "1920PDN001501"
         assert dsm_7.information.temperature == 40
@@ -120,6 +136,13 @@ class TestSynologyDSM7:
         assert dsm_7.information.version == "24922"
         assert dsm_7.information.version_string == "DSM 7.0-41222"
         assert dsm_7.information.awesome_version == "7.0.0"
+
+    @pytest.mark.asyncio
+    async def test_information_no_data_error(self, dsm_7):
+        """Test information no data error."""
+        dsm_7.no_data_responses.append(SynoDSMInformation.API_KEY)
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.login()
 
     @pytest.mark.asyncio
     async def test_external_usb(self, dsm_7, snapshot: SnapshotAssertion):

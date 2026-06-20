@@ -5,6 +5,7 @@ import pytest
 from aiohttp import ClientTimeout
 
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
+from synology_dsm.api.core.hardware import SynoCoreHardware
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -18,6 +19,7 @@ from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.const import API_AUTH, API_INFO
 from synology_dsm.exceptions import (
     SynologyDSMAPIErrorException,
+    SynologyDSMAPINoDataException,
     SynologyDSMAPINotExistsException,
     SynologyDSMLogin2SAFailedException,
     SynologyDSMLogin2SARequiredException,
@@ -392,6 +394,12 @@ class TestSynologyDSM:
         assert dsm.reset("external_usb")
         assert not dsm._external_usb
 
+        assert not dsm._hardware
+        assert dsm.hardware
+        assert dsm._hardware
+        assert dsm.reset("hardware")
+        assert not dsm._hardware
+
         assert not dsm._security
         assert dsm.security
         assert dsm._security
@@ -454,6 +462,12 @@ class TestSynologyDSM:
         assert dsm.reset(SynoCoreExternalUSB.API_KEY)
         assert not dsm._external_usb
 
+        assert not dsm._hardware
+        assert dsm.hardware
+        assert dsm._hardware
+        assert dsm.reset(SynoCoreHardware.API_KEY)
+        assert not dsm._hardware
+
         assert not dsm._security
         assert dsm.security
         assert dsm._security
@@ -515,6 +529,12 @@ class TestSynologyDSM:
         assert dsm._external_usb
         assert dsm.reset(dsm.external_usb)
         assert not dsm._external_usb
+
+        assert not dsm._hardware
+        assert dsm.hardware
+        assert dsm._hardware
+        assert dsm.reset(dsm.hardware)
+        assert not dsm._hardware
 
         assert not dsm._security
         assert dsm.security
@@ -600,6 +620,15 @@ class TestSynologyDSM:
         await dsm.login()
         assert dsm.utilisation
         await dsm.utilisation.update()
+
+    @pytest.mark.asyncio
+    async def test_utilisation_no_data_error(self, dsm):
+        """Test utilisation no data error."""
+        dsm.no_data_responses.append(SynoCoreUtilization.API_KEY)
+        assert await dsm.login()
+        assert dsm.utilisation
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm.utilisation.update()
 
     @pytest.mark.asyncio
     async def test_utilisation_cpu(self, dsm):

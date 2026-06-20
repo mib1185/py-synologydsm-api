@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TypedDict
 
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMAPINoDataException
 
 
 class UpgradeDataType(TypedDict, total=False):
@@ -28,6 +29,8 @@ class SynoCoreUpgrade(SynoBaseApi[UpgradeDataType]):
         raw_data = await self._dsm.get(self.API_SERVER_KEY, "check")
         if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
             self._data = data.get("update", data)
+        else:
+            raise SynologyDSMAPINoDataException(self.API_SERVER_KEY)
 
     @property
     def update_available(self) -> bool:

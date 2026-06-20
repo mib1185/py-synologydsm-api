@@ -6,6 +6,7 @@ from enum import StrEnum
 from typing import TypedDict
 
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMAPINoDataException
 
 
 class FanSpeed(StrEnum):
@@ -55,6 +56,8 @@ class SynoCoreHardware(SynoBaseApi[HardwareDataType]):
             )
 
             self._data = HardwareDataType(fan_speed=fan_speed)
+        else:
+            raise SynologyDSMAPINoDataException(self.API_KEY_FANSPEED)
 
     @property
     def data(self) -> HardwareDataType:

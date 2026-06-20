@@ -35,12 +35,7 @@ class SynoCoreSecurity(SynoBaseApi[SecurityDataType]):
     """Class containing Security data."""
 
     API_KEY = "SYNO.Core.SecurityScan.Status"
-
-    async def update(self) -> None:
-        """Updates security data."""
-        raw_data = await self._dsm.get(self.API_KEY, "system_get")
-        if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
-            self._data = data
+    UPDATE_METHOD = "system_get"
 
     @property
     def checks(self) -> dict[str, SecurityCategory]:

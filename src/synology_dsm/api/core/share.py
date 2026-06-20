@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TypedDict
 
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMAPINoDataException
 from synology_dsm.helpers import SynoFormatHelper
 
 Share = TypedDict(
@@ -49,6 +50,8 @@ class SynoCoreShare(SynoBaseApi[ShareDataType]):
         raw_data = await self._dsm.post(self.API_KEY, "list", data=self.REQUEST_DATA)
         if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
             self._data = data
+        else:
+            raise SynologyDSMAPINoDataException(self.API_KEY)
 
     @property
     def shares(self) -> list[Share]:

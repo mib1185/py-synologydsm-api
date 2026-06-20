@@ -1,5 +1,7 @@
 """Library exceptions."""
 
+# flake8: noqa: B042
+
 from __future__ import annotations
 
 from .const import (
@@ -72,6 +74,14 @@ class SynologyDSMAPINotExistsException(SynologyDSMException):
     def __init__(self, api: str) -> None:
         """Constructor method."""
         super().__init__(api, -2, f"API {api} does not exists")
+
+
+class SynologyDSMAPINoDataException(SynologyDSMException):
+    """API no data exception."""
+
+    def __init__(self, api: str) -> None:
+        """Constructor method."""
+        super().__init__(api, -3, f"API {api} returned no data")
 
 
 class SynologyDSMAPIErrorException(SynologyDSMException):
