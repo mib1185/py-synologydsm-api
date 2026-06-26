@@ -41,6 +41,11 @@ ERROR_AUTH: Final = {
     411: "Account Locked (when account max try exceed)",
 }
 
+# SYNO.Core.Hardware.*
+ERROR_CORE_HARDWARE: Final = {
+    3712: "Unsupported fan speed mode",
+}
+
 # SYNO.DownloadStation[2].BTSearch
 ERROR_DOWNLOAD_SEARCH: Final = {
     400: "Unknown error",
