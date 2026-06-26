@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enum import IntFlag, StrEnum
+from enum import StrEnum
 from typing import TypedDict
 
 from synology_dsm.api import SynoBaseApi
@@ -15,16 +15,6 @@ class FanSpeed(StrEnum):
     FULL = "fullfan"
     COOL = "coolfan"
     QUIET = "quietfan"
-    STOP = "quietstopfan"
-
-
-class SupportedFanSpeed(IntFlag):
-    """Supported fan speed modes."""
-
-    COOL = 1
-    QUIET = 2
-    STOP = 4
-    FULL = 8
 
 
 class HardwareFan(TypedDict):
@@ -78,16 +68,6 @@ class SynoCoreHardware(SynoBaseApi[HardwareDataType]):
     def fan_speed(self) -> FanSpeed:
         """Return current system fan speed mode."""
         return self._data["fan_speed"]["dual_fan_speed"]
-
-    @property
-    def supported_fan_speeds(self) -> list[FanSpeed]:
-        """Return a list of supported system fan speed modes."""
-        supported_modes = SupportedFanSpeed(self._data["fan_speed"]["fan_type"])
-        return [
-            speed
-            for speed in FanSpeed
-            if getattr(SupportedFanSpeed, speed.name) in supported_modes
-        ]
 
     async def set_fan_speed(self, speed: FanSpeed) -> None:
         """Set system fan speed mode."""
