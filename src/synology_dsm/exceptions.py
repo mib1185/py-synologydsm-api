@@ -8,6 +8,7 @@ from .const import (
     API_AUTH,
     ERROR_AUTH,
     ERROR_COMMON,
+    ERROR_CORE_HARDWARE,
     ERROR_DOWNLOAD_SEARCH,
     ERROR_DOWNLOAD_TASK,
     ERROR_FILE,
@@ -25,6 +26,8 @@ class SynologyDSMException(Exception):
         if api and not reason:
             if api == API_AUTH:
                 reason = ERROR_AUTH.get(code)
+            elif "SYNO.Core.Hardware" in api:
+                reason = ERROR_CORE_HARDWARE.get(code)
             elif "SYNO.DownloadStation" in api:
                 if "BTSearch" in api:
                     reason = ERROR_DOWNLOAD_SEARCH.get(code)
