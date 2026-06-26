@@ -119,7 +119,7 @@ class TestSynologyDSM7:
             FanSpeed.FULL,
             FanSpeed.COOL,
             FanSpeed.QUIET,
-            FanSpeed.STOP,
+            FanSpeed.QUIET_STOP,
         ]
 
     @pytest.mark.asyncio

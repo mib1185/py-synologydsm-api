@@ -15,7 +15,7 @@ class FanSpeed(StrEnum):
     FULL = "fullfan"
     COOL = "coolfan"
     QUIET = "quietfan"
-    STOP = "quietstopfan"
+    QUIET_STOP = "quietstopfan"
 
 
 class SupportedFanSpeed(IntFlag):
@@ -23,7 +23,7 @@ class SupportedFanSpeed(IntFlag):
 
     COOL = 1
     QUIET = 2
-    STOP = 4
+    QUIET_STOP = 4
     FULL = 8
 
 
