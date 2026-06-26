@@ -101,12 +101,26 @@ class TestSynologyDSM7:
         assert dsm_7.hardware
         await dsm_7.hardware.update()
         assert dsm_7.hardware.fan_speed == FanSpeed.COOL
+        assert dsm_7.hardware.supported_fan_speeds == [
+            FanSpeed.FULL,
+            FanSpeed.COOL,
+            FanSpeed.QUIET,
+        ]
         data = dsm_7.hardware.data
         assert data["fan_speed"]["all_disk_temp_fail"] is False
         assert data["fan_speed"]["cool_fan"] is True
         assert data["fan_speed"]["dual_fan_speed"] == FanSpeed.COOL
         assert data["fan_speed"]["fan_support_adjust_by_ext_nic"] is False
         assert data["fan_speed"]["fan_type"] == 11
+
+        # simulate NAS with different supported fan modes
+        data["fan_speed"]["fan_type"] = 15
+        assert dsm_7.hardware.supported_fan_speeds == [
+            FanSpeed.FULL,
+            FanSpeed.COOL,
+            FanSpeed.QUIET,
+            FanSpeed.STOP,
+        ]
 
     @pytest.mark.asyncio
     async def test_hardware_no_data_error(self, dsm_7):
