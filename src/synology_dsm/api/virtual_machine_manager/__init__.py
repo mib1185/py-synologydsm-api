@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from synology_dsm.api import SynoBaseApi
+from synology_dsm.exceptions import SynologyDSMAPINoDataException
 
 from .guest import SynoVmmGuest
 
@@ -17,9 +18,8 @@ class SynoVirtualMachineManager(SynoBaseApi["dict[str, SynoVmmGuest]"]):
     async def update(self) -> None:
         """Updates Virtual Machine Manager data."""
         raw_data = await self._dsm.get(self.GUEST_API_KEY, "list")
-        print(raw_data)
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
-            return
+            raise SynologyDSMAPINoDataException(self.GUEST_API_KEY)
 
         for guest in data["guests"]:
             if guest["guest_id"] in self._data:

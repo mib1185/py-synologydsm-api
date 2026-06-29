@@ -1,11 +1,14 @@
 """Library exceptions."""
 
+# flake8: noqa: B042
+
 from __future__ import annotations
 
 from .const import (
     API_AUTH,
     ERROR_AUTH,
     ERROR_COMMON,
+    ERROR_CORE_HARDWARE,
     ERROR_DOWNLOAD_SEARCH,
     ERROR_DOWNLOAD_TASK,
     ERROR_FILE,
@@ -23,6 +26,8 @@ class SynologyDSMException(Exception):
         if api and not reason:
             if api == API_AUTH:
                 reason = ERROR_AUTH.get(code)
+            elif "SYNO.Core.Hardware" in api:
+                reason = ERROR_CORE_HARDWARE.get(code)
             elif "SYNO.DownloadStation" in api:
                 if "BTSearch" in api:
                     reason = ERROR_DOWNLOAD_SEARCH.get(code)
@@ -72,6 +77,14 @@ class SynologyDSMAPINotExistsException(SynologyDSMException):
     def __init__(self, api: str) -> None:
         """Constructor method."""
         super().__init__(api, -2, f"API {api} does not exists")
+
+
+class SynologyDSMAPINoDataException(SynologyDSMException):
+    """API no data exception."""
+
+    def __init__(self, api: str) -> None:
+        """Constructor method."""
+        super().__init__(api, -3, f"API {api} returned no data")
 
 
 class SynologyDSMAPIErrorException(SynologyDSMException):

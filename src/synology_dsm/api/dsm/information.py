@@ -28,12 +28,7 @@ class SynoDSMInformation(SynoBaseApi[DsmInformationDataType]):
     """Class containing Information data."""
 
     API_KEY = "SYNO.DSM.Info"
-
-    async def update(self) -> None:
-        """Updates information data."""
-        raw_data = await self._dsm.get(self.API_KEY, "getinfo")
-        if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
-            self._data = data
+    UPDATE_METHOD = "getinfo"
 
     @property
     def model(self) -> str:
@@ -75,6 +70,11 @@ class SynoDSMInformation(SynoBaseApi[DsmInformationDataType]):
     def version_string(self) -> str:
         """Version of the NAS."""
         return self._data["version_string"]
+
+    @property
+    def is_virtual(self) -> bool:
+        """Whether the NAS is a VirtualDSM."""
+        return self.model.lower() == "virtualdsm"
 
     @property
     def awesome_version(self) -> AwesomeVersion:

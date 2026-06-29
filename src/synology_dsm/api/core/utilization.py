@@ -60,12 +60,7 @@ class SynoCoreUtilization(SynoBaseApi[UtilizationDataType]):
     """Class containing Utilization data."""
 
     API_KEY = "SYNO.Core.System.Utilization"
-
-    async def update(self) -> None:
-        """Updates utilization data."""
-        raw_data = await self._dsm.get(self.API_KEY, "get")
-        if isinstance(raw_data, dict) and (data := raw_data.get("data")) is not None:
-            self._data = data
+    UPDATE_METHOD = "get"
 
     @property
     def cpu(self) -> CpuUtilization:

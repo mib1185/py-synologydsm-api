@@ -23,6 +23,7 @@ from yarl import URL
 
 from .api import SynoBaseApi
 from .api.core.external_usb import SynoCoreExternalUSB
+from .api.core.hardware import SynoCoreHardware
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
 from .api.core.system import SynoCoreSystem
@@ -106,6 +107,7 @@ class SynologyDSM:
         self._download: SynoDownloadStation | None = None
         self._external_usb: SynoCoreExternalUSB | None = None
         self._file: SynoFileStation | None = None
+        self._hardware: SynoCoreHardware | None = None
         self._hyperbackup: SynoHyperBackup | None = None
         self._information: SynoDSMInformation | None = None
         self._network: SynoDSMNetwork | None = None
@@ -478,6 +480,9 @@ class SynologyDSM:
         if self._external_usb:
             update_methods.append(self._external_usb.update())
 
+        if self._hardware:
+            update_methods.append(self._hardware.update())
+
         if self._hyperbackup:
             update_methods.append(self._hyperbackup.update())
 
@@ -527,6 +532,9 @@ class SynologyDSM:
             if api == SynoFileStation.API_KEY:
                 self._file = None
                 return True
+            if api == SynoCoreHardware.API_KEY:
+                self._hardware = None
+                return True
             if api == SynoCoreSecurity.API_KEY:
                 self._security = None
                 return True
@@ -565,6 +573,9 @@ class SynologyDSM:
             return True
         if isinstance(api, SynoFileStation):
             self._file = None
+            return True
+        if isinstance(api, SynoCoreHardware):
+            self._hardware = None
             return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
@@ -621,6 +632,13 @@ class SynologyDSM:
         if not self._file:
             self._file = SynoFileStation(self)
         return self._file
+
+    @property
+    def hardware(self) -> SynoCoreHardware:
+        """Gets NAS hardware information."""
+        if not self._hardware:
+            self._hardware = SynoCoreHardware(self)
+        return self._hardware
 
     @property
     def hyperbackup(self) -> SynoHyperBackup:
