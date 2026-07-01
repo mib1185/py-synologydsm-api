@@ -14,8 +14,8 @@ pep8-naming==0.15.1
 pre-commit-hooks==6.0.0
 pre-commit==4.6.0
 Pygments==2.20.0
-pylint==4.0.5
+pylint==4.0.6
 pytest-asyncio==1.4.0
-pytest==9.0.3
+pytest==9.1.1
 reorder-python-imports==3.16.0
 syrupy
