@@ -60,10 +60,9 @@ class SynoCoreHardware(SynoBaseApi[HardwareDataType]):
                 all_disk_temp_fail=data["all_disk_temp_fail"] == "yes",
                 cool_fan=data["cool_fan"] == "yes",
                 dual_fan_speed=FanSpeed(data["dual_fan_speed"]),
-                fan_support_adjust_by_ext_nic=data.get(
-                    "fan_support_adjust_by_ext_nic", "no"
-                )
-                == "yes",
+                fan_support_adjust_by_ext_nic=(
+                    data.get("fan_support_adjust_by_ext_nic", "no") == "yes"
+                ),
                 fan_type=data["fan_type"],
             )
 
