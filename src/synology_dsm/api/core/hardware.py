@@ -57,11 +57,14 @@ class SynoCoreHardware(SynoBaseApi[HardwareDataType]):
             and (data := raw_data_fan_speed.get("data")) is not None
         ):
             fan_speed = HardwareFan(
-                all_disk_temp_fail=data["all_disk_temp_fail"] == "yes",
+                all_disk_temp_fail=data.get("all_disk_temp_fail", "no") == "yes",
                 cool_fan=data["cool_fan"] == "yes",
                 dual_fan_speed=FanSpeed(data["dual_fan_speed"]),
                 fan_support_adjust_by_ext_nic=(
-                    data.get("fan_support_adjust_by_ext_nic", "no") == "yes"
+                    data.get(
+                        "fan_support_adjust_by_ext_nic", data.get("has_ext_nic", "no")
+                    )
+                    == "yes"
                 ),
                 fan_type=data["fan_type"],
             )
