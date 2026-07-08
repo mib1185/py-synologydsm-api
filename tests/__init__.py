@@ -40,6 +40,7 @@ from .api_data.dsm_6 import (
     DSM_6_AUTH_LOGIN,
     DSM_6_AUTH_LOGIN_2SA,
     DSM_6_AUTH_LOGIN_2SA_OTP,
+    DSM_6_CORE_HARDWARE_FANSPEED,
     DSM_6_CORE_SECURITY,
     DSM_6_CORE_SECURITY_UPDATE_OUTOFDATE,
     DSM_6_CORE_SHARE,
@@ -111,6 +112,7 @@ API_SWITCHER = {
         "AUTH_LOGIN_2SA_OTP": DSM_6_AUTH_LOGIN_2SA_OTP,
         "DSM_INFORMATION": DSM_6_DSM_INFORMATION,
         "DSM_NETWORK": DSM_6_DSM_NETWORK_2LAN_1PPPOE,
+        "CORE_HARDWARE": DSM_6_CORE_HARDWARE_FANSPEED,
         "CORE_SECURITY": DSM_6_CORE_SECURITY,
         "CORE_SHARE": DSM_6_CORE_SHARE,
         "CORE_SYSTEM": DSM_6_CORE_SYSTEM_DS918_PLUS,
@@ -128,6 +130,7 @@ API_SWITCHER = {
         "AUTH_LOGIN": DSM_7_AUTH_LOGIN,
         "AUTH_LOGIN_2SA": DSM_7_AUTH_LOGIN_2SA,
         "AUTH_LOGIN_2SA_OTP": DSM_7_AUTH_LOGIN_2SA_OTP,
+        "CORE_HARDWARE": DSM_7_CORE_HARDWARE_FANSPEED,
         "CORE_UPGRADE": DSM_7_CORE_UPGRADE_TRUE,
         "DSM_INFORMATION": DSM_7_DSM_INFORMATION,
         "FOTO_ALBUMS": DSM_7_FOTO_ALBUMS,
@@ -265,7 +268,7 @@ class SynologyDSMMock(SynologyDSM):
             if SynoCoreHardware.API_KEY_FANSPEED in url:
                 if SynoCoreHardware.API_KEY_FANSPEED in self.no_data_responses:
                     return {"success": True}
-                return DSM_7_CORE_HARDWARE_FANSPEED
+                return API_SWITCHER[self.dsm_version]["CORE_HARDWARE"]
 
             if SynoCoreSecurity.API_KEY in url:
                 if self.error:
