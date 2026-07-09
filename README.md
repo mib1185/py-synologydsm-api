@@ -471,6 +471,67 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Storage via SYNO.Core.System api usage
+
+Basic disk and volume information can also be obtained through the "SYNO.Core.System" API. The api.storage API requires connection as a user included in the administrators group. Starting with dsm 7.0, basic disk and volume information can be accessed by a user not in the administrators group via Delegated Administration -> System Monitoring.
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    print("=== System Storage ===")
+    await api.system_storage.update()
+    print("--Volumes--")
+    for volume_name in api.system_storage.volumes_names:
+        print("Name:         " + str(volume_name))
+        print("Status:       " + str(api.system_storage.volume_status(volume_name)))
+        print("% Used:       "
+              + str(api.system_storage.volume_percentage_used(volume_name)) + " %")
+        print("Is encrypted: "
+              + str(api.system_storage.volume_is_encrypted(volume_name)))
+        print("Description: "
+              + str(api.system_storage.volume_description(volume_name)))
+        print("--")
+
+    print("--Disks--")
+    for disk_id in api.system_storage.disks_ids:
+        print("ID:           " + str(disk_id))
+        print("Name:         " + str(api.system_storage.disk_name(disk_id)))
+        print("Smart status: " + str(api.system_storage.disk_smart_status(disk_id)))
+        print("Status:       " + str(api.system_storage.disk_status(disk_id)))
+        print("Temp:         " + str(api.system_storage.disk_temp(disk_id)))
+        print("device:       " + str(api.system_storage.disk_device(disk_id)))
+        print("Firmware:     " + str(api.system_storage.disk_firmware(disk_id)))
+        print("Model:        " + str(api.system_storage.disk_model(disk_id)))
+        print("Vendor:       " + str(api.system_storage.disk_vendor(disk_id)))
+        print("Serial:       " + str(api.system_storage.disk_serial(disk_id)))
+        print("Size Total:   "
+              + str(api.system_storage.disk_size_total(disk_id, human_readable=True)))
+        print("Type:         " + str(api.system_storage.disk_type(disk_id)))
+        print("Is below remain life threshold:  "
+              + str(api.system_storage.disk_below_remain_life_thr(disk_id)))
+        print("Danger Remain life:              "
+              + str(api.system_storage.disk_remain_life_danger(disk_id)))
+        print("--")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## Upgrade usage
 
 ```python
