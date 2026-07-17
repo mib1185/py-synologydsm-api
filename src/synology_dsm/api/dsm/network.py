@@ -40,6 +40,68 @@ class SynoDSMNetwork(SynoBaseApi[DsmNetworkDataType]):
     API_KEY = "SYNO.DSM.Network"
     UPDATE_METHOD = "list"
 
+    async def update(self) -> None:
+        """Update network data."""
+        await super().update()
+
+        if self.interfaces:
+            return
+
+        raw_data = await self._dsm.get(
+            "SYNO.Core.System",
+            "info",
+            {"type": "network"},
+            max_version=1,
+        )
+        if not isinstance(raw_data, dict):
+            return
+
+        data = raw_data.get("data")
+        if not isinstance(data, dict):
+            return
+
+        nif = data.get("nif")
+        if not isinstance(nif, list):
+            return
+
+        interfaces: list[NetworkInterface] = []
+
+        for item in nif:
+            if not isinstance(item, dict):
+                continue
+
+            interface_id = item.get("id")
+            if not isinstance(interface_id, str):
+                continue
+
+            interface: NetworkInterface = {
+                "id": interface_id,
+                "ipv6": [],
+            }
+
+            interface_type = item.get("type")
+            if isinstance(interface_type, str):
+                interface["type"] = interface_type
+
+            mac = item.get("mac")
+            if isinstance(mac, str):
+                interface["mac"] = mac
+
+            address = item.get("addr")
+            netmask = item.get("mask")
+            if isinstance(address, str) and isinstance(netmask, str):
+                interface["ip"] = [
+                    {
+                        "address": address,
+                        "netmask": netmask,
+                    }
+                ]
+
+            interfaces.append(interface)
+
+        if interfaces:
+            self._data["interfaces"] = interfaces
+
     @property
     def dns(self) -> list[str]:
         """DNS of the NAS."""
