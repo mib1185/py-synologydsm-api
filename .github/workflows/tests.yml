@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
 
       - name: Set up Python 3.14
-        uses: actions/setup-python@v6.3.0
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.14"
 
@@ -62,10 +62,10 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6.3.0
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -90,10 +90,10 @@ jobs:
     needs: tests
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
 
       - name: Set up Python 3.14
-        uses: actions/setup-python@v6.3.0
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.14"
 
@@ -123,12 +123,12 @@ jobs:
     needs: tests
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 2
 
       - name: Set up Python 3.14
-        uses: actions/setup-python@v6.3.0
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.14"
 
