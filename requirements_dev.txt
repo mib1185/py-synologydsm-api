@@ -9,13 +9,13 @@ flake8-bugbear==25.11.29
 flake8-docstrings==1.7.0
 flake8-rst-docstrings==0.4.0
 flake8==7.3.0
-mypy==2.1.0
+mypy==2.3.0
 pep8-naming==0.15.1
 pre-commit-hooks==6.0.0
-pre-commit==4.6.0
+pre-commit==4.6.1
 Pygments==2.20.0
 pylint==4.0.6
 pytest-asyncio==1.4.0
 pytest==9.1.1
-reorder-python-imports==3.16.0
+reorder-python-imports==3.17.0
 syrupy
