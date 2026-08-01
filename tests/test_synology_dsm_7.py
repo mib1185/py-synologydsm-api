@@ -152,6 +152,49 @@ class TestSynologyDSM7:
         assert dsm_7.information.awesome_version == "7.0.0"
 
     @pytest.mark.asyncio
+    async def test_network_empty_interfaces_fallback(self, dsm_7):
+        """Test network fallback when SYNO.DSM.Network returns no interfaces."""
+        assert await dsm_7.login()
+        assert dsm_7.network
+
+        await dsm_7.network.update()
+        assert dsm_7.network.dns == ["192.168.1.5"]
+        assert dsm_7.network.gateway == "192.168.1.1"
+        assert dsm_7.network.hostname == "DiskStation"
+        assert dsm_7.network.workgroup == "WORKGROUP"
+
+        assert dsm_7.network.interfaces == [
+            {
+                "id": "eth0",
+                "ip": [
+                    {
+                        "address": "192.168.1.10",
+                        "netmask": "255.255.255.0",
+                    }
+                ],
+                "ipv6": [],
+                "mac": "00-11-32-00-00-01",
+                "type": "lan",
+            },
+            {
+                "id": "eth1",
+                "ip": [
+                    {
+                        "address": "169.254.216.44",
+                        "netmask": "255.255.0.0",
+                    }
+                ],
+                "ipv6": [],
+                "mac": "00-11-32-00-00-02",
+                "type": "lan",
+            },
+        ]
+        assert dsm_7.network.macs == [
+            "00-11-32-00-00-01",
+            "00-11-32-00-00-02",
+        ]
+
+    @pytest.mark.asyncio
     async def test_information_no_data_error(self, dsm_7):
         """Test information no data error."""
         dsm_7.no_data_responses.append(SynoDSMInformation.API_KEY)
