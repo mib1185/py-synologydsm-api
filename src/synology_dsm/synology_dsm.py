@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import socket
+import ssl
 from hashlib import md5
 from ipaddress import IPv6Address
 from json import JSONDecodeError
@@ -12,8 +13,10 @@ from typing import Any, Coroutine, TypedDict
 from urllib.parse import quote, urlencode
 
 from aiohttp import (
+    ClientConnectorCertificateError,
     ClientError,
     ClientSession,
+    ClientSSLError,
     ClientTimeout,
     MultipartWriter,
     StreamReader,
@@ -50,6 +53,7 @@ from .exceptions import (
     SynologyDSMLoginPermissionDeniedException,
     SynologyDSMNotLoggedInException,
     SynologyDSMRequestException,
+    SynologyDSMSSLException,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -463,6 +467,9 @@ class SynologyDSM:
             # We got a 400, 401 or 404 ...
             raise ClientError(response)
 
+        except (ClientConnectorCertificateError, ClientSSLError, ssl.SSLError) as exp:
+            # must be caught before ClientError, which is their base class
+            raise SynologyDSMSSLException(exp) from exp
         except (ClientError, asyncio.TimeoutError, JSONDecodeError) as exp:
             raise SynologyDSMRequestException(exp) from exp
 
