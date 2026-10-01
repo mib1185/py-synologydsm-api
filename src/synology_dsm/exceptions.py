@@ -70,6 +70,26 @@ class SynologyDSMRequestException(SynologyDSMException):
         super().__init__(None, -1, f"{ex_class} = {ex_reason}")
 
 
+class SynologyDSMSSLException(SynologyDSMRequestException):
+    """SSL/TLS exception (e.g. expired or untrusted certificate, failed handshake).
+
+    Subclass of SynologyDSMRequestException, so existing handlers which catch
+    SynologyDSMRequestException keep working unchanged.
+    """
+
+    def __init__(self, exception: Exception) -> None:
+        """Constructor method."""
+        ex_class = exception.__class__.__name__
+        # aiohttp's ClientConnectorCertificateError keeps the meaningful message
+        # (e.g. "certificate has expired") in certificate_error, whereas args[0]
+        # is just a ConnectionKey.
+        reason = getattr(exception, "certificate_error", None) or (
+            exception.args[-1] if exception.args else None
+        )
+        # Skip SynologyDSMRequestException.__init__, which would use args[0]
+        SynologyDSMException.__init__(self, None, -1, f"{ex_class} = {reason}")
+
+
 # API
 class SynologyDSMAPINotExistsException(SynologyDSMException):
     """API not exists exception."""
