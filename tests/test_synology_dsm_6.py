@@ -3,6 +3,7 @@
 # pylint: disable=protected-access
 import pytest
 
+from synology_dsm.api.core.hardware import FanSpeed
 from synology_dsm.const import API_AUTH
 from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
 
@@ -520,3 +521,18 @@ class TestSynologyDSM6:
         assert await dsm_6.surveillance_station.get_home_mode_status()
         assert await dsm_6.surveillance_station.set_home_mode(False)
         assert await dsm_6.surveillance_station.set_home_mode(True)
+
+    @pytest.mark.asyncio
+    async def test_hardware(self, dsm_6):
+        """Test hardware."""
+        assert await dsm_6.login()
+        assert dsm_6.hardware
+        await dsm_6.hardware.update()
+        assert dsm_6.hardware.fan_speed == FanSpeed.COOL
+        assert dsm_6.hardware.supported_fan_speeds == [FanSpeed.COOL]
+        data = dsm_6.hardware.data
+        assert data["fan_speed"]["all_disk_temp_fail"] is False
+        assert data["fan_speed"]["cool_fan"] is True
+        assert data["fan_speed"]["dual_fan_speed"] == FanSpeed.COOL
+        assert data["fan_speed"]["fan_support_adjust_by_ext_nic"] is False
+        assert data["fan_speed"]["fan_type"] == 1
