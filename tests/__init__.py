@@ -73,8 +73,10 @@ from .api_data.dsm_7 import (
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_EXTERNAL_USB,
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB,
     DSM_7_CORE_HARDWARE_FANSPEED,
+    DSM_7_CORE_SYSTEM_NETWORK,
     DSM_7_CORE_UPGRADE_TRUE,
     DSM_7_DSM_INFORMATION,
+    DSM_7_DSM_NETWORK_EMPTY_INTERFACES,
     DSM_7_FILE_STATION_FILES,
     DSM_7_FILE_STATION_FOLDERS,
     DSM_7_FOTO_ALBUMS,
@@ -131,6 +133,8 @@ API_SWITCHER = {
         "AUTH_LOGIN_2SA": DSM_7_AUTH_LOGIN_2SA,
         "AUTH_LOGIN_2SA_OTP": DSM_7_AUTH_LOGIN_2SA_OTP,
         "CORE_HARDWARE": DSM_7_CORE_HARDWARE_FANSPEED,
+        "CORE_SYSTEM_NETWORK": DSM_7_CORE_SYSTEM_NETWORK,
+        "DSM_NETWORK": DSM_7_DSM_NETWORK_EMPTY_INTERFACES,
         "CORE_UPGRADE": DSM_7_CORE_UPGRADE_TRUE,
         "DSM_INFORMATION": DSM_7_DSM_INFORMATION,
         "FOTO_ALBUMS": DSM_7_FOTO_ALBUMS,
@@ -285,6 +289,8 @@ class SynologyDSMMock(SynologyDSM):
                     if SynoCoreUtilization.API_KEY in self.no_data_responses:
                         return {"success": True}
                     return API_SWITCHER[self.dsm_version]["CORE_UTILIZATION"]
+                if "type=network" in url:
+                    return API_SWITCHER[self.dsm_version]["CORE_SYSTEM_NETWORK"]
                 return API_SWITCHER[self.dsm_version]["CORE_SYSTEM"]
 
             if SynoCoreUpgrade.API_KEY in url:
