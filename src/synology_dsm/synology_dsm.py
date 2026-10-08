@@ -222,7 +222,7 @@ class SynologyDSM:
         if result["data"].get("device_id"):
             # Not available on API version < 7
             self._device_token = result["data"]["device_id"]
-        self._debuglog("Authentication successful, token: " + str(self._session_id))
+        self._debuglog("Authentication successful")
 
         if not self._information:
             self._information = SynoDSMInformation(self)
@@ -334,7 +334,12 @@ class SynologyDSM:
         )
         self._debuglog("Successful returned data")
         if not raw_response_content:
-            self._debuglog("RESPONSE: " + str(response))
+            if api == API_AUTH:
+                # Never log the SYNO.API.Auth body: it carries the session id,
+                # the SynoToken and the long-lived 2FA device token
+                self._debuglog("RESPONSE: <masked SYNO.API.Auth response>")
+            else:
+                self._debuglog("RESPONSE: " + str(response))
 
         # Handle data errors
         if isinstance(response, dict) and response.get("error") and api != API_AUTH:
