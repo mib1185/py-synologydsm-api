@@ -133,8 +133,14 @@ class SynoFileStation(SynoBaseApi):
         filename: str,
         source: bytes | BufferedReader | AsyncIterator[bytes] | str,
         create_parents: bool = False,
+        size: int | None = None,
     ) -> bool | None:
-        """Upload a file to a folder from eather a local source_file or content."""
+        """Upload a file to a folder from eather a local source_file or content.
+
+        Pass the size of an AsyncIterator source to send it with a Content-Length
+        instead of chunked transfer encoding, which DSM's reverse proxy buffers
+        completely before forwarding (leads to 504 Gateway Timeout on large files).
+        """
         if isinstance(source, str):
             source = open(source, "rb")
 
@@ -145,6 +151,7 @@ class SynoFileStation(SynoBaseApi):
             filename=filename,
             content=source,
             create_parents=create_parents,
+            size=size,
         )
         if not isinstance(raw_data, dict):
             return None

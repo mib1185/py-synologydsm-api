@@ -8,7 +8,7 @@ import socket
 from hashlib import md5
 from ipaddress import IPv6Address
 from json import JSONDecodeError
-from typing import Any, Coroutine, TypedDict
+from typing import Any, AsyncIterable, Coroutine, TypedDict
 from urllib.parse import quote, urlencode
 
 from aiohttp import (
@@ -19,6 +19,7 @@ from aiohttp import (
     StreamReader,
     hdrs,
 )
+from aiohttp.payload import AsyncIterablePayload
 from yarl import URL
 
 from .api import SynoBaseApi
@@ -61,6 +62,15 @@ class ApiType(TypedDict):
     maxVersion: int  # noqa: N815
     minVersion: int  # noqa: N815
     path: str
+
+
+class SizedAsyncIterablePayload(AsyncIterablePayload):
+    """AsyncIterablePayload with a known size, to avoid chunked transfer encoding."""
+
+    def __init__(self, value: AsyncIterable[bytes], size: int) -> None:
+        """Initialize the payload."""
+        super().__init__(value)
+        self._size = size
 
 
 class SynologyDSM:
@@ -386,6 +396,9 @@ class SynologyDSM:
                 path = kwargs.pop("path")
                 filename = kwargs.pop("filename")
                 create_parents = kwargs.pop("create_parents", None)
+                size = kwargs.pop("size", None)
+                if size is not None and isinstance(content, AsyncIterable):
+                    content = SizedAsyncIterablePayload(content, size)
 
                 boundary = md5(
                     str(url_encoded).encode("utf-8"), usedforsecurity=False
