@@ -70,7 +70,12 @@ class SizedAsyncIterablePayload(AsyncIterablePayload):
     def __init__(self, value: AsyncIterable[bytes], size: int) -> None:
         """Initialize the payload."""
         super().__init__(value)
-        self._size = size
+        self._content_size = size
+
+    @property
+    def size(self) -> int:
+        """Size of the payload in bytes."""
+        return self._content_size
 
 
 class SynologyDSM:
