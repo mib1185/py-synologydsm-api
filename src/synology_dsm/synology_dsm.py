@@ -231,8 +231,14 @@ class SynologyDSM:
         return bool(result["success"])
 
     async def logout(self) -> bool:
-        """Log out of the session."""
+        """Log out of the session.
+
+        Once the logout request has been sent, the session credential is
+        forgotten so that it can no longer be used for requests or urls.
+        """
         result = await self.get(API_AUTH, "logout")
+        self._session_id = None
+        self._syno_token = None
         if not isinstance(result, dict):
             return False
 
@@ -263,9 +269,25 @@ class SynologyDSM:
         api: str,
         method: str,
         params: dict | None = None,
+        *,
+        include_session: bool = True,
     ) -> str:
-        """Generate an url for external usage."""
+        """Generate an url for external usage.
+
+        WARNING: by default the returned url embeds the full-privilege session
+        credential of the logged-in DSM account (the ``_sid`` and ``SynoToken``
+        query parameters). Such an url is a bearer credential that authorizes
+        *every* DSM API call as that account, not only the one it was built
+        for. Treat it as a secret: never hand it to a less-trusted party (a
+        browser, log files, other users, ...). Pass ``include_session=False``
+        to get the url without the session credential, or fetch the content
+        through the library (e.g. ``photos.download_item_thumbnail()``) and
+        serve it yourself instead of sharing the url.
+        """
         url, params, _ = await self._prepare_request(api, method, params)
+        if not include_session:
+            params.pop("_sid", None)
+            params.pop("SynoToken", None)
         return str(URL(url).update_query(params))
 
     async def _prepare_request(

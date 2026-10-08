@@ -65,6 +65,31 @@ class TestSynologyDSM7:
         assert isinstance(dsm_7.virtual_machine_manager, SynoVirtualMachineManager)
 
     @pytest.mark.asyncio
+    async def test_generate_url(self, dsm_7):
+        """Test generated urls embed the session credential only by default."""
+        assert await dsm_7.login()
+        base_url = f"https://{VALID_HOST}:{VALID_PORT}/webapi/entry.cgi?"
+
+        params = {"id": 29807, "cache_key": "29807_1668560967", "size": "xl"}
+        url = await dsm_7.generate_url(SynoPhotos.THUMBNAIL_API_KEY, "get", params)
+        assert url == (
+            f"{base_url}id=29807&cache_key=29807_1668560967&size=xl"
+            "&api=SYNO.Foto.Thumbnail&version=2&method=get"
+            "&_sid=session_id&SynoToken=Sy%C3%B10_T0k%E2%82%AC%C3%B1"
+        )
+
+        params = {"id": 29807, "cache_key": "29807_1668560967", "size": "xl"}
+        url = await dsm_7.generate_url(
+            SynoPhotos.THUMBNAIL_API_KEY, "get", params, include_session=False
+        )
+        assert url == (
+            f"{base_url}id=29807&cache_key=29807_1668560967&size=xl"
+            "&api=SYNO.Foto.Thumbnail&version=2&method=get"
+        )
+        assert "_sid" not in url
+        assert "SynoToken" not in url
+
+    @pytest.mark.asyncio
     async def test_login_2sa(self):
         """Test login with 2SA."""
         dsm_7 = SynologyDSMMock(

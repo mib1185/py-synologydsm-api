@@ -235,6 +235,12 @@ class SynologyDSMMock(SynologyDSM):
             return API_SWITCHER[self.dsm_version]["API_INFO"]
 
         if API_AUTH in url:
+            if "method=logout" in url:
+                # a logout request has to carry the session it terminates
+                if "_sid=" in url:
+                    return {"success": True}
+                return ERROR_INSUFFICIENT_USER_PRIVILEGE
+
             if VALID_USER_2SA in url and VALID_PASSWORD in url:
                 if "otp_code" not in url and "device_id" not in url:
                     return API_SWITCHER[self.dsm_version]["AUTH_LOGIN_2SA"]
