@@ -16,7 +16,7 @@ from synology_dsm.api.dsm.information import SynoDSMInformation
 from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
-from synology_dsm.const import API_AUTH, API_INFO
+from synology_dsm.const import API_AUTH, API_INFO, SENSITIV_PARAMS
 from synology_dsm.exceptions import (
     SynologyDSMAPIErrorException,
     SynologyDSMAPINoDataException,
@@ -51,6 +51,20 @@ class TestSynologyDSM:
         assert dsm._aiohttp_timeout.total == 10
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
+
+    def test_sensitive_params(self):
+        """Test secret request parameters are masked in debug logs."""
+        for param in (
+            "account",
+            "passwd",
+            "_sid",
+            "SynoToken",
+            "device_id",
+            "otp_code",
+            "unzip_password",
+            "passphrase",
+        ):
+            assert param in SENSITIV_PARAMS
 
     @pytest.mark.parametrize("version", [5, 6, 7])
     @pytest.mark.asyncio
