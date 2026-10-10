@@ -187,6 +187,7 @@ class SynologyDSMMock(SynologyDSM):
         self.disks_redundancy = "RAID"  # RAID or SHR[number][_EXPANSION]
         self.error = False
         self.no_data_responses = []
+        self.insufficient_privilege_responses = []
         self.with_surveillance = False
         self.usb_device_connected = True
 
@@ -282,6 +283,10 @@ class SynologyDSMMock(SynologyDSM):
                 if SynoCoreUtilization.API_KEY in url:
                     if self.error:
                         return DSM_6_CORE_UTILIZATION_ERROR_1055
+                    if SynoCoreUtilization.API_KEY in (
+                        self.insufficient_privilege_responses
+                    ):
+                        return ERROR_INSUFFICIENT_USER_PRIVILEGE
                     if SynoCoreUtilization.API_KEY in self.no_data_responses:
                         return {"success": True}
                     return API_SWITCHER[self.dsm_version]["CORE_UTILIZATION"]
