@@ -1,6 +1,8 @@
 """Synology DSM tests."""
 
 # pylint: disable=protected-access
+import logging
+
 import pytest
 from aiohttp import ClientTimeout
 
@@ -33,12 +35,14 @@ from . import (
     USER_MAX_TRY,
     VALID_HOST,
     VALID_HTTPS,
+    VALID_OTP,
     VALID_PASSWORD,
     VALID_PORT,
     VALID_USER,
     VALID_USER_2SA,
     SynologyDSMMock,
 )
+from .const import DEVICE_TOKEN, SESSION_ID, SYNO_TOKEN
 
 
 class TestSynologyDSM:
@@ -135,6 +139,31 @@ class TestSynologyDSM:
         assert dsm._session_id is None
         assert dsm._syno_token is None
         assert dsm._device_token is None
+
+    @pytest.mark.parametrize("version", [5, 6, 7])
+    @pytest.mark.asyncio
+    async def test_login_debug_log_masks_credentials(self, version, caplog):
+        """Test the auth response and session id are not written to the log."""
+        dsm = SynologyDSMMock(
+            None,
+            VALID_HOST,
+            VALID_PORT,
+            VALID_USER_2SA,
+            VALID_PASSWORD,
+            VALID_HTTPS,
+        )
+        dsm.dsm_version = version
+
+        with caplog.at_level(logging.DEBUG):
+            assert await dsm.login(VALID_OTP)
+
+        assert dsm._session_id == SESSION_ID
+        assert dsm.device_token == DEVICE_TOKEN
+        assert "Authentication successful" in caplog.text
+        assert "RESPONSE: <masked SYNO.API.Auth response>" in caplog.text
+        assert SESSION_ID not in caplog.text
+        assert SYNO_TOKEN not in caplog.text
+        assert DEVICE_TOKEN not in caplog.text
 
     @pytest.mark.parametrize("version", [5, 6, 7])
     @pytest.mark.asyncio
