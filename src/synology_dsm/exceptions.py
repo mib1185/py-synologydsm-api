@@ -95,6 +95,14 @@ class SynologyDSMAPIErrorException(SynologyDSMException):
         super().__init__(api, code, details)
 
 
+class SynologyDSMAPIInsufficientPrivilegeException(SynologyDSMAPIErrorException):
+    """API returns insufficient user privilege exception."""
+
+    def __init__(self, api: str, details: str) -> None:
+        """Constructor method."""
+        super().__init__(api, 105, details)
+
+
 # Login
 class SynologyDSMLoginFailedException(SynologyDSMException):
     """Failed to login exception."""

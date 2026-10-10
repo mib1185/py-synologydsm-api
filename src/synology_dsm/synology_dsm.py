@@ -40,6 +40,7 @@ from .api.virtual_machine_manager import SynoVirtualMachineManager
 from .const import API_AUTH, API_INFO, SENSITIV_PARAMS
 from .exceptions import (
     SynologyDSMAPIErrorException,
+    SynologyDSMAPIInsufficientPrivilegeException,
     SynologyDSMAPINotExistsException,
     SynologyDSMLogin2SAFailedException,
     SynologyDSMLogin2SAForcedException,
@@ -358,6 +359,10 @@ class SynologyDSM:
                 self._session_id = None
                 self._syno_token = None
                 return await self._request(request_method, api, method, params, False)
+            if response["error"]["code"] == 105:
+                raise SynologyDSMAPIInsufficientPrivilegeException(
+                    api, response["error"].get("errors")
+                )
             raise SynologyDSMAPIErrorException(
                 api, response["error"]["code"], response["error"].get("errors")
             )
