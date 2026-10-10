@@ -90,7 +90,7 @@ class SynologyDSMAPINoDataException(SynologyDSMException):
 class SynologyDSMAPIErrorException(SynologyDSMException):
     """API returns an error exception."""
 
-    def __init__(self, api: str, code: int, details: str) -> None:
+    def __init__(self, api: str, code: int, details: str | None) -> None:
         """Constructor method."""
         super().__init__(api, code, details)
 
@@ -98,7 +98,7 @@ class SynologyDSMAPIErrorException(SynologyDSMException):
 class SynologyDSMAPIInsufficientPrivilegeException(SynologyDSMAPIErrorException):
     """API returns insufficient user privilege exception."""
 
-    def __init__(self, api: str, details: str) -> None:
+    def __init__(self, api: str, details: str | None) -> None:
         """Constructor method."""
         super().__init__(api, 105, details)
 
