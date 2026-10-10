@@ -199,8 +199,8 @@ class SynologyDSM:
         if self._device_token:
             params["device_id"] = self._device_token
 
-        # Request login
-        result = await self.get(API_AUTH, "login", params)
+        # Request login (POST so the credentials are sent in the body only)
+        result = await self.post(API_AUTH, "login", params)
         if not isinstance(result, dict):
             return False
 
@@ -431,9 +431,20 @@ class SynologyDSM:
                         data=mp,
                     )
             elif method == "POST":
-                data = {}
-                if params is not None:
-                    data.update(params)
+                # only the routing parameters go into the URL query, all other
+                # parameters (credentials, session id, token, caller params)
+                # are sent in the body only to keep them out of access logs
+                url_params = ("api", "version", "method", "action")
+                query = urlencode(
+                    {key: params[key] for key in url_params if key in params},
+                    safe="?/:@-._~!$'()*,",
+                    quote_via=quote,
+                )
+                url_encoded = url.join(URL(f"?{query}", encoded=True))
+
+                data = {
+                    key: value for key, value in params.items() if key not in url_params
+                }
                 data.update(kwargs.pop("data", {}))
                 data["mimeType"] = "application/json"
                 kwargs["data"] = data
@@ -447,7 +458,7 @@ class SynologyDSM:
             if _LOGGER.isEnabledFor(logging.DEBUG) or self._debugmode:
                 response_url = response.url  # pylint: disable=E0606
                 for param in SENSITIV_PARAMS:
-                    if params is not None and params.get(param):
+                    if param in response_url.query:
                         response_url = response_url.update_query({param: "*********"})
                 self._debuglog("Request url: " + str(response_url))
                 self._debuglog(

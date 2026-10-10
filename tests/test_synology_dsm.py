@@ -2,10 +2,12 @@
 
 # pylint: disable=protected-access
 import logging
+from types import SimpleNamespace
 
 import pytest
 from aiohttp import ClientTimeout
 
+from synology_dsm import SynologyDSM
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.hardware import SynoCoreHardware
 from synology_dsm.api.core.security import SynoCoreSecurity
@@ -43,7 +45,53 @@ from . import (
     VALID_USER_2SA,
     SynologyDSMMock,
 )
+from .api_data.dsm_7 import DSM_7_API_INFO, DSM_7_AUTH_LOGIN, DSM_7_DSM_INFORMATION
 from .const import DEVICE_TOKEN, SESSION_ID, SYNO_TOKEN
+
+
+class FakeResponse:
+    """Fake aiohttp response returned by the FakeSession."""
+
+    def __init__(self, url, payload):
+        """Constructor method."""
+        self.status = 200
+        self.headers = {"Content-Type": "application/json"}
+        self.url = url
+        self.request_info = SimpleNamespace(headers={})
+        self._payload = payload
+
+    async def json(self, content_type=None):
+        """Return the canned json payload."""
+        return self._payload
+
+
+class FakeSession:
+    """Fake aiohttp session which records the requests it receives."""
+
+    def __init__(self):
+        """Constructor method."""
+        self.requests = []
+
+    def _handle(self, method, url, **kwargs):
+        self.requests.append((method, url, kwargs))
+        api = url.query.get("api")
+        if api == API_INFO:
+            payload = DSM_7_API_INFO
+        elif api == API_AUTH:
+            payload = DSM_7_AUTH_LOGIN
+        elif api == SynoDSMInformation.API_KEY:
+            payload = DSM_7_DSM_INFORMATION
+        else:
+            payload = {"data": {}, "success": True}
+        return FakeResponse(url, payload)
+
+    async def get(self, url, **kwargs):
+        """Record a GET request and return a fake response."""
+        return self._handle("GET", url, **kwargs)
+
+    async def post(self, url, **kwargs):
+        """Record a POST request and return a fake response."""
+        return self._handle("POST", url, **kwargs)
 
 
 class TestSynologyDSM:
@@ -430,23 +478,152 @@ class TestSynologyDSM:
         assert error_value["reason"] == "File does not exist"
         assert not error_value["details"]
 
+    @staticmethod
+    def _real_dsm(session, **kwargs):
+        """Return a real SynologyDSM using the given fake session."""
+        return SynologyDSM(
+            session,
+            VALID_HOST,
+            VALID_PORT,
+            VALID_USER,
+            VALID_PASSWORD,
+            VALID_HTTPS,
+            **kwargs,
+        )
+
     def test_mask_sensitive_params(self, dsm):
-        """Test sensitive request parameters are masked for debug output."""
+        """Test sensitive params are masked in a copy, the input is untouched."""
         params = {param: f"secret_{param}" for param in SENSITIV_PARAMS}
-        params.update({"api": API_AUTH, "method": "login", "version": 7})
+        params.update({"api": API_AUTH, "version": 7, "method": "login"})
+        original = dict(params)
 
         masked = dsm._mask_sensitive_params(params)
-
+        assert masked is not params
+        assert set(masked) == set(params)
         for param in SENSITIV_PARAMS:
             assert masked[param] == "*********"
             assert f"secret_{param}" not in str(masked)
         assert masked["api"] == API_AUTH
-        assert masked["method"] == "login"
         assert masked["version"] == 7
+        assert masked["method"] == "login"
+        assert params == original
 
-        # the params dict actually sent must not be altered
-        for param in SENSITIV_PARAMS:
-            assert params[param] == f"secret_{param}"
+    @pytest.mark.asyncio
+    async def test_login_credentials_in_post_body(self, caplog):
+        """Test login is a POST with the credentials only in the body."""
+        caplog.set_level(logging.DEBUG)
+        session = FakeSession()
+        dsm = self._real_dsm(session, device_token=DEVICE_TOKEN)
+        assert await dsm.login()
+        assert dsm._session_id == SESSION_ID
+        assert dsm._syno_token == SYNO_TOKEN
+
+        login_requests = [
+            request
+            for request in session.requests
+            if request[1].query.get("api") == API_AUTH
+        ]
+        assert len(login_requests) == 1
+        method, url, kwargs = login_requests[0]
+        assert method == "POST"
+        assert set(url.query) == {"api", "version", "method"}
+        assert url.query["method"] == "login"
+        data = kwargs["data"]
+        assert data["account"] == VALID_USER
+        assert data["passwd"] == VALID_PASSWORD
+        assert data["device_id"] == DEVICE_TOKEN
+        assert data["enable_device_token"] == "yes"
+        assert data["device_name"]
+        assert data["mimeType"] == "application/json"
+
+        # neither the password nor the device token reach any log message
+        # (the session id is logged by the login response itself only)
+        for message in caplog.messages:
+            assert VALID_PASSWORD not in message
+            assert DEVICE_TOKEN not in message
+            if message.startswith(("Request url: ", "POST data: ")):
+                assert SESSION_ID not in message
+        # the logged copy of the POST body is masked, the sent body is not
+        data_logs = [msg for msg in caplog.messages if msg.startswith("POST data: ")]
+        assert len(data_logs) == 1
+        assert VALID_USER not in data_logs[0]
+        assert "'account': '*********'" in data_logs[0]
+        assert "'passwd': '*********'" in data_logs[0]
+        assert "'device_id': '*********'" in data_logs[0]
+        assert "'enable_device_token': 'yes'" in data_logs[0]
+        assert data["account"] == VALID_USER
+        assert data["passwd"] == VALID_PASSWORD
+
+    @pytest.mark.asyncio
+    async def test_request_post_session_in_body(self, caplog):
+        """Test POST sends session id, token and params only in the body."""
+        caplog.set_level(logging.DEBUG)
+        session = FakeSession()
+        dsm = self._real_dsm(session, debugmode=True)
+        assert await dsm.login()
+        session.requests.clear()
+        caplog.clear()
+
+        assert await dsm.post(
+            SynoCoreShare.API_KEY,
+            "list",
+            {"caller": "param", "overridden": "param"},
+            data={"overridden": "data"},
+        )
+        method, url, kwargs = session.requests[0]
+        assert method == "POST"
+        assert set(url.query) == {"api", "version", "method"}
+        assert url.query["api"] == SynoCoreShare.API_KEY
+        assert url.query["method"] == "list"
+        data = kwargs["data"]
+        assert data["_sid"] == SESSION_ID
+        assert data["SynoToken"] == SYNO_TOKEN
+        assert data["caller"] == "param"
+        assert data["overridden"] == "data"
+        assert data["mimeType"] == "application/json"
+
+        # the logged url neither contains the secrets nor a mask placeholder
+        url_logs = [msg for msg in caplog.messages if msg.startswith("Request url: ")]
+        assert len(url_logs) == 1
+        assert SESSION_ID not in url_logs[0]
+        assert "_sid" not in url_logs[0]
+        assert "SynoToken" not in url_logs[0]
+        assert "*********" not in url_logs[0]
+        # the logged POST body masks the session id and token
+        data_logs = [msg for msg in caplog.messages if msg.startswith("POST data: ")]
+        assert len(data_logs) == 1
+        assert SESSION_ID not in data_logs[0]
+        assert SYNO_TOKEN not in data_logs[0]
+        assert "'_sid': '*********'" in data_logs[0]
+        assert "'SynoToken': '*********'" in data_logs[0]
+        assert "'caller': 'param'" in data_logs[0]
+
+    @pytest.mark.asyncio
+    async def test_request_get_params_in_query(self, caplog):
+        """Test GET still sends its parameters in the URL query."""
+        caplog.set_level(logging.DEBUG)
+        session = FakeSession()
+        dsm = self._real_dsm(session)
+        assert await dsm.login()
+        session.requests.clear()
+        caplog.clear()
+
+        assert await dsm.get(SynoCoreShare.API_KEY, "list", {"caller": "param"})
+        method, url, kwargs = session.requests[0]
+        assert method == "GET"
+        assert url.query["api"] == SynoCoreShare.API_KEY
+        assert url.query["method"] == "list"
+        assert url.query["caller"] == "param"
+        assert url.query["_sid"] == SESSION_ID
+        assert url.query["SynoToken"] == SYNO_TOKEN
+        assert "data" not in kwargs
+
+        # the logged url shows a mask placeholder instead of the secrets
+        url_logs = [msg for msg in caplog.messages if msg.startswith("Request url: ")]
+        assert len(url_logs) == 1
+        assert SESSION_ID not in url_logs[0]
+        assert "_sid=*********" in url_logs[0]
+        assert "SynoToken=*********" in url_logs[0]
 
     def test_reset_str_attr(self, dsm):
         """Test reset with string attr."""
