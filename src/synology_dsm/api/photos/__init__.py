@@ -181,7 +181,16 @@ class SynoPhotos(SynoBaseApi):
         return None
 
     async def get_item_thumbnail_url(self, item: SynoPhotosItem) -> str:
-        """Get the url of given items thumbnail."""
+        """Get the url of given items thumbnail.
+
+        WARNING: the returned url embeds the full-privilege session credential
+        of the logged-in DSM account (the ``_sid`` and ``SynoToken`` query
+        parameters), so it is a bearer credential that authorizes *every* DSM
+        API call as that account, not only this thumbnail download. Treat it
+        as a secret: never hand it to a less-trusted party (a browser, log
+        files, other users, ...). If the thumbnail has to be shared, fetch it
+        through ``download_item_thumbnail()`` and serve the bytes yourself.
+        """
         download_api = self.THUMBNAIL_API_KEY
         if item.is_shared:
             download_api = self.THUMBNAIL_FOTOTEAM_API_KEY

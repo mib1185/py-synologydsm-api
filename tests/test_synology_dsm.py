@@ -143,6 +143,61 @@ class TestSynologyDSM:
 
     @pytest.mark.parametrize("version", [5, 6, 7])
     @pytest.mark.asyncio
+    async def test_logout(self, version):
+        """Test logout clears the session credential."""
+        dsm = SynologyDSMMock(
+            None,
+            VALID_HOST,
+            VALID_PORT,
+            VALID_USER,
+            VALID_PASSWORD,
+            VALID_HTTPS,
+        )
+        dsm.dsm_version = version
+        assert await dsm.login()
+        assert dsm._session_id
+
+        assert await dsm.logout()
+        assert dsm._session_id is None
+        assert dsm._syno_token is None
+
+        # the forgotten credential can neither be sent nor embedded in urls
+        with pytest.raises(SynologyDSMNotLoggedInException):
+            await dsm.utilisation.update()
+        with pytest.raises(SynologyDSMNotLoggedInException):
+            await dsm.generate_url("SYNO.DownloadStation2.Task", "list")
+
+        # without a session there is nothing left to log out from
+        assert not await dsm.logout()
+
+    @pytest.mark.parametrize("version", [5, 6, 7])
+    @pytest.mark.asyncio
+    async def test_logout_request_failed(self, version, monkeypatch):
+        """Test logout clears the session credential even if the request fails."""
+        dsm = SynologyDSMMock(
+            None,
+            VALID_HOST,
+            VALID_PORT,
+            VALID_USER,
+            VALID_PASSWORD,
+            VALID_HTTPS,
+        )
+        dsm.dsm_version = version
+        assert await dsm.login()
+        assert dsm._session_id
+
+        async def _failing_request(*args, **kwargs):
+            raise SynologyDSMRequestException(TimeoutError())
+
+        monkeypatch.setattr(dsm, "_execute_request", _failing_request)
+
+        with pytest.raises(SynologyDSMRequestException):
+            await dsm.logout()
+        assert dsm._session_id is None
+        assert dsm._syno_token is None
+
+    @pytest.mark.parametrize("version", [5, 6, 7])
+    @pytest.mark.asyncio
     async def test_login_basic_failed(self, version):
         """Test basic failed login."""
         dsm = SynologyDSMMock(
