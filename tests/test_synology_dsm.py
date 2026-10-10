@@ -56,6 +56,20 @@ class TestSynologyDSM:
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
 
+    def test_sensitive_params(self):
+        """Test secret request parameters are masked in debug logs."""
+        for param in (
+            "account",
+            "passwd",
+            "_sid",
+            "SynoToken",
+            "device_id",
+            "otp_code",
+            "unzip_password",
+            "passphrase",
+        ):
+            assert param in SENSITIV_PARAMS
+
     @pytest.mark.parametrize("version", [5, 6, 7])
     @pytest.mark.asyncio
     async def test_login_neccessary(self, version):
