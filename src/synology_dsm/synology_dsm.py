@@ -232,9 +232,11 @@ class SynologyDSM:
 
     async def logout(self) -> bool:
         """Log out of the session."""
-        result = await self.get(API_AUTH, "logout")
-        self._session_id = None
-        self._syno_token = None
+        try:
+            result = await self.get(API_AUTH, "logout")
+        finally:
+            self._session_id = None
+            self._syno_token = None
         if not isinstance(result, dict):
             return False
 
