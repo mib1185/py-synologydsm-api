@@ -18,7 +18,7 @@ from synology_dsm.api.dsm.information import SynoDSMInformation
 from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
-from synology_dsm.const import API_AUTH, API_INFO
+from synology_dsm.const import API_AUTH, API_INFO, SENSITIV_PARAMS
 from synology_dsm.exceptions import (
     SynologyDSMAPIErrorException,
     SynologyDSMAPINoDataException,
@@ -414,6 +414,24 @@ class TestSynologyDSM:
         assert error_value["code"] == 408
         assert error_value["reason"] == "File does not exist"
         assert not error_value["details"]
+
+    def test_mask_sensitive_params(self, dsm):
+        """Test sensitive request parameters are masked for debug output."""
+        params = {param: f"secret_{param}" for param in SENSITIV_PARAMS}
+        params.update({"api": API_AUTH, "method": "login", "version": 7})
+
+        masked = dsm._mask_sensitive_params(params)
+
+        for param in SENSITIV_PARAMS:
+            assert masked[param] == "*********"
+            assert f"secret_{param}" not in str(masked)
+        assert masked["api"] == API_AUTH
+        assert masked["method"] == "login"
+        assert masked["version"] == 7
+
+        # the params dict actually sent must not be altered
+        for param in SENSITIV_PARAMS:
+            assert params[param] == f"secret_{param}"
 
     def test_reset_str_attr(self, dsm):
         """Test reset with string attr."""

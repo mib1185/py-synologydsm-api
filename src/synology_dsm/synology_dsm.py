@@ -137,6 +137,14 @@ class SynologyDSM:
         if self._debugmode:
             print("DEBUG: " + message)
 
+    @staticmethod
+    def _mask_sensitive_params(params: dict[str, Any]) -> dict[str, Any]:
+        """Returns a copy of params with sensitive values masked."""
+        return {
+            key: "*********" if key in SENSITIV_PARAMS else value
+            for key, value in params.items()
+        }
+
     def _is_weird_api_url(self, api: str) -> bool:
         """Returns True if the API URL is not common.
 
@@ -424,7 +432,7 @@ class SynologyDSM:
                 data.update(kwargs.pop("data", {}))
                 data["mimeType"] = "application/json"
                 kwargs["data"] = data
-                self._debuglog("POST data: " + str(data))
+                self._debuglog("POST data: " + str(self._mask_sensitive_params(data)))
 
                 response = await self._session.post(
                     url_encoded, timeout=timeout, **kwargs
