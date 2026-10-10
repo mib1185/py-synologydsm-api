@@ -23,6 +23,7 @@ from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.const import API_AUTH, API_INFO, SENSITIV_PARAMS
 from synology_dsm.exceptions import (
     SynologyDSMAPIErrorException,
+    SynologyDSMAPIInsufficientPrivilegeException,
     SynologyDSMAPINoDataException,
     SynologyDSMAPINotExistsException,
     SynologyDSMLogin2SAFailedException,
@@ -37,6 +38,7 @@ from . import (
     USER_MAX_TRY,
     VALID_HOST,
     VALID_HTTPS,
+    VALID_OTP,
     VALID_PASSWORD,
     VALID_PORT,
     VALID_USER,
@@ -102,6 +104,20 @@ class TestSynologyDSM:
         assert dsm._aiohttp_timeout.total == 10
         assert not dsm.apis.get(API_AUTH)
         assert not dsm._session_id
+
+    def test_sensitive_params(self):
+        """Test secret request parameters are masked in debug logs."""
+        for param in (
+            "account",
+            "passwd",
+            "_sid",
+            "SynoToken",
+            "device_id",
+            "otp_code",
+            "unzip_password",
+            "passphrase",
+        ):
+            assert param in SENSITIV_PARAMS
 
     @pytest.mark.parametrize("version", [5, 6, 7])
     @pytest.mark.asyncio
@@ -186,6 +202,31 @@ class TestSynologyDSM:
         assert dsm._session_id is None
         assert dsm._syno_token is None
         assert dsm._device_token is None
+
+    @pytest.mark.parametrize("version", [5, 6, 7])
+    @pytest.mark.asyncio
+    async def test_login_debug_log_masks_credentials(self, version, caplog):
+        """Test the auth response and session id are not written to the log."""
+        dsm = SynologyDSMMock(
+            None,
+            VALID_HOST,
+            VALID_PORT,
+            VALID_USER_2SA,
+            VALID_PASSWORD,
+            VALID_HTTPS,
+        )
+        dsm.dsm_version = version
+
+        with caplog.at_level(logging.DEBUG):
+            assert await dsm.login(VALID_OTP)
+
+        assert dsm._session_id == SESSION_ID
+        assert dsm.device_token == DEVICE_TOKEN
+        assert "Authentication successful" in caplog.text
+        assert "RESPONSE: <masked SYNO.API.Auth response>" in caplog.text
+        assert SESSION_ID not in caplog.text
+        assert SYNO_TOKEN not in caplog.text
+        assert DEVICE_TOKEN not in caplog.text
 
     @pytest.mark.parametrize("version", [5, 6, 7])
     @pytest.mark.asyncio
@@ -461,6 +502,7 @@ class TestSynologyDSM:
         assert set(masked) == set(params)
         for param in SENSITIV_PARAMS:
             assert masked[param] == "*********"
+            assert f"secret_{param}" not in str(masked)
         assert masked["api"] == API_AUTH
         assert masked["version"] == 7
         assert masked["method"] == "login"
@@ -840,6 +882,19 @@ class TestSynologyDSM:
         assert dsm.utilisation.cpu_1min_load
         assert dsm.utilisation.cpu_5min_load
         assert dsm.utilisation.cpu_15min_load
+
+    @pytest.mark.asyncio
+    async def test_utilisation_insufficient_privilege(self, dsm):
+        """Test utilisation insufficient user privilege error."""
+        dsm.insufficient_privilege_responses.append(SynoCoreUtilization.API_KEY)
+        await dsm.login()
+        with pytest.raises(SynologyDSMAPIInsufficientPrivilegeException) as error:
+            await dsm.utilisation.update()
+        assert isinstance(error.value, SynologyDSMAPIErrorException)
+        error_value = error.value.args[0]
+        assert error_value["api"] == "SYNO.Core.System.Utilization"
+        assert error_value["code"] == 105
+        assert error_value["reason"] == "Insufficient user privilege"
 
     @pytest.mark.asyncio
     async def test_utilisation_error(self, dsm):
