@@ -231,11 +231,7 @@ class SynologyDSM:
         return bool(result["success"])
 
     async def logout(self) -> bool:
-        """Log out of the session.
-
-        Once the logout request has been sent, the session credential is
-        forgotten so that it can no longer be used for requests or urls.
-        """
+        """Log out of the session."""
         result = await self.get(API_AUTH, "logout")
         self._session_id = None
         self._syno_token = None
