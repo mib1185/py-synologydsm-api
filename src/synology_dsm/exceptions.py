@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from .const import (
     API_AUTH,
     ERROR_AUTH,
@@ -16,11 +18,15 @@ from .const import (
     ERROR_VIRTUALIZATION,
 )
 
+ErrorDetails = str | dict[str, Any] | list[Any] | None
+
 
 class SynologyDSMException(Exception):
     """Generic Synology DSM exception."""
 
-    def __init__(self, api: str | None, code: int, details: str | None = None) -> None:
+    def __init__(
+        self, api: str | None, code: int, details: ErrorDetails = None
+    ) -> None:
         """Constructor method."""
         reason = ERROR_COMMON.get(code)
         if api and not reason:
@@ -90,7 +96,7 @@ class SynologyDSMAPINoDataException(SynologyDSMException):
 class SynologyDSMAPIErrorException(SynologyDSMException):
     """API returns an error exception."""
 
-    def __init__(self, api: str, code: int, details: str | None) -> None:
+    def __init__(self, api: str, code: int, details: ErrorDetails) -> None:
         """Constructor method."""
         super().__init__(api, code, details)
 
@@ -98,7 +104,7 @@ class SynologyDSMAPIErrorException(SynologyDSMException):
 class SynologyDSMAPIInsufficientPrivilegeException(SynologyDSMAPIErrorException):
     """API returns insufficient user privilege exception."""
 
-    def __init__(self, api: str, details: str | None) -> None:
+    def __init__(self, api: str, details: ErrorDetails) -> None:
         """Constructor method."""
         super().__init__(api, 105, details)
 
