@@ -27,3 +27,14 @@ class SynoPhotosItem:
     thumbnail_size: str
     is_shared: bool
     passphrase: str
+    time: int | None = None
+    folder_id: int | None = None
+    exif: dict | None = None
+    width: int | None = None
+    height: int | None = None
+    orientation: int | None = None
+    orientation_original: int | None = None
+    person: list[dict] | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    address: dict | None = None
