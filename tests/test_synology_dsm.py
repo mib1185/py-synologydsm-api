@@ -584,6 +584,9 @@ class TestSynologyDSM:
         assert set(url.query) == {"api", "version", "method"}
         assert url.query["method"] == "login"
         data = kwargs["data"]
+        assert data["api"] == API_AUTH
+        assert str(data["version"]) == url.query["version"]
+        assert data["method"] == "login"
         assert data["account"] == VALID_USER
         assert data["passwd"] == VALID_PASSWORD
         assert data["device_id"] == DEVICE_TOKEN
@@ -611,7 +614,7 @@ class TestSynologyDSM:
 
     @pytest.mark.asyncio
     async def test_request_post_session_in_body(self, caplog):
-        """Test POST sends session id, token and params only in the body."""
+        """Test POST sends all params in the body, only routing ones in the url."""
         caplog.set_level(logging.DEBUG)
         session = FakeSession()
         dsm = self._real_dsm(session, debugmode=True)
@@ -631,6 +634,9 @@ class TestSynologyDSM:
         assert url.query["api"] == SynoCoreShare.API_KEY
         assert url.query["method"] == "list"
         data = kwargs["data"]
+        assert data["api"] == SynoCoreShare.API_KEY
+        assert str(data["version"]) == url.query["version"]
+        assert data["method"] == "list"
         assert data["_sid"] == SESSION_ID
         assert data["SynoToken"] == SYNO_TOKEN
         assert data["caller"] == "param"

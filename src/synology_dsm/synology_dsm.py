@@ -451,9 +451,10 @@ class SynologyDSM:
                         data=mp,
                     )
             elif method == "POST":
-                # only the routing parameters go into the URL query, all other
-                # parameters (credentials, session id, token, caller params)
-                # are sent in the body only to keep them out of access logs
+                # all parameters are sent in the body, since some DSM versions
+                # ignore the URL query of a form POST request; only the routing
+                # parameters are added to the URL query too, to keep credentials,
+                # session id and token out of access logs
                 url_params = ("api", "version", "method", "action")
                 query = urlencode(
                     {key: params[key] for key in url_params if key in params},
@@ -462,9 +463,7 @@ class SynologyDSM:
                 )
                 url_encoded = url.join(URL(f"?{query}", encoded=True))
 
-                data = {
-                    key: value for key, value in params.items() if key not in url_params
-                }
+                data = dict(params)
                 data.update(kwargs.pop("data", {}))
                 data["mimeType"] = "application/json"
                 kwargs["data"] = data
