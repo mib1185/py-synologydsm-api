@@ -40,6 +40,7 @@ from .api.virtual_machine_manager import SynoVirtualMachineManager
 from .const import API_AUTH, API_INFO, SENSITIV_PARAMS
 from .exceptions import (
     SynologyDSMAPIErrorException,
+    SynologyDSMAPIInsufficientPrivilegeException,
     SynologyDSMAPINotExistsException,
     SynologyDSMLogin2SAFailedException,
     SynologyDSMLogin2SAForcedException,
@@ -137,6 +138,14 @@ class SynologyDSM:
         if self._debugmode:
             print("DEBUG: " + message)
 
+    @staticmethod
+    def _mask_sensitive_params(params: dict[str, Any]) -> dict[str, Any]:
+        """Returns a copy of params with sensitive values masked."""
+        return {
+            key: "*********" if key in SENSITIV_PARAMS else value
+            for key, value in params.items()
+        }
+
     def _is_weird_api_url(self, api: str) -> bool:
         """Returns True if the API URL is not common.
 
@@ -190,8 +199,8 @@ class SynologyDSM:
         if self._device_token:
             params["device_id"] = self._device_token
 
-        # Request login
-        result = await self.get(API_AUTH, "login", params)
+        # Request login (POST so the credentials are sent in the body only)
+        result = await self.post(API_AUTH, "login", params)
         if not isinstance(result, dict):
             return False
 
@@ -222,7 +231,7 @@ class SynologyDSM:
         if result["data"].get("device_id"):
             # Not available on API version < 7
             self._device_token = result["data"]["device_id"]
-        self._debuglog("Authentication successful, token: " + str(self._session_id))
+        self._debuglog("Authentication successful")
 
         if not self._information:
             self._information = SynoDSMInformation(self)
@@ -232,7 +241,11 @@ class SynologyDSM:
 
     async def logout(self) -> bool:
         """Log out of the session."""
-        result = await self.get(API_AUTH, "logout")
+        try:
+            result = await self.get(API_AUTH, "logout")
+        finally:
+            self._session_id = None
+            self._syno_token = None
         if not isinstance(result, dict):
             return False
 
@@ -263,9 +276,25 @@ class SynologyDSM:
         api: str,
         method: str,
         params: dict | None = None,
+        *,
+        include_session: bool = True,
     ) -> str:
-        """Generate an url for external usage."""
+        """Generate an url for external usage.
+
+        WARNING: by default the returned url embeds the full-privilege session
+        credential of the logged-in DSM account (the ``_sid`` and ``SynoToken``
+        query parameters). Such an url is a bearer credential that authorizes
+        *every* DSM API call as that account, not only the one it was built
+        for. Treat it as a secret: never hand it to a less-trusted party (a
+        browser, log files, other users, ...). Pass ``include_session=False``
+        to get the url without the session credential, or fetch the content
+        through the library (e.g. ``photos.download_item_thumbnail()``) and
+        serve it yourself instead of sharing the url.
+        """
         url, params, _ = await self._prepare_request(api, method, params)
+        if not include_session:
+            params.pop("_sid", None)
+            params.pop("SynoToken", None)
         return str(URL(url).update_query(params))
 
     async def _prepare_request(
@@ -334,7 +363,12 @@ class SynologyDSM:
         )
         self._debuglog("Successful returned data")
         if not raw_response_content:
-            self._debuglog("RESPONSE: " + str(response))
+            if api == API_AUTH:
+                # Never log the SYNO.API.Auth body: it carries the session id,
+                # the SynoToken and the long-lived 2FA device token
+                self._debuglog("RESPONSE: <masked SYNO.API.Auth response>")
+            else:
+                self._debuglog("RESPONSE: " + str(response))
 
         # Handle data errors
         if isinstance(response, dict) and response.get("error") and api != API_AUTH:
@@ -345,6 +379,10 @@ class SynologyDSM:
                 self._session_id = None
                 self._syno_token = None
                 return await self._request(request_method, api, method, params, False)
+            if response["error"]["code"] == 105:
+                raise SynologyDSMAPIInsufficientPrivilegeException(
+                    api, response["error"].get("errors")
+                )
             raise SynologyDSMAPIErrorException(
                 api, response["error"]["code"], response["error"].get("errors")
             )
@@ -413,13 +451,23 @@ class SynologyDSM:
                         data=mp,
                     )
             elif method == "POST":
-                data = {}
-                if params is not None:
-                    data.update(params)
+                # all parameters are sent in the body, since some DSM versions
+                # ignore the URL query of a form POST request; only the routing
+                # parameters are added to the URL query too, to keep credentials,
+                # session id and token out of access logs
+                url_params = ("api", "version", "method", "action")
+                query = urlencode(
+                    {key: params[key] for key in url_params if key in params},
+                    safe="?/:@-._~!$'()*,",
+                    quote_via=quote,
+                )
+                url_encoded = url.join(URL(f"?{query}", encoded=True))
+
+                data = dict(params)
                 data.update(kwargs.pop("data", {}))
                 data["mimeType"] = "application/json"
                 kwargs["data"] = data
-                self._debuglog("POST data: " + str(data))
+                self._debuglog("POST data: " + str(self._mask_sensitive_params(data)))
 
                 response = await self._session.post(
                     url_encoded, timeout=timeout, **kwargs
@@ -429,7 +477,7 @@ class SynologyDSM:
             if _LOGGER.isEnabledFor(logging.DEBUG) or self._debugmode:
                 response_url = response.url  # pylint: disable=E0606
                 for param in SENSITIV_PARAMS:
-                    if params is not None and params.get(param):
+                    if param in response_url.query:
                         response_url = response_url.update_query({param: "*********"})
                 self._debuglog("Request url: " + str(response_url))
                 self._debuglog(

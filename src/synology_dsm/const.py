@@ -7,7 +7,16 @@ API_INFO: Final = "SYNO.API.Info"
 API_AUTH: Final = "SYNO.API.Auth"
 
 # Parameters to be masked on debug output
-SENSITIV_PARAMS: Final = ["account", "passwd", "_sid", "SynoToken", "device_id"]
+SENSITIV_PARAMS: Final = [
+    "account",
+    "passwd",
+    "_sid",
+    "SynoToken",
+    "device_id",
+    "otp_code",
+    "unzip_password",
+    "passphrase",
+]
 
 # SYNO.*
 ERROR_COMMON: Final = {
