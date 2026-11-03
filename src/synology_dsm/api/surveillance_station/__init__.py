@@ -171,24 +171,14 @@ class SynoSurveillanceStation(SynoBaseApi["dict[int, SynoCamera]"]):
         raw_data = await self._dsm.get(
             self.CAMERA_API_KEY, "Enable", {"idList": camera_ids}
         )
-        if (
-            isinstance(raw_data, dict)
-            and (result := raw_data.get("success")) is not None
-        ):
-            return bool(result)
-        return None
+        return self._parse_success(raw_data)
 
     async def disable_camera(self, camera_ids: str) -> bool | None:
         """Disable camera(s) - multiple ID or single ex 1 or 1,2,3."""
         raw_data = await self._dsm.get(
             self.CAMERA_API_KEY, "Disable", {"idList": camera_ids}
         )
-        if (
-            isinstance(raw_data, dict)
-            and (result := raw_data.get("success")) is not None
-        ):
-            return bool(result)
-        return None
+        return self._parse_success(raw_data)
 
     # Snapshot
     async def capture_camera_image(
@@ -270,9 +260,4 @@ class SynoSurveillanceStation(SynoBaseApi["dict[int, SynoCamera]"]):
         raw_data = await self._dsm.get(
             self.HOME_MODE_API_KEY, "Switch", {"on": str(state).lower()}
         )
-        if (
-            isinstance(raw_data, dict)
-            and (result := raw_data.get("success")) is not None
-        ):
-            return bool(result)
-        return None
+        return self._parse_success(raw_data)

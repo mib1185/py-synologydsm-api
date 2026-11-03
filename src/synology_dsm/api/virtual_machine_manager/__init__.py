@@ -44,12 +44,7 @@ class SynoVirtualMachineManager(SynoBaseApi["dict[str, SynoVmmGuest]"]):
                 "action": action,
             },
         )
-        if (
-            isinstance(raw_data, dict)
-            and (result := raw_data.get("success")) is not None
-        ):
-            return bool(result)
-        return None
+        return self._parse_success(raw_data)
 
     async def guest_poweron(self, guest_id: str) -> bool | None:
         """Power on a vmm guest."""
