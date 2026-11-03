@@ -14,8 +14,8 @@ if [ ! -f "$SETTINGS_FILE" ]; then
     cp "$SETTINGS_TEMPLATE_FILE" "$SETTINGS_FILE"
 fi
 
-# install git pre-commit hook
-pre-commit install
+# create virtual environment and install package with dev dependencies
+uv sync
 
-# install from source
-pip install -e .
+# install git pre-commit hook
+uv run prek install

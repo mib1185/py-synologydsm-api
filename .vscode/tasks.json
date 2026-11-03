@@ -6,7 +6,7 @@
     {
       "label": "pytest",
       "type": "shell",
-      "command": "pytest tests/",
+      "command": "uv run pytest tests/",
       "group": {
         "kind": "test",
         "isDefault": true
@@ -15,7 +15,7 @@
     {
       "label": "coverage",
       "type": "shell",
-      "command": "coverage run --parallel -m pytest ; coverage combine ; coverage report",
+      "command": "uv run coverage run --parallel -m pytest ; uv run coverage combine ; uv run coverage report",
       "group": {
         "kind": "test",
         "isDefault": false
@@ -24,7 +24,7 @@
     {
       "label": "reinstall dependencies",
       "type": "shell",
-      "command": "pip3 --disable-pip-version-check --no-cache-dir install -r requirements_dev.txt -e .",
+      "command": "uv sync",
       "group": {
         "kind": "build",
         "isDefault": true
