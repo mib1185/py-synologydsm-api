@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,12 +11,12 @@ authors = [
     {name="Quentin POLLET (Quentame)"},
     {name="FG van Zeelst (ProtoThis)"}
 ]
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE.txt"]
 readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
