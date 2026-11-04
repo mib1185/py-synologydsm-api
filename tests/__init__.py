@@ -24,11 +24,6 @@ from synology_dsm.api.surveillance_station import SynoSurveillanceStation
 from synology_dsm.api.virtual_machine_manager import SynoVirtualMachineManager
 from synology_dsm.const import API_AUTH, API_INFO
 from synology_dsm.exceptions import SynologyDSMRequestException
-from tests.api_data.dsm_7.hyperbackup.const_7_hyperbackup import (
-    DSM_7_HYPERBACKUP_LIST,
-    DSM_7_STATUSES,
-    TARGET_DATA_ONLINE,
-)
 
 from .api_data.dsm_5 import (
     DSM_5_API_INFO,
@@ -89,6 +84,11 @@ from .api_data.dsm_7 import (
     DSM_7_FOTO_ITEMS_SHARED_ALBUM,
     DSM_7_FOTO_SHARED_ITEMS,
     DSM_7_VMM_GUESTS,
+)
+from .api_data.dsm_7.hyperbackup import (
+    DSM_7_HYPERBACKUP_LIST,
+    DSM_7_STATUSES,
+    TARGET_DATA_ONLINE,
 )
 from .const import (
     DEVICE_TOKEN,
@@ -387,6 +387,8 @@ class SynologyDSMMock(SynologyDSM):
                 return {"error": {"code": 408}, "success": False}
 
             if params["api"] == SynoHyperBackup.API_KEY:
+                if SynoHyperBackup.API_KEY in self.no_data_responses:
+                    return {"success": True}
                 if "method=list" in url:
                     return DSM_7_HYPERBACKUP_LIST
                 if "method=status" in url:

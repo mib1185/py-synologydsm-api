@@ -1,4 +1,8 @@
-"""Synology DSM tests."""
+"""Synology Hyper Backup tests."""
+
+# pylint: disable=protected-access
+from copy import deepcopy
+from datetime import datetime
 
 import pytest
 import pytest_asyncio
@@ -11,18 +15,58 @@ from synology_dsm.api.hyperbackup.const import (
     PROP_ONLINE,
     PROP_USED_SIZE,
     STATUS_DETECT,
+    STATUS_ERROR,
+    STATUS_NEVER_RUN,
     STATUS_NO_SCHEDULE,
     STATUS_OK,
     STATUS_RESTORE_ONLY,
+    STATUS_RESUMING,
     STATUS_RUNNING,
     STATUS_RUNNING_NO_SCHEDULE,
+    STATUS_SUSPENDED,
+    STATUS_UNKNOWN,
+    STATUS_WAITING,
+)
+from synology_dsm.api.hyperbackup.task import SynoHyperBackupTask
+from synology_dsm.exceptions import (
+    SynologyDSMAPIErrorException,
+    SynologyDSMAPINoDataException,
 )
 
 from .api_data.dsm_7.hyperbackup import (
+    DSM_7_HYPERBACKUP_LIST,
     DSM_7_STATUSES,
     PERCENT_MIDDLE,
+    TARGET_DATA_OFFLINE,
     TARGET_DATA_ONLINE,
 )
+
+API_ERROR = {"error": {"code": 400}, "success": False}
+NEXT_BACKUP = "2023/12/22 01:00"
+
+
+class ApiRequestRecorder:
+    """Record the API requests of a mocked DSM and optionally override responses."""
+
+    def __init__(self, dsm):
+        """Wrap the request execution of the given mocked DSM."""
+        self.calls: list[tuple[str, str]] = []
+        self.responses: dict[tuple[str, str], dict] = {}
+        self._execute_request = dsm._execute_request
+        dsm._execute_request = self._record
+
+    async def _record(self, method, url, params, raw_response_content, **kwargs):
+        call = (params["api"], params["method"])
+        self.calls.append(call)
+        if call in self.responses:
+            return self.responses[call]
+        return await self._execute_request(
+            method, url, params, raw_response_content, **kwargs
+        )
+
+    def count(self, api: str) -> int:
+        """Return the number of recorded requests to the given api."""
+        return sum(1 for called_api, _ in self.calls if called_api == api)
 
 
 # noinspection SpellCheckingInspection
@@ -34,6 +78,11 @@ class TestSynoHyperBackup:
         """Function for login and hyperbackup.update()."""
         await dsm_7.login()
         await dsm_7.hyperbackup.update(get_all_target_data=False)
+
+    @pytest.fixture
+    def api_requests(self, dsm_7):
+        """Record the api requests of the mocked DSM 7."""
+        return ApiRequestRecorder(dsm_7)
 
     @pytest.mark.asyncio
     @pytest.mark.usefixtures("call_update")
@@ -130,27 +179,279 @@ class TestSynoHyperBackup:
     @pytest.mark.asyncio
     @pytest.mark.usefixtures("call_update")
     async def test_no_target_api_call_on_second_update_with_same_backup_time(
-        self, dsm_7
+        self, dsm_7, api_requests
     ):
         """Ensure target API is not called when last backup time is unchanged."""
-        target_api_calls = 0
-        original_execute_request = dsm_7._execute_request
-
-        async def wrapped_execute_request(
-            method, url, params, raw_response_content, **kwargs
-        ):
-            nonlocal target_api_calls
-            if (
-                isinstance(params, dict)
-                and params.get("api") == SynoHyperBackup.API_KEY_TARGET
-            ):
-                target_api_calls += 1
-            return await original_execute_request(
-                method, url, params, raw_response_content, **kwargs
-            )
-
-        dsm_7._execute_request = wrapped_execute_request
-
         await dsm_7.hyperbackup.update(get_all_target_data=False)
 
-        assert target_api_calls == 0
+        assert api_requests.count(SynoHyperBackup.API_KEY_TARGET) == 0
+
+    @pytest.mark.asyncio
+    async def test_get_all_tasks(self, dsm_7):
+        """Test the task accessors."""
+        assert await dsm_7.login()
+        assert dsm_7.hyperbackup.get_all_tasks() == []
+
+        await dsm_7.hyperbackup.update()
+        tasks = dsm_7.hyperbackup.get_all_tasks()
+        assert [task.task_id for task in tasks] == [1, 2, 3, 4, 5, 6, 7]
+        assert all(isinstance(task, SynoHyperBackupTask) for task in tasks)
+        assert dsm_7.hyperbackup.task_ids == [1, 2, 3, 4, 5, 6, 7]
+        assert dsm_7.hyperbackup.get_raw_data == {task.task_id: task for task in tasks}
+        assert dsm_7.hyperbackup.get_task(6) is tasks[5]
+        assert dsm_7.hyperbackup.get_task(42) is None
+
+    @pytest.mark.asyncio
+    async def test_task_properties(self, dsm_7):
+        """Test the properties of a task."""
+        assert await dsm_7.login()
+        await dsm_7.hyperbackup.update()
+
+        task = dsm_7.hyperbackup.get_task(6)
+        assert task.task_id == 6
+        assert task.name == "Idle with schedule"
+        assert task.target_id == "vault_2.hbk"
+        assert task.transfer_type == "image_remote"
+        assert task.previous_result == "done"
+        assert task.previous_error == ""
+        assert task.previous_backup_time == datetime(2023, 12, 21, 1, 13)
+        assert task.previous_backup_end_time == datetime(2023, 12, 21, 1, 13)
+        assert task.previous_success_time == datetime(2023, 12, 21, 1, 12)
+        assert task.next_backup_time == datetime(2023, 12, 22, 1, 0)
+        assert task.has_schedule is True
+        assert task.target_online is True
+        assert task.used_size() == 2048000000000
+        assert task.used_size(human_readable=True) == "1.9Tb"
+
+    @pytest.mark.asyncio
+    async def test_update_no_data(self, dsm_7):
+        """Test update raises when the task list returns no data."""
+        dsm_7.no_data_responses.append(SynoHyperBackup.API_KEY)
+        assert await dsm_7.login()
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.hyperbackup.update()
+        assert dsm_7.hyperbackup.get_all_tasks() == []
+
+    @pytest.mark.asyncio
+    async def test_update_keeps_task_objects(self, dsm_7, api_requests):
+        """Test known tasks are updated in place and removed tasks are dropped."""
+        assert await dsm_7.login()
+        await dsm_7.hyperbackup.update()
+        task = dsm_7.hyperbackup.get_task(6)
+
+        await dsm_7.hyperbackup.update()
+        assert dsm_7.hyperbackup.get_task(6) is task
+
+        task_list = DSM_7_HYPERBACKUP_LIST["data"]["task_list"]
+        api_requests.responses[(SynoHyperBackup.API_KEY, "list")] = {
+            "success": True,
+            "data": {"task_list": [task_list[5], task_list[6]], "total": 2},
+        }
+        await dsm_7.hyperbackup.update()
+        assert dsm_7.hyperbackup.task_ids == [6, 7]
+        assert dsm_7.hyperbackup.get_task(6) is task
+
+    @pytest.mark.asyncio
+    async def test_update_error_keeps_previous_tasks(self, dsm_7, api_requests):
+        """Test a failing update does not discard the previous tasks."""
+        assert await dsm_7.login()
+        await dsm_7.hyperbackup.update()
+        tasks = dsm_7.hyperbackup.get_all_tasks()
+
+        api_requests.responses[(SynoHyperBackup.API_KEY, "status")] = API_ERROR
+        with pytest.raises(SynologyDSMAPIErrorException):
+            await dsm_7.hyperbackup.update()
+        assert dsm_7.hyperbackup.get_all_tasks() == tasks
+
+    @pytest.mark.asyncio
+    async def test_update_without_status_data(self, dsm_7, api_requests):
+        """Test tasks are still usable when their status returns no data."""
+        assert await dsm_7.login()
+        # the task list entries are modified in place without status data
+        api_requests.responses[(SynoHyperBackup.API_KEY, "list")] = deepcopy(
+            DSM_7_HYPERBACKUP_LIST
+        )
+        api_requests.responses[(SynoHyperBackup.API_KEY, "status")] = {"success": True}
+        await dsm_7.hyperbackup.update()
+
+        task = dsm_7.hyperbackup.get_task(6)
+        assert task.state == "backupable"
+        assert task.previous_result == "done"
+        assert task.next_backup_time is None
+        assert task.previous_error is None
+        assert task.previous_success_time is None
+        assert task.backup_progress is None
+        assert task.status == STATUS_NO_SCHEDULE
+        assert task.health == HEALTH_WARN
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("target_response", [API_ERROR, TARGET_DATA_OFFLINE])
+    async def test_target_offline(self, dsm_7, api_requests, target_response):
+        """Test tasks with an offline backup target."""
+        assert await dsm_7.login()
+        api_requests.responses[(SynoHyperBackup.API_KEY_TARGET, "get")] = (
+            target_response
+        )
+        await dsm_7.hyperbackup.update()
+
+        for task in dsm_7.hyperbackup.get_all_tasks():
+            assert task.target_online is False
+            assert task.used_size() is None
+            assert task.used_size(human_readable=True) is None
+
+    @pytest.mark.asyncio
+    async def test_target_no_data(self, dsm_7, api_requests):
+        """Test tasks when the target returns no data."""
+        assert await dsm_7.login()
+        api_requests.responses[(SynoHyperBackup.API_KEY_TARGET, "get")] = {
+            "success": True
+        }
+        await dsm_7.hyperbackup.update()
+
+        for task in dsm_7.hyperbackup.get_all_tasks():
+            assert task.target_online is False
+            assert task.used_size() is None
+
+    @pytest.mark.asyncio
+    async def test_target_data_refresh(self, dsm_7, api_requests):
+        """Test when the target data is requested again."""
+        assert await dsm_7.login()
+        await dsm_7.hyperbackup.update()
+        assert api_requests.count(SynoHyperBackup.API_KEY_TARGET) == 7
+
+        # target data is requested for all tasks on demand
+        api_requests.calls.clear()
+        await dsm_7.hyperbackup.update(get_all_target_data=True)
+        assert api_requests.count(SynoHyperBackup.API_KEY_TARGET) == 7
+
+        # target data is requested only for tasks with a new backup
+        api_requests.calls.clear()
+        dsm_7.hyperbackup.get_task(6)._data["last_bkp_time"] = "2023/12/20 01:13"
+        await dsm_7.hyperbackup.update()
+        assert api_requests.count(SynoHyperBackup.API_KEY_TARGET) == 1
+        assert dsm_7.hyperbackup.get_task(6).target_online is True
+
+        # target data is always requested for tasks without a backup yet
+        api_requests.calls.clear()
+        api_requests.responses[(SynoHyperBackup.API_KEY, "status")] = {
+            "success": True,
+            "data": {"last_bkp_time": ""},
+        }
+        await dsm_7.hyperbackup.update()
+        assert api_requests.count(SynoHyperBackup.API_KEY_TARGET) == 7
+
+    @pytest.mark.parametrize(
+        "state, raw_status, previous_result, next_backup, expected_status, "
+        "expected_health",
+        [
+            ("restore_only", "none", "done", "", STATUS_RESTORE_ONLY, HEALTH_CRIT),
+            ("error_detect", "detect_waiting", "done", "", STATUS_DETECT, HEALTH_WARN),
+            ("error_detect", "none", "done", NEXT_BACKUP, STATUS_ERROR, HEALTH_CRIT),
+            ("broken", "none", "done", NEXT_BACKUP, STATUS_ERROR, HEALTH_CRIT),
+            ("unauth", "none", "done", NEXT_BACKUP, STATUS_ERROR, HEALTH_CRIT),
+            ("endofservice", "none", "done", NEXT_BACKUP, STATUS_ERROR, HEALTH_CRIT),
+            ("relinkable", "none", "done", NEXT_BACKUP, STATUS_UNKNOWN, HEALTH_WARN),
+            ("backupable", "none", "done", NEXT_BACKUP, STATUS_OK, HEALTH_GOOD),
+            ("backupable", "none", "done", "", STATUS_NO_SCHEDULE, HEALTH_WARN),
+            ("backupable", "none", "none", NEXT_BACKUP, STATUS_NEVER_RUN, HEALTH_WARN),
+            ("backupable", "none", "suspend", "", STATUS_SUSPENDED, HEALTH_WARN),
+            ("backupable", "none", "failed", NEXT_BACKUP, STATUS_ERROR, HEALTH_CRIT),
+            ("backupable", "backup", "resuming", "", STATUS_RESUMING, HEALTH_WARN),
+            (
+                "backupable",
+                "backup",
+                "resuming",
+                NEXT_BACKUP,
+                STATUS_RESUMING,
+                HEALTH_GOOD,
+            ),
+            (
+                "backupable",
+                "version_deleting",
+                "done",
+                "",
+                STATUS_RUNNING_NO_SCHEDULE,
+                HEALTH_WARN,
+            ),
+            (
+                "backupable",
+                "preparing_version_delete",
+                "done",
+                NEXT_BACKUP,
+                STATUS_RUNNING,
+                HEALTH_GOOD,
+            ),
+            ("backupable", "detect", "done", NEXT_BACKUP, STATUS_RUNNING, HEALTH_GOOD),
+            ("backupable", "waiting", "done", NEXT_BACKUP, STATUS_WAITING, HEALTH_GOOD),
+            ("backupable", "waiting", "done", "", STATUS_WAITING, HEALTH_WARN),
+            (
+                "backupable",
+                "unexpected",
+                "done",
+                NEXT_BACKUP,
+                STATUS_ERROR,
+                HEALTH_CRIT,
+            ),
+        ],
+    )
+    def test_status_and_health_mapping(
+        self,
+        state,
+        raw_status,
+        previous_result,
+        next_backup,
+        expected_status,
+        expected_health,
+    ):
+        """Test the derived status and health of all known combinations."""
+        task = SynoHyperBackupTask(
+            {
+                "task_id": 1,
+                "state": state,
+                "status": raw_status,
+                "last_bkp_result": previous_result,
+                "next_bkp_time": next_backup,
+            }
+        )
+        assert task.status == expected_status
+        assert task.health == expected_health
+
+    def test_task_without_status_data(self):
+        """Test a task containing only the task list data."""
+        task = SynoHyperBackupTask(
+            {"task_id": 1, "name": "Task", "state": "backupable", "status": "none"}
+        )
+        assert task.previous_result is None
+        assert task.previous_error is None
+        assert task.previous_backup_time is None
+        assert task.previous_backup_end_time is None
+        assert task.previous_success_time is None
+        assert task.next_backup_time is None
+        assert task.has_schedule is False
+        assert task.backup_progress is None
+        assert task.is_backing_up is False
+        assert task.target_online is False
+        assert task.used_size() is None
+        assert task.status == STATUS_ERROR
+        assert task.health == HEALTH_CRIT
+
+    def test_task_update(self):
+        """Test updating the data of a task."""
+        task = SynoHyperBackupTask({"task_id": 1, "name": "Old name"})
+        task.update({"task_id": 1, "name": "New name"})
+        assert task.name == "New name"
+
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            ("2023/12/22 01:00", datetime(2023, 12, 22, 1, 0)),
+            ("2023/12/22 01:00:30", datetime(2023, 12, 22, 1, 0, 30)),
+            ("N/A", None),
+            ("", None),
+            (None, None),
+            ("invalid", None),
+        ],
+    )
+    def test_to_datetime(self, value, expected):
+        """Test parsing of the api date/time values."""
+        assert SynoHyperBackupTask({}).to_datetime(value) == expected

@@ -17,6 +17,7 @@ from synology_dsm.api.core.upgrade import SynoCoreUpgrade
 from synology_dsm.api.core.utilization import SynoCoreUtilization
 from synology_dsm.api.download_station import SynoDownloadStation
 from synology_dsm.api.dsm.information import SynoDSMInformation
+from synology_dsm.api.hyperbackup import SynoHyperBackup
 from synology_dsm.api.photos import SynoPhotos
 from synology_dsm.api.storage.storage import SynoStorage
 from synology_dsm.api.surveillance_station import SynoSurveillanceStation
@@ -700,6 +701,12 @@ class TestSynologyDSM:
         assert dsm.reset("hardware")
         assert not dsm._hardware
 
+        assert not dsm._hyperbackup
+        assert dsm.hyperbackup
+        assert dsm._hyperbackup
+        assert dsm.reset("hyperbackup")
+        assert not dsm._hyperbackup
+
         assert not dsm._security
         assert dsm.security
         assert dsm._security
@@ -768,6 +775,12 @@ class TestSynologyDSM:
         assert dsm.reset(SynoCoreHardware.API_KEY)
         assert not dsm._hardware
 
+        assert not dsm._hyperbackup
+        assert dsm.hyperbackup
+        assert dsm._hyperbackup
+        assert dsm.reset(SynoHyperBackup.API_KEY)
+        assert not dsm._hyperbackup
+
         assert not dsm._security
         assert dsm.security
         assert dsm._security
@@ -835,6 +848,12 @@ class TestSynologyDSM:
         assert dsm._hardware
         assert dsm.reset(dsm.hardware)
         assert not dsm._hardware
+
+        assert not dsm._hyperbackup
+        assert dsm.hyperbackup
+        assert dsm._hyperbackup
+        assert dsm.reset(dsm.hyperbackup)
+        assert not dsm._hyperbackup
 
         assert not dsm._security
         assert dsm.security

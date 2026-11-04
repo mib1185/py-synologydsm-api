@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+import json
+from typing import Any
 
 from synology_dsm.api import SynoBaseApi
 from synology_dsm.api.hyperbackup.const import (
@@ -17,9 +18,12 @@ from synology_dsm.api.hyperbackup.const import (
     PROP_TASKID,
     PROP_USED_SIZE,
 )
-from synology_dsm.exceptions import SynologyDSMAPIErrorException
+from synology_dsm.exceptions import (
+    SynologyDSMAPIErrorException,
+    SynologyDSMAPINoDataException,
+)
 
-from .task import SynoHyperBackupTask
+from .task import SynoHyperBackupTask, SynoHyperBackupTaskType
 
 
 class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
@@ -28,33 +32,28 @@ class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
     API_KEY = "SYNO.Backup.Task"
     API_KEY_TARGET = "SYNO.Backup.Target"
 
-    REQUEST_DATA = (
-        '["'
-        + PROP_LAST_BACKUP_TIME
-        + '", "'
-        + PROP_LAST_RESULT
-        + '", "'
-        + PROP_NEXT_BACKUP_TIME
-        + '", "'
-        + PROP_LAST_BACKUP_PROGRESS
-        + '", "'
-        + PROP_LAST_BACKUP_ERROR
-        + '", "'
-        + PROP_LAST_BACKUP_SUCCESS_TIME
-        + '"]'
+    REQUEST_DATA = json.dumps(
+        [
+            PROP_LAST_BACKUP_TIME,
+            PROP_LAST_RESULT,
+            PROP_NEXT_BACKUP_TIME,
+            PROP_LAST_BACKUP_PROGRESS,
+            PROP_LAST_BACKUP_ERROR,
+            PROP_LAST_BACKUP_SUCCESS_TIME,
+        ]
     )
     TARGET_FIELDS = [PROP_ONLINE, PROP_USED_SIZE]
-    TARGET_DATA = '["' + PROP_ONLINE + '", "' + PROP_USED_SIZE + '"]'
+    TARGET_DATA = json.dumps(TARGET_FIELDS)
 
     async def update(self, get_all_target_data: bool = False) -> None:
         """Update backup tasks settings and information from API."""
-        prev_data = self._data
-        self._data: dict[int, SynoHyperBackupTask] = {}
-
         raw_data = await self._dsm.get(self.API_KEY, "list", max_version=1)
         if not isinstance(raw_data, dict) or (data := raw_data.get("data")) is None:
-            return
+            raise SynologyDSMAPINoDataException(self.API_KEY)
 
+        # Collect the data of all tasks first, so that the previous tasks
+        # are kept untouched when one of the following requests fails.
+        tasks_data: dict[int, SynoHyperBackupTaskType] = {}
         for task in data.get("task_list", []):
             task_id: int = task[PROP_TASKID]
 
@@ -83,19 +82,24 @@ class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
                 task[PROP_PROGRESS] = None
 
             target_data = await self._get_target_data(
-                task_id, task, prev_data, get_all_target_data
+                task_id, task, self._data, get_all_target_data
             )
-            task = task | target_data
+            tasks_data[task_id] = task | target_data
 
-            if task_id in self._data:
-                self._data[task_id].update(task)
+        # Update known tasks in place, add new ones and drop removed ones.
+        tasks: dict[int, SynoHyperBackupTask] = {}
+        for task_id, task_data in tasks_data.items():
+            if (known_task := self._data.get(task_id)) is not None:
+                known_task.update(task_data)
+                tasks[task_id] = known_task
             else:
-                self._data[task_id] = SynoHyperBackupTask(task)
+                tasks[task_id] = SynoHyperBackupTask(task_data)
+        self._data = tasks
 
     async def _get_target_data(
         self,
         task_id: int,
-        task: Dict,
+        task: dict[str, Any],
         prev_data: dict[int, SynoHyperBackupTask],
         get_all_target_data: bool = False,
     ) -> dict[str, Any]:
@@ -137,7 +141,6 @@ class SynoHyperBackup(SynoBaseApi["dict[int, SynoHyperBackupTask]"]):
 
     # Tasks
 
-    @property
     def get_all_tasks(self) -> list[SynoHyperBackupTask]:
         """Return a list of tasks."""
         return list(self._data.values())

@@ -163,17 +163,12 @@ class SynoHyperBackupTask:
     @property
     def is_backing_up(self) -> bool:
         """Is this backup task currently running?"""
-        return bool(self.backup_progress is not None)
+        return self.backup_progress is not None
 
     @property
     def backup_progress(self) -> int | None:
         """What is backup percent? Returns None if not running."""
-        try:
-            return (
-                self._data["progress"] if self._data["progress"] is not None else None
-            )
-        except KeyError:
-            return None
+        return self._data.get("progress")
 
     @property
     def state(self) -> str:
@@ -187,33 +182,27 @@ class SynoHyperBackupTask:
 
     def used_size(self, human_readable: bool = False) -> int | str | None:
         """Return bytes used for backup in destination."""
-        try:
-            return_data = self._data["used_size"]
-            if return_data is None:
-                return None
-        except KeyError:
+        if (used_size := self._data.get("used_size")) is None:
             return None
-        return_data = return_data * 1024
+        used_size *= 1024
         if human_readable:
-            return SynoFormatHelper.bytes_to_readable(return_data)
-        return return_data
+            return SynoFormatHelper.bytes_to_readable(used_size)
+        return used_size
 
     @property
-    def previous_result(self) -> str:
+    def previous_result(self) -> str | None:
         """Return result from previous backup."""
-        return self._data["last_bkp_result"]
+        return self._data.get("last_bkp_result")
 
     @property
     def has_schedule(self) -> bool:
         """Does this backup task have a future schedule?"""
-        if self.next_backup_time is None:
-            return False
-        return bool(self.next_backup_time)
+        return self.next_backup_time is not None
 
     @property
     def next_backup_time(self) -> datetime | None:
         """Return next scheduled backup date/time."""
-        return self.to_datetime(self._data["next_bkp_time"])
+        return self.to_datetime(self._data.get("next_bkp_time"))
 
     @property
     def target_id(self) -> str:
@@ -228,22 +217,22 @@ class SynoHyperBackupTask:
     @property
     def previous_backup_end_time(self) -> datetime | None:
         """Return previous backup end date/time."""
-        return self.to_datetime(self._data["last_bkp_end_time"])
+        return self.to_datetime(self._data.get("last_bkp_end_time"))
 
     @property
     def previous_backup_time(self) -> datetime | None:
         """Return previous backup date/time."""
-        return self.to_datetime(self._data["last_bkp_time"])
+        return self.to_datetime(self._data.get("last_bkp_time"))
 
     @property
-    def previous_error(self) -> str:
+    def previous_error(self) -> str | None:
         """Return any error from previous backup."""
-        return self._data["last_bkp_error"]
+        return self._data.get("last_bkp_error")
 
     @property
     def previous_success_time(self) -> datetime | None:
         """Return success previous backup date/time."""
-        return self.to_datetime(self._data["last_bkp_success_time"])
+        return self.to_datetime(self._data.get("last_bkp_success_time"))
 
     # Root
     @property
