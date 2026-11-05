@@ -325,6 +325,36 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Package usage
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    await api.package.update()
+    for package in api.package.get_all_packages():
+        print("Id:                " + package.package_id)
+        print("Name:              " + package.name)
+        print("Installed version: " + package.version)
+        if package.update_available:
+            print("Available version: " + package.available_version)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## Photos usage
 
 ```python

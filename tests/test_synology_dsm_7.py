@@ -6,6 +6,7 @@ from syrupy.assertion import SnapshotAssertion
 
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.hardware import FanSpeed, SynoCoreHardware
+from synology_dsm.api.core.package import SynoCorePackage
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -25,6 +26,7 @@ from synology_dsm.exceptions import (
 )
 
 from . import (
+    API_SWITCHER,
     VALID_HOST,
     VALID_HTTPS,
     VALID_OTP,
@@ -260,6 +262,92 @@ class TestSynologyDSM7:
         assert dsm_7._syno_token == SYNO_TOKEN
         assert dsm_7._device_token == DEVICE_TOKEN
         assert dsm_7.device_token == DEVICE_TOKEN
+
+    @pytest.mark.asyncio
+    async def test_package(self, dsm_7):
+        """Test installed packages."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        assert [package.package_id for package in dsm_7.package.get_all_packages()] == [
+            "ActiveInsight",
+            "DhcpServer",
+            "Node.js_v22",
+        ]
+        assert dsm_7.package.get_package("unknown") is None
+
+        package = dsm_7.package.get_package("ActiveInsight")
+        assert package.name == "Active Insight"
+        assert package.version == "3.0.6-24124"
+        assert package.install_type == "system"
+        assert not package.update_available
+        assert package.available_version is None
+        assert package.available_version_changelog is None
+
+        package = dsm_7.package.get_package("Node.js_v22")
+        assert package.name == "Node.js v22"
+        assert package.version == "22.22.3-1010"
+        assert package.install_type == ""
+        assert package.update_available
+        assert package.available_version == "22.23.4-1011"
+        assert (
+            package.available_version_changelog == "<p><strong>What's New</strong></p>"
+        )
+
+    @pytest.mark.asyncio
+    async def test_package_request_data_not_mutated(self, dsm_7):
+        """Test session data does not leak into the shared request data."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        assert set(SynoCorePackage.REQUEST_DATA) == {"additional", "ignore_hidden"}
+
+    @pytest.mark.asyncio
+    async def test_package_removed(self, dsm_7, monkeypatch):
+        """Test an uninstalled package is dropped on update."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+        assert dsm_7.package.get_package("ActiveInsight")
+
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE",
+            {"data": {"packages": []}, "success": True},
+        )
+        await dsm_7.package.update()
+
+        assert dsm_7.package.get_all_packages() == []
+
+    @pytest.mark.asyncio
+    async def test_package_without_additional(self, dsm_7, monkeypatch):
+        """Test a package without additional data has no available update."""
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE",
+            {
+                "data": {
+                    "packages": [
+                        {"id": "Old", "name": "Old package", "version": "1.0-0001"}
+                    ]
+                },
+                "success": True,
+            },
+        )
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        package = dsm_7.package.get_package("Old")
+        assert package.install_type is None
+        assert not package.update_available
+
+    @pytest.mark.asyncio
+    async def test_package_no_data_error(self, dsm_7):
+        """Test a response without data raises."""
+        assert await dsm_7.login()
+        dsm_7.no_data_responses.append(SynoCorePackage.API_KEY)
+
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.package.update()
 
     @pytest.mark.asyncio
     async def test_upgrade(self, dsm_7):
