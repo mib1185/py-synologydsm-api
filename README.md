@@ -325,6 +325,44 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Package usage
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    # Loads the package catalogue, then lists the installed packages
+    await api.package.check_updates()
+    for package in api.package.get_all_packages():
+        print("Id:                " + package.package_id)
+        print("Name:              " + package.name)
+        print("Installed version: " + package.version)
+        if package.update_available:
+            print("Available version: " + package.available_version)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+DSM only reports available updates after its package catalogue was loaded, and stops reporting them some time later:
+
+- `package.update()` refreshes the installed packages. It keeps the updates already known, but can't rule out a new one.
+- `package.check_updates()` loads the catalogue first, so it finds out which updates are available. It may make the NAS contact Synology and transfers a large response, so call it less often, such as once an hour. It can wait up to 20 seconds if packages were listed just before.
+
+`update_available` is `True` or `False`, or `None` if it isn't known yet or the last `check_updates()` failed. A failed check keeps any update that was already known.
+
 ## Photos usage
 
 ```python

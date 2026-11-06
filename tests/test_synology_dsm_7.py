@@ -6,6 +6,7 @@ from syrupy.assertion import SnapshotAssertion
 
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.hardware import FanSpeed, SynoCoreHardware
+from synology_dsm.api.core.package import SynoCorePackage
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -25,6 +26,7 @@ from synology_dsm.exceptions import (
 )
 
 from . import (
+    API_SWITCHER,
     VALID_HOST,
     VALID_HTTPS,
     VALID_OTP,
@@ -35,6 +37,81 @@ from . import (
 )
 from .api_data.dsm_7 import DSM_7_API_INFO
 from .const import DEVICE_TOKEN, SESSION_ID, SYNO_TOKEN
+
+PACKAGE_UPGRADE = {"changelog": "<p>New</p>", "version": "2.0-0002"}
+
+
+def _package_response(version="1.0-0001", upgrade=None):
+    """Return a package list response with one package."""
+    return {
+        "data": {
+            "packages": [
+                {
+                    "additional": {
+                        "available_operation": {"upgrade": upgrade} if upgrade else {},
+                        "install_type": "",
+                    },
+                    "id": "Pkg",
+                    "name": "Package",
+                    "version": version,
+                }
+            ]
+        },
+        "success": True,
+    }
+
+
+def _record_requests(dsm, monkeypatch):
+    """Record the requests made from now on, and return the list of them."""
+    requests = []
+    execute_request = dsm._execute_request
+
+    async def record(method, url, params, raw_response_content, **kwargs):
+        requests.append(
+            (
+                method,
+                params["api"],
+                params["method"],
+                params["version"],
+                kwargs.get("data"),
+            )
+        )
+        return await execute_request(
+            method, url, params, raw_response_content, **kwargs
+        )
+
+    monkeypatch.setattr(dsm, "_execute_request", record)
+    return requests
+
+
+class PackageClock:
+    """A clock that advances when the package api sleeps."""
+
+    def __init__(self):
+        """Initialize the clock."""
+        self.now = 1000.0
+        self.sleeps = []
+        self.on_sleep = None
+
+    def monotonic(self):
+        """Return the current time."""
+        return self.now
+
+    async def sleep(self, seconds):
+        """Advance the clock, and run the sleep callback if there is one."""
+        self.sleeps.append(seconds)
+        self.now += seconds
+        if self.on_sleep:
+            await self.on_sleep()
+
+
+@pytest.fixture
+def package_clock(monkeypatch):
+    """Replace the time functions of the package api."""
+    clock = PackageClock()
+    monkeypatch.setattr("synology_dsm.api.core.package.monotonic", clock.monotonic)
+    monkeypatch.setattr("synology_dsm.api.core.package.sleep", clock.sleep)
+    return clock
 
 
 class TestSynologyDSM7:
@@ -260,6 +337,290 @@ class TestSynologyDSM7:
         assert dsm_7._syno_token == SYNO_TOKEN
         assert dsm_7._device_token == DEVICE_TOKEN
         assert dsm_7.device_token == DEVICE_TOKEN
+
+    @pytest.mark.asyncio
+    async def test_package(self, dsm_7):
+        """Test installed packages."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        assert [package.package_id for package in dsm_7.package.get_all_packages()] == [
+            "ActiveInsight",
+            "DhcpServer",
+            "Node.js_v22",
+        ]
+        assert dsm_7.package.get_package("unknown") is None
+
+        package = dsm_7.package.get_package("ActiveInsight")
+        assert package.name == "Active Insight"
+        assert package.version == "3.0.6-24124"
+        assert package.install_type == "system"
+        assert package.update_available is None
+        assert package.available_version is None
+        assert package.available_version_changelog is None
+
+        package = dsm_7.package.get_package("Node.js_v22")
+        assert package.name == "Node.js v22"
+        assert package.version == "22.22.3-1010"
+        assert package.install_type == ""
+        assert package.update_available
+        assert package.available_version == "22.23.4-1011"
+        assert (
+            package.available_version_changelog == "<p><strong>What's New</strong></p>"
+        )
+
+    @pytest.mark.asyncio
+    async def test_package_request_data_not_mutated(self, dsm_7):
+        """Test session data does not leak into the shared request data."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        assert set(SynoCorePackage.REQUEST_DATA) == {"additional", "ignore_hidden"}
+
+    @pytest.mark.asyncio
+    async def test_package_removed(self, dsm_7, monkeypatch):
+        """Test an uninstalled package is dropped on update."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+        assert dsm_7.package.get_package("ActiveInsight")
+
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE",
+            {"data": {"packages": []}, "success": True},
+        )
+        await dsm_7.package.update()
+
+        assert dsm_7.package.get_all_packages() == []
+
+    @pytest.mark.asyncio
+    async def test_package_without_additional(self, dsm_7, monkeypatch):
+        """Test a package without additional data has no available update."""
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE",
+            {
+                "data": {
+                    "packages": [
+                        {"id": "Old", "name": "Old package", "version": "1.0-0001"}
+                    ]
+                },
+                "success": True,
+            },
+        )
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        package = dsm_7.package.get_package("Old")
+        assert package.install_type is None
+        assert package.update_available is None
+
+    @pytest.mark.asyncio
+    async def test_package_no_data_error(self, dsm_7):
+        """Test a response without data raises."""
+        assert await dsm_7.login()
+        dsm_7.no_data_responses.append(SynoCorePackage.API_KEY)
+
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.package.update()
+
+    @pytest.mark.asyncio
+    async def test_package_missing_packages_error(self, dsm_7, monkeypatch):
+        """Test a response without a package list raises."""
+        assert await dsm_7.login()
+        monkeypatch.setitem(
+            API_SWITCHER[7], "CORE_PACKAGE", {"data": {}, "success": True}
+        )
+
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.package.update()
+
+    @pytest.mark.asyncio
+    async def test_package_requests(self, dsm_7, monkeypatch, package_clock):
+        """Test the requests sent, and that the catalogue is loaded before the list."""
+        assert await dsm_7.login()
+        requests = _record_requests(dsm_7, monkeypatch)
+
+        await dsm_7.package.check_updates()
+
+        assert requests == [
+            (
+                "POST",
+                SynoCorePackage.SERVER_API_KEY,
+                "list",
+                2,
+                {"blforcereload": "false", "blloadothers": "false"},
+            ),
+            (
+                "GET",
+                SynoCorePackage.API_KEY,
+                "list",
+                2,
+                None,
+            ),
+        ]
+
+    @pytest.mark.asyncio
+    async def test_package_dsm_update_lists_only(self, dsm_7, monkeypatch):
+        """Test dsm.update refreshes packages without loading the catalogue."""
+        assert await dsm_7.login()
+        assert dsm_7.package
+        requests = _record_requests(dsm_7, monkeypatch)
+
+        await dsm_7.update()
+
+        assert [request[1] for request in requests] == [SynoCorePackage.API_KEY]
+        assert dsm_7.package.get_package("ActiveInsight")
+
+    @pytest.mark.asyncio
+    async def test_package_check_updates(self, dsm_7, monkeypatch, package_clock):
+        """Test an update check turns an unknown update into a known answer."""
+        assert await dsm_7.login()
+        monkeypatch.setitem(API_SWITCHER[7], "CORE_PACKAGE", _package_response())
+        await dsm_7.package.update()
+        assert dsm_7.package.get_package("Pkg").update_available is None
+
+        await dsm_7.package.check_updates()
+        assert dsm_7.package.get_package("Pkg").update_available is False
+
+        monkeypatch.setitem(
+            API_SWITCHER[7], "CORE_PACKAGE", _package_response(upgrade=PACKAGE_UPGRADE)
+        )
+        await dsm_7.package.check_updates()
+        package = dsm_7.package.get_package("Pkg")
+        assert package.update_available is True
+        assert package.available_version == "2.0-0002"
+        assert package.available_version_changelog == "<p>New</p>"
+
+        # An update check is trusted when it no longer reports the update.
+        monkeypatch.setitem(API_SWITCHER[7], "CORE_PACKAGE", _package_response())
+        await dsm_7.package.check_updates()
+        package = dsm_7.package.get_package("Pkg")
+        assert package.update_available is False
+        assert package.available_version is None
+
+    @pytest.mark.asyncio
+    async def test_package_update_keeps_known_update(
+        self, dsm_7, monkeypatch, package_clock
+    ):
+        """Test a list that stopped reporting an update doesn't clear it."""
+        assert await dsm_7.login()
+        monkeypatch.setitem(
+            API_SWITCHER[7], "CORE_PACKAGE", _package_response(upgrade=PACKAGE_UPGRADE)
+        )
+        await dsm_7.package.check_updates()
+
+        monkeypatch.setitem(API_SWITCHER[7], "CORE_PACKAGE", _package_response())
+        await dsm_7.package.update()
+
+        package = dsm_7.package.get_package("Pkg")
+        assert package.update_available is True
+        assert package.available_version == "2.0-0002"
+
+    @pytest.mark.asyncio
+    async def test_package_update_clears_installed_update(
+        self, dsm_7, monkeypatch, package_clock
+    ):
+        """Test a known update is cleared when the installed version changes."""
+        assert await dsm_7.login()
+        monkeypatch.setitem(
+            API_SWITCHER[7], "CORE_PACKAGE", _package_response(upgrade=PACKAGE_UPGRADE)
+        )
+        await dsm_7.package.check_updates()
+
+        monkeypatch.setitem(
+            API_SWITCHER[7], "CORE_PACKAGE", _package_response(version="2.0-0002")
+        )
+        await dsm_7.package.update()
+
+        package = dsm_7.package.get_package("Pkg")
+        assert package.update_available is False
+        assert package.available_version is None
+
+    @pytest.mark.asyncio
+    async def test_package_update_reports_listed_update(self, dsm_7, monkeypatch):
+        """Test an update in a list is used without an update check."""
+        assert await dsm_7.login()
+        monkeypatch.setitem(
+            API_SWITCHER[7], "CORE_PACKAGE", _package_response(upgrade=PACKAGE_UPGRADE)
+        )
+
+        await dsm_7.package.update()
+
+        assert dsm_7.package.get_package("Pkg").update_available is True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "api_key", [SynoCorePackage.SERVER_API_KEY, SynoCorePackage.API_KEY]
+    )
+    async def test_package_check_updates_failure(
+        self, dsm_7, monkeypatch, package_clock, api_key
+    ):
+        """Test a failed update check makes a missing update unknown."""
+        assert await dsm_7.login()
+        monkeypatch.setitem(API_SWITCHER[7], "CORE_PACKAGE", _package_response())
+        await dsm_7.package.check_updates()
+        assert dsm_7.package.get_package("Pkg").update_available is False
+
+        dsm_7.no_data_responses.append(api_key)
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.package.check_updates()
+
+        assert dsm_7.package.get_package("Pkg").update_available is None
+
+    @pytest.mark.asyncio
+    async def test_package_check_updates_failure_keeps_known_update(
+        self, dsm_7, monkeypatch, package_clock
+    ):
+        """Test a failed update check keeps an update that is already known."""
+        assert await dsm_7.login()
+        monkeypatch.setitem(
+            API_SWITCHER[7], "CORE_PACKAGE", _package_response(upgrade=PACKAGE_UPGRADE)
+        )
+        await dsm_7.package.check_updates()
+
+        dsm_7.no_data_responses.append(SynoCorePackage.SERVER_API_KEY)
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.package.check_updates()
+
+        assert dsm_7.package.get_package("Pkg").update_available is True
+
+    @pytest.mark.asyncio
+    async def test_package_check_updates_no_wait(self, dsm_7, package_clock):
+        """Test an update check doesn't wait if no list was requested."""
+        assert await dsm_7.login()
+
+        await dsm_7.package.check_updates()
+
+        assert package_clock.sleeps == []
+
+    @pytest.mark.asyncio
+    async def test_package_check_updates_waits_for_list_cache(
+        self, dsm_7, package_clock
+    ):
+        """Test an update check waits for a recent list to leave the cache."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+        package_clock.now += 5
+
+        await dsm_7.package.check_updates()
+
+        assert package_clock.sleeps == [15]
+
+    @pytest.mark.asyncio
+    async def test_package_check_updates_waits_again(self, dsm_7, package_clock):
+        """Test an update check waits again if a list is requested meanwhile."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        async def list_during_wait() -> None:
+            package_clock.on_sleep = None
+            await dsm_7.package.update()
+
+        package_clock.on_sleep = list_during_wait
+        await dsm_7.package.check_updates()
+
+        assert package_clock.sleeps == [20, 20]
 
     @pytest.mark.asyncio
     async def test_upgrade(self, dsm_7):
