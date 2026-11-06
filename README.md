@@ -343,7 +343,8 @@ async def do(session: aiohttp.ClientSession):
     api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
     await api.login()
 
-    await api.package.update()
+    # Loads the package catalogue, then lists the installed packages
+    await api.package.check_updates()
     for package in api.package.get_all_packages():
         print("Id:                " + package.package_id)
         print("Name:              " + package.name)
@@ -354,6 +355,13 @@ async def do(session: aiohttp.ClientSession):
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+DSM only reports available updates after its package catalogue was loaded, and stops reporting them some time later:
+
+- `package.update()` refreshes the installed packages. It keeps the updates already known, but can't rule out a new one.
+- `package.check_updates()` loads the catalogue first, so it finds out which updates are available. It may make the NAS contact Synology and transfers a large response, so call it less often, such as once an hour. It can wait up to 20 seconds if packages were listed just before.
+
+`update_available` is `True` or `False`, or `None` if it isn't known yet or the last `check_updates()` failed. A failed check keeps any update that was already known.
 
 ## Photos usage
 

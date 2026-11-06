@@ -275,6 +275,11 @@ class SynologyDSMMock(SynologyDSM):
                 if not self.usb_device_connected:
                     return DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB
 
+            if SynoCorePackage.SERVER_API_KEY in url:
+                if SynoCorePackage.SERVER_API_KEY in self.no_data_responses:
+                    return {"success": True}
+                return {"data": {"packages": []}, "success": True}
+
             if SynoCorePackage.API_KEY in url:
                 if SynoCorePackage.API_KEY in self.no_data_responses:
                     return {"success": True}
