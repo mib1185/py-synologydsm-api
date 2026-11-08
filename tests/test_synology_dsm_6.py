@@ -213,6 +213,34 @@ class TestSynologyDSM6:
             assert usb_dev.get("vid")
 
     @pytest.mark.asyncio
+    async def test_package(self, dsm_6):
+        """Test installed packages and the versions available for them."""
+        assert await dsm_6.login()
+        await dsm_6.package.update()
+
+        assert [package.package_id for package in dsm_6.package.get_all_packages()] == [
+            "FileStation",
+            "SynoFinder",
+            "OAuthService",
+        ]
+        package = dsm_6.package.get_package("SynoFinder")
+        assert package.name == "Universal Search"
+        assert package.version == "1.5.1-0316"
+        assert package.install_type == "system"
+        assert package.update_available is True
+        assert package.available_version == "1.5.2-0323"
+        assert package.available_version_changelog.startswith(
+            "<p><strong>Important Notes</strong></p>"
+        )
+        for package_id, version in (
+            ("FileStation", "1.2.8-0293"),
+            ("OAuthService", "1.0.4-0031"),
+        ):
+            package = dsm_6.package.get_package(package_id)
+            assert package.update_available is False
+            assert package.available_version == version
+
+    @pytest.mark.asyncio
     async def test_upgrade(self, dsm_6):
         """Test upgrade."""
         assert await dsm_6.login()

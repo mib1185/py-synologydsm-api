@@ -42,6 +42,9 @@ from .api_data.dsm_6 import (
     DSM_6_AUTH_LOGIN_2SA,
     DSM_6_AUTH_LOGIN_2SA_OTP,
     DSM_6_CORE_HARDWARE_FANSPEED,
+    DSM_6_CORE_PACKAGE,
+    DSM_6_CORE_PACKAGE_ERROR_ADDITIONAL,
+    DSM_6_CORE_PACKAGE_SERVER,
     DSM_6_CORE_SECURITY,
     DSM_6_CORE_SECURITY_UPDATE_OUTOFDATE,
     DSM_6_CORE_SHARE,
@@ -75,6 +78,7 @@ from .api_data.dsm_7 import (
     DSM_7_CORE_EXTERNAL_USB_DS1821_PLUS_NO_EXTERNAL_USB,
     DSM_7_CORE_HARDWARE_FANSPEED,
     DSM_7_CORE_PACKAGE,
+    DSM_7_CORE_PACKAGE_SERVER,
     DSM_7_CORE_UPGRADE_TRUE,
     DSM_7_DSM_INFORMATION,
     DSM_7_FILE_STATION_FILES,
@@ -115,6 +119,8 @@ API_SWITCHER = {
         "DSM_INFORMATION": DSM_6_DSM_INFORMATION,
         "DSM_NETWORK": DSM_6_DSM_NETWORK_2LAN_1PPPOE,
         "CORE_HARDWARE": DSM_6_CORE_HARDWARE_FANSPEED,
+        "CORE_PACKAGE": DSM_6_CORE_PACKAGE,
+        "CORE_PACKAGE_SERVER": DSM_6_CORE_PACKAGE_SERVER,
         "CORE_SECURITY": DSM_6_CORE_SECURITY,
         "CORE_SHARE": DSM_6_CORE_SHARE,
         "CORE_SYSTEM": DSM_6_CORE_SYSTEM_DS918_PLUS,
@@ -134,6 +140,7 @@ API_SWITCHER = {
         "AUTH_LOGIN_2SA_OTP": DSM_7_AUTH_LOGIN_2SA_OTP,
         "CORE_HARDWARE": DSM_7_CORE_HARDWARE_FANSPEED,
         "CORE_PACKAGE": DSM_7_CORE_PACKAGE,
+        "CORE_PACKAGE_SERVER": DSM_7_CORE_PACKAGE_SERVER,
         "CORE_UPGRADE": DSM_7_CORE_UPGRADE_TRUE,
         "DSM_INFORMATION": DSM_7_DSM_INFORMATION,
         "FOTO_ALBUMS": DSM_7_FOTO_ALBUMS,
@@ -278,11 +285,13 @@ class SynologyDSMMock(SynologyDSM):
             if SynoCorePackage.SERVER_API_KEY in url:
                 if SynoCorePackage.SERVER_API_KEY in self.no_data_responses:
                     return {"success": True}
-                return {"data": {"packages": []}, "success": True}
+                return API_SWITCHER[self.dsm_version]["CORE_PACKAGE_SERVER"]
 
             if SynoCorePackage.API_KEY in url:
                 if SynoCorePackage.API_KEY in self.no_data_responses:
                     return {"success": True}
+                if self.dsm_version == 6 and "available_operation" in url:
+                    return DSM_6_CORE_PACKAGE_ERROR_ADDITIONAL
                 return API_SWITCHER[self.dsm_version]["CORE_PACKAGE"]
 
             if SynoCoreHardware.API_KEY_FANSPEED in url:
