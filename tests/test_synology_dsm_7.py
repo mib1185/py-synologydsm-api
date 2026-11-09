@@ -6,6 +6,7 @@ from syrupy.assertion import SnapshotAssertion
 
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.hardware import FanSpeed, SynoCoreHardware
+from synology_dsm.api.core.package import SynoCorePackage
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -25,6 +26,7 @@ from synology_dsm.exceptions import (
 )
 
 from . import (
+    API_SWITCHER,
     VALID_HOST,
     VALID_HTTPS,
     VALID_OTP,
@@ -33,8 +35,31 @@ from . import (
     VALID_USER_2SA,
     SynologyDSMMock,
 )
-from .api_data.dsm_7 import DSM_7_API_INFO
+from .api_data.dsm_7 import DSM_7_API_INFO, DSM_7_CORE_PACKAGE_SERVER_ERROR_NO_INTERNET
 from .const import DEVICE_TOKEN, SESSION_ID, SYNO_TOKEN
+
+
+def _record_requests(dsm, monkeypatch):
+    """Record the requests made from now on, and return the list of them."""
+    requests = []
+    execute_request = dsm._execute_request
+
+    async def record(method, url, params, raw_response_content, **kwargs):
+        requests.append(
+            (
+                method,
+                params["api"],
+                params["method"],
+                params["version"],
+                kwargs.get("data"),
+            )
+        )
+        return await execute_request(
+            method, url, params, raw_response_content, **kwargs
+        )
+
+    monkeypatch.setattr(dsm, "_execute_request", record)
+    return requests
 
 
 class TestSynologyDSM7:
@@ -260,6 +285,218 @@ class TestSynologyDSM7:
         assert dsm_7._syno_token == SYNO_TOKEN
         assert dsm_7._device_token == DEVICE_TOKEN
         assert dsm_7.device_token == DEVICE_TOKEN
+
+    @pytest.mark.asyncio
+    async def test_package(self, dsm_7):
+        """Test installed packages and the versions available for them."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        assert [package.package_id for package in dsm_7.package.get_all_packages()] == [
+            "ActiveInsight",
+            "FileStation",
+            "QuickConnect",
+            "SupportService",
+        ]
+        assert dsm_7.package.get_package("unknown") is None
+
+        package = dsm_7.package.get_package("ActiveInsight")
+        assert package.name == "Active Insight"
+        assert package.version == "3.0.5-24122"
+        assert package.install_type == "system"
+        assert package.update_available is True
+        assert package.available_version == "3.0.6-24124"
+        assert package.available_version_changelog.startswith(
+            "<p><strong>Fixed Issues</strong></p>"
+        )
+
+        package = dsm_7.package.get_package("FileStation")
+        assert package.version == "1.4.2-1575"
+        assert package.update_available is False
+        assert package.available_version == "1.4.2-1575"
+
+        # 1.0.10 is newer than 1.0.9
+        package = dsm_7.package.get_package("QuickConnect")
+        assert package.update_available is True
+        assert package.available_version == "1.0.10-0187"
+
+        # Hidden packages aren't in the catalogue.
+        package = dsm_7.package.get_package("SupportService")
+        assert package.install_type == "system_hidden"
+        assert package.update_available is None
+        assert package.available_version is None
+        assert package.available_version_changelog is None
+
+    @pytest.mark.asyncio
+    async def test_package_without_internet(self, dsm_7, monkeypatch):
+        """Test the available versions are unknown if DSM can't load the catalogue."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+        assert dsm_7.package.get_package("ActiveInsight").update_available is True
+
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE_SERVER",
+            DSM_7_CORE_PACKAGE_SERVER_ERROR_NO_INTERNET,
+        )
+        await dsm_7.package.update()
+
+        package = dsm_7.package.get_package("ActiveInsight")
+        assert package.version == "3.0.5-24122"
+        assert package.update_available is None
+        assert package.available_version is None
+        assert package.available_version_changelog is None
+        assert [
+            package.update_available for package in dsm_7.package.get_all_packages()
+        ] == [None, None, None, None]
+
+    @pytest.mark.asyncio
+    async def test_package_request_data_not_mutated(self, dsm_7):
+        """Test session data does not leak into the shared request data."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        assert set(SynoCorePackage.REQUEST_DATA) == {"additional", "ignore_hidden"}
+        assert set(SynoCorePackage.SERVER_REQUEST_DATA) == {
+            "blforcereload",
+            "blloadothers",
+        }
+
+    @pytest.mark.asyncio
+    async def test_package_removed(self, dsm_7, monkeypatch):
+        """Test an uninstalled package is dropped on update."""
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+        assert dsm_7.package.get_package("ActiveInsight")
+
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE",
+            {"data": {"packages": []}, "success": True},
+        )
+        await dsm_7.package.update()
+
+        assert dsm_7.package.get_all_packages() == []
+
+    @pytest.mark.asyncio
+    async def test_package_without_additional(self, dsm_7, monkeypatch):
+        """Test a package without additional data has no install type."""
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE",
+            {
+                "data": {
+                    "packages": [
+                        {"id": "Old", "name": "Old package", "version": "1.0-0001"}
+                    ]
+                },
+                "success": True,
+            },
+        )
+        assert await dsm_7.login()
+        await dsm_7.package.update()
+
+        package = dsm_7.package.get_package("Old")
+        assert package.install_type is None
+        assert package.update_available is None
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "api_key", [SynoCorePackage.API_KEY, SynoCorePackage.SERVER_API_KEY]
+    )
+    async def test_package_no_data_error(self, dsm_7, api_key):
+        """Test a response without data raises."""
+        assert await dsm_7.login()
+        dsm_7.no_data_responses.append(api_key)
+
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.package.update()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("response", ["CORE_PACKAGE", "CORE_PACKAGE_SERVER"])
+    async def test_package_missing_packages_error(self, dsm_7, monkeypatch, response):
+        """Test a response without a package list raises."""
+        assert await dsm_7.login()
+        monkeypatch.setitem(API_SWITCHER[7], response, {"data": {}, "success": True})
+
+        with pytest.raises(SynologyDSMAPINoDataException):
+            await dsm_7.package.update()
+
+    @pytest.mark.asyncio
+    async def test_package_requests(self, dsm_7, monkeypatch):
+        """Test the installed packages are listed before the catalogue is loaded."""
+        assert await dsm_7.login()
+        requests = _record_requests(dsm_7, monkeypatch)
+
+        await dsm_7.package.update()
+
+        assert requests == [
+            ("GET", SynoCorePackage.API_KEY, "list", 2, None),
+            (
+                "POST",
+                SynoCorePackage.SERVER_API_KEY,
+                "list",
+                2,
+                {"blforcereload": "false", "blloadothers": "false"},
+            ),
+        ]
+
+    @pytest.mark.asyncio
+    async def test_package_dsm_update(self, dsm_7, monkeypatch):
+        """Test dsm.update updates the packages and their available versions."""
+        assert await dsm_7.login()
+        assert dsm_7.package
+        requests = _record_requests(dsm_7, monkeypatch)
+
+        await dsm_7.update()
+
+        assert [request[1] for request in requests] == [
+            SynoCorePackage.API_KEY,
+            SynoCorePackage.SERVER_API_KEY,
+        ]
+        assert dsm_7.package.get_package("ActiveInsight").update_available is True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("installed", "available", "update_available"),
+        [
+            ("1.0-0001", "1.0-0001", False),
+            ("1.0-0001", "1.0-0002", True),
+            ("1.0-0002", "1.0-0001", False),
+            ("1.9-0003", "1.10-0002", True),
+            ("1.2-0003", "1.2.1-0001", True),
+            ("1.2.1-0001", "1.2-0003", False),
+        ],
+    )
+    async def test_package_compares_versions(
+        self, dsm_7, monkeypatch, installed, available, update_available
+    ):
+        """Test an update is available if the catalogue has a newer version."""
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE",
+            {
+                "data": {
+                    "packages": [{"id": "Pkg", "name": "Package", "version": installed}]
+                },
+                "success": True,
+            },
+        )
+        monkeypatch.setitem(
+            API_SWITCHER[7],
+            "CORE_PACKAGE_SERVER",
+            {
+                "data": {"packages": [{"id": "Pkg", "version": available}]},
+                "success": True,
+            },
+        )
+        assert await dsm_7.login()
+
+        await dsm_7.package.update()
+
+        package = dsm_7.package.get_package("Pkg")
+        assert package.update_available is update_available
+        assert package.available_version == available
 
     @pytest.mark.asyncio
     async def test_upgrade(self, dsm_7):

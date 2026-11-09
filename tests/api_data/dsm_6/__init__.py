@@ -7,6 +7,11 @@ from .const_6_api_auth import (
 )
 from .const_6_api_info import DSM_6_API_INFO
 from .core.const_6_core_hardware import DSM_6_CORE_HARDWARE_FANSPEED
+from .core.const_6_core_package import (
+    DSM_6_CORE_PACKAGE,
+    DSM_6_CORE_PACKAGE_ERROR_ADDITIONAL,
+    DSM_6_CORE_PACKAGE_SERVER,
+)
 from .core.const_6_core_security import (
     DSM_6_CORE_SECURITY,
     DSM_6_CORE_SECURITY_UPDATE_OUTOFDATE,
@@ -59,6 +64,9 @@ __all__ = [
     "DSM_6_AUTH_LOGIN_2SA_OTP",
     "DSM_6_API_INFO",
     "DSM_6_CORE_HARDWARE_FANSPEED",
+    "DSM_6_CORE_PACKAGE",
+    "DSM_6_CORE_PACKAGE_ERROR_ADDITIONAL",
+    "DSM_6_CORE_PACKAGE_SERVER",
     "DSM_6_CORE_SECURITY",
     "DSM_6_CORE_SECURITY_UPDATE_OUTOFDATE",
     "DSM_6_CORE_SHARE",
