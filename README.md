@@ -99,6 +99,10 @@ async def do(session: aiohttp.ClientSession):
         print("ID:          " + str(volume_id))
         print("Status:      " + str(api.storage.volume_status(volume_id)))
         print("% Used:      " + str(api.storage.volume_percentage_used(volume_id)) + " %")
+        if api.storage.volume_is_scrubbing(volume_id):
+            # remaining time is in seconds, None until it can be estimated
+            print("Scrubbing:   " + str(api.storage.volume_scrubbing_percentage(volume_id)) + " %")
+            print("Remaining:   " + str(api.storage.volume_scrubbing_remaining_time(volume_id)) + " s")
         print("--")
 
     for disk_id in api.storage.disks_ids:
