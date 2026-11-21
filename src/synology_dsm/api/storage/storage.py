@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
-from typing import TypedDict, cast
+import time
+from typing import TYPE_CHECKING, TypedDict, cast
 
 from synology_dsm.api import SynoBaseApi
 from synology_dsm.exceptions import SynologyDSMAPINoDataException
 from synology_dsm.helpers import SynoFormatHelper
+
+if TYPE_CHECKING:
+    from synology_dsm import SynologyDSM
+
+SCRUBBING_POOL_STATUS = "background_scrubbing"
 
 
 class SynoStorageDisk(TypedDict, total=False):
@@ -27,6 +33,17 @@ class SynoStorageDisk(TypedDict, total=False):
     size_total: int
 
 
+class SynoStorageProgress(TypedDict, total=False):
+    """Synology Storage progress of a running background task."""
+
+    percent: str  # e.g. "50.72", "-1" when nothing is running
+    step: str
+    remaining_time: int  # seconds, 0 when DSM has no estimate
+    cur_step: int
+    total_step: int
+    is_resync_speed_limited: bool
+
+
 SynoStoragePoolChild = TypedDict(
     "SynoStoragePoolChild", {"id": str, "size": dict}, total=False
 )
@@ -35,8 +52,13 @@ SynoStoragePoolChild = TypedDict(
 class SynoStoragePool(TypedDict, total=False):
     """Synology Storage Pool."""
 
+    id: str
+    deploy_path: str
     disks: list[str]
     pool_child: list[SynoStoragePoolChild]
+    progress: SynoStorageProgress
+    scrubbingStatus: str  # noqa: N815
+    status: str
 
 
 SynoStorageVolumeSize = TypedDict(
@@ -59,6 +81,7 @@ class SynoStorageVolume(TypedDict, total=False):
     size: SynoStorageVolumeSize
     status: str
     fs_type: str
+    pool_path: str
 
 
 class StorageDataType(TypedDict, total=False):
@@ -75,6 +98,14 @@ class SynoStorage(SynoBaseApi[StorageDataType]):
 
     API_KEY = "SYNO.Storage.CGI.Storage"
 
+    def __init__(self, dsm: SynologyDSM) -> None:
+        """Constructor method."""
+        super().__init__(dsm)
+        # pool id -> (monotonic time, percent) of the first sample seen
+        # for the running scrub, used to estimate the remaining time.
+        self._scrub_start: dict[str, tuple[float, float]] = {}
+        self._scrub_last: dict[str, tuple[float, float]] = {}
+
     async def update(self) -> None:
         """Updates storage data."""
         raw_data = await self._dsm.get(self.API_KEY, "load_info")
@@ -87,6 +118,29 @@ class SynoStorage(SynoBaseApi[StorageDataType]):
                 raise SynologyDSMAPINoDataException(self.API_KEY)
         else:
             raise SynologyDSMAPINoDataException(self.API_KEY)
+        self._track_scrubbing()
+
+    def _track_scrubbing(self) -> None:
+        """Record scrubbing progress samples to estimate remaining time."""
+        now = time.monotonic()
+        running: set[str] = set()
+        for pool in self.storage_pools:
+            pool_id = pool.get("id")
+            if pool_id is None:
+                continue
+            percent = self.pool_scrubbing_percentage(pool_id)
+            if percent is None:
+                continue
+            running.add(pool_id)
+            last = self._scrub_last.get(pool_id)
+            if pool_id not in self._scrub_start or (last and percent < last[1]):
+                # new scrub, or progress went backwards (restarted)
+                self._scrub_start[pool_id] = (now, percent)
+            if last is None or percent != last[1]:
+                self._scrub_last[pool_id] = (now, percent)
+        for pool_id in set(self._scrub_start) - running:
+            self._scrub_start.pop(pool_id, None)
+            self._scrub_last.pop(pool_id, None)
 
     # Root
     @property
@@ -198,6 +252,104 @@ class SynoStorage(SynoBaseApi[StorageDataType]):
             if disk_temp := self.disk_temp(disk["id"]):
                 disk_temps.append(disk_temp)
         return max(disk_temps)
+
+    def volume_is_scrubbing(self, volume_id: str) -> bool | None:
+        """Checks if the storage pool of the volume is being scrubbed."""
+        if pool := self._get_pool_for_volume(volume_id):
+            return self.pool_is_scrubbing(pool["id"])
+        return None
+
+    def volume_scrubbing_percentage(self, volume_id: str) -> float | None:
+        """Scrubbing progress in percent of the volume's storage pool."""
+        if pool := self._get_pool_for_volume(volume_id):
+            return self.pool_scrubbing_percentage(pool["id"])
+        return None
+
+    def volume_scrubbing_remaining_time(self, volume_id: str) -> int | None:
+        """Estimated remaining scrubbing time (seconds) of the volume's pool."""
+        if pool := self._get_pool_for_volume(volume_id):
+            return self.pool_scrubbing_remaining_time(pool["id"])
+        return None
+
+    def _get_pool_for_volume(self, volume_id: str) -> SynoStoragePool | None:
+        """Returns the storage pool a volume is located on."""
+        volume = self.get_volume(volume_id)
+        if volume and (pool_path := volume.get("pool_path")):
+            if pool := self.get_storage_pool(pool_path):
+                return pool
+        for pool in self.storage_pools:
+            if pool.get("deploy_path") == volume_id:
+                return pool
+            for pool_child in pool.get("pool_child", []):
+                if pool_child.get("id") == volume_id:
+                    return pool
+        return None
+
+    # Storage pool
+    @property
+    def storage_pools_ids(self) -> list[str]:
+        """Returns storage pools ids."""
+        return [pool["id"] for pool in self.storage_pools if "id" in pool]
+
+    def get_storage_pool(self, pool_id: str) -> SynoStoragePool | None:
+        """Returns a specific storage pool."""
+        for pool in self.storage_pools:
+            if pool.get("id") == pool_id:
+                return pool
+        return None
+
+    def pool_status(self, pool_id: str) -> str | None:
+        """Status of the storage pool (normal, background_scrubbing, etc)."""
+        if pool := self.get_storage_pool(pool_id):
+            return pool.get("status")
+        return None
+
+    def pool_is_scrubbing(self, pool_id: str) -> bool | None:
+        """Checks if a data scrubbing is currently running on the pool."""
+        if (pool := self.get_storage_pool(pool_id)) is None:
+            return None
+        return pool.get("status") == SCRUBBING_POOL_STATUS or pool.get(
+            "scrubbingStatus", ""
+        ).endswith("_running")
+
+    def pool_scrubbing_percentage(self, pool_id: str) -> float | None:
+        """Data scrubbing progress in percent, None if not scrubbing."""
+        if not self.pool_is_scrubbing(pool_id):
+            return None
+        pool = cast(SynoStoragePool, self.get_storage_pool(pool_id))
+        try:
+            percent = float(pool.get("progress", {}).get("percent", -1))
+        except (TypeError, ValueError):
+            return 0.0
+        # DSM reports -1 until the scrub has made measurable progress
+        return round(min(max(percent, 0.0), 100.0), 2)
+
+    def pool_scrubbing_remaining_time(self, pool_id: str) -> int | None:
+        """Estimated remaining data scrubbing time in seconds.
+
+        Uses the remaining time reported by DSM when available. DSM usually
+        reports 0 while scrubbing, so otherwise the time is estimated from
+        the progress observed across calls of update(). Returns None when
+        not scrubbing or when there is not enough data for an estimate yet.
+        """
+        if (percent := self.pool_scrubbing_percentage(pool_id)) is None:
+            return None
+        pool = cast(SynoStoragePool, self.get_storage_pool(pool_id))
+        try:
+            remaining = int(pool.get("progress", {}).get("remaining_time", 0))
+        except (TypeError, ValueError):
+            remaining = 0
+        if remaining > 0:
+            return remaining
+
+        start = self._scrub_start.get(pool_id)
+        last = self._scrub_last.get(pool_id)
+        if not start or not last or last[0] <= start[0]:
+            return None
+        rate = (last[1] - start[1]) / (last[0] - start[0])  # percent / second
+        if rate <= 0:
+            return None
+        return round((100.0 - percent) / rate)
 
     # Disk
     @property

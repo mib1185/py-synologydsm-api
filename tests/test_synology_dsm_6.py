@@ -1,13 +1,17 @@
 """Synology DSM tests."""
 
 # pylint: disable=protected-access
+from copy import deepcopy
+
 import pytest
 
 from synology_dsm.api.core.hardware import FanSpeed
+from synology_dsm.api.storage import storage as storage_module
 from synology_dsm.const import API_AUTH
 from synology_dsm.exceptions import SynologyDSMLogin2SARequiredException
 
 from . import (
+    API_SWITCHER,
     VALID_HOST,
     VALID_HTTPS,
     VALID_OTP,
@@ -269,6 +273,109 @@ class TestSynologyDSM6:
         assert dsm_6.storage.env
         assert dsm_6.storage.storage_pools
         assert dsm_6.storage.volumes
+
+    @pytest.mark.asyncio
+    async def test_storage_scrubbing_idle(self, dsm_6):
+        """Test scrubbing helpers when no scrub is running."""
+        assert await dsm_6.login()
+        await dsm_6.storage.update()
+
+        assert dsm_6.storage.storage_pools_ids == ["reuse_1"]
+        assert dsm_6.storage.pool_status("reuse_1") == "normal"
+        assert dsm_6.storage.pool_is_scrubbing("reuse_1") is False
+        assert dsm_6.storage.pool_scrubbing_percentage("reuse_1") is None
+        assert dsm_6.storage.pool_scrubbing_remaining_time("reuse_1") is None
+        assert dsm_6.storage.volume_is_scrubbing("volume_1") is False
+        assert dsm_6.storage.volume_scrubbing_percentage("volume_1") is None
+        assert dsm_6.storage.volume_scrubbing_remaining_time("volume_1") is None
+
+        assert dsm_6.storage.pool_is_scrubbing("not_a_pool") is None
+        assert dsm_6.storage.pool_scrubbing_percentage("not_a_pool") is None
+        assert dsm_6.storage.volume_is_scrubbing("not_a_volume") is None
+        assert dsm_6.storage.volume_scrubbing_percentage("not_a_volume") is None
+
+    @pytest.mark.asyncio
+    async def test_storage_scrubbing_running(self, dsm_6, monkeypatch):
+        """Test scrubbing percentage and remaining time estimate."""
+        data = deepcopy(API_SWITCHER[6]["STORAGE_STORAGE"]["RAID"])
+        monkeypatch.setitem(API_SWITCHER[6]["STORAGE_STORAGE"], "RAID", data)
+        pool = data["data"]["storagePools"][0]
+        clock = {"now": 1000.0}
+        monkeypatch.setattr(storage_module.time, "monotonic", lambda: clock["now"])
+
+        def set_scrub(percent: str, remaining_time: int = 0) -> None:
+            pool["status"] = "background_scrubbing"
+            pool["scrubbingStatus"] = "manual_running"
+            pool["progress"] = {
+                "percent": percent,
+                "step": "waiting",
+                "remaining_time": remaining_time,
+            }
+
+        assert await dsm_6.login()
+
+        # Scrub just started, DSM reports -1 percent
+        set_scrub("-1")
+        await dsm_6.storage.update()
+        assert dsm_6.storage.pool_is_scrubbing("reuse_1") is True
+        assert dsm_6.storage.volume_is_scrubbing("volume_1") is True
+        assert dsm_6.storage.pool_scrubbing_percentage("reuse_1") == 0.0
+        assert dsm_6.storage.pool_scrubbing_remaining_time("reuse_1") is None
+
+        # First real sample: no rate yet
+        set_scrub("10.00")
+        clock["now"] = 1100.0
+        await dsm_6.storage.update()
+        assert dsm_6.storage.volume_scrubbing_percentage("volume_1") == 10.0
+
+        # 10% -> 20% in 1000s => 80% left takes 8000s
+        set_scrub("20.00")
+        clock["now"] = 2100.0
+        await dsm_6.storage.update()
+        assert dsm_6.storage.pool_scrubbing_percentage("reuse_1") == 20.0
+        # rate is measured from the first sample (0% at t=1000)
+        assert dsm_6.storage.pool_scrubbing_remaining_time("reuse_1") == round(
+            80 / (20 / 1100)
+        )
+
+        # DSM provided remaining time takes precedence
+        set_scrub("25.50", remaining_time=3600)
+        clock["now"] = 2400.0
+        await dsm_6.storage.update()
+        assert dsm_6.storage.volume_scrubbing_remaining_time("volume_1") == 3600
+
+        # Scrub finished: helpers reset and tracking is cleared
+        pool["status"] = "normal"
+        pool["scrubbingStatus"] = "done"
+        pool["progress"] = {"percent": "-1", "step": "none"}
+        await dsm_6.storage.update()
+        assert dsm_6.storage.pool_is_scrubbing("reuse_1") is False
+        assert dsm_6.storage.pool_scrubbing_percentage("reuse_1") is None
+        assert dsm_6.storage.pool_scrubbing_remaining_time("reuse_1") is None
+        assert not dsm_6.storage._scrub_start
+
+    @pytest.mark.asyncio
+    async def test_storage_scrubbing_real_payload(self, dsm_6, monkeypatch):
+        """Test scrubbing with a progress payload captured from a real NAS."""
+        data = deepcopy(API_SWITCHER[6]["STORAGE_STORAGE"]["RAID"])
+        monkeypatch.setitem(API_SWITCHER[6]["STORAGE_STORAGE"], "RAID", data)
+        pool = data["data"]["storagePools"][0]
+        pool["status"] = "background_scrubbing"
+        pool["scrubbingStatus"] = "manual_running"
+        pool["progress"] = {
+            "cur_step": 0,
+            "is_resync_speed_limited": False,
+            "percent": "50.72",
+            "remaining_time": 5217,
+            "step": "waiting",
+            "total_step": 0,
+        }
+
+        assert await dsm_6.login()
+        await dsm_6.storage.update()
+        assert dsm_6.storage.volume_is_scrubbing("volume_1") is True
+        assert dsm_6.storage.volume_scrubbing_percentage("volume_1") == 50.72
+        assert dsm_6.storage.volume_scrubbing_remaining_time("volume_1") == 5217
 
     @pytest.mark.asyncio
     async def test_storage_raid_volumes(self, dsm_6):
