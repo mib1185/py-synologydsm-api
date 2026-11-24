@@ -325,6 +325,40 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Package usage
+
+```python
+import asyncio
+import aiohttp
+from synology_dsm import SynologyDSM
+
+async def main():
+    print("Creating Valid API")
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(verify_ssl=False)
+    ) as session:
+        await do(session)
+
+async def do(session: aiohttp.ClientSession):
+    api = SynologyDSM(session, "<IP/DNS>", "<port>", "<username>", "<password>")
+    await api.login()
+
+    await api.package.update()
+    for package in api.package.get_all_packages():
+        print("Id:                " + package.package_id)
+        print("Name:              " + package.name)
+        print("Installed version: " + package.version)
+        if package.update_available:
+            print("Available version: " + package.available_version)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+`package.update()` lists the installed packages, then loads the Synology package catalogue for the version available for each of them, with its HTML changelog. `update_available` tells whether that version is newer than the installed one.
+
+`available_version` and `update_available` are `None` if they aren't known: when the NAS can't load the catalogue, such as without internet access, and for packages that aren't in it, such as hidden system packages or packages from other sources.
+
 ## Photos usage
 
 ```python

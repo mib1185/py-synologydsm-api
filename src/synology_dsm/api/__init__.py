@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from synology_dsm.exceptions import SynologyDSMAPINoDataException
 
@@ -23,6 +23,16 @@ class SynoBaseApi(Generic[_DataT]):
         """Constructor method."""
         self._dsm = dsm
         self._data: _DataT = {}  # type: ignore[assignment]
+
+    @staticmethod
+    def _parse_success(raw_data: Any) -> bool | None:
+        """Return the 'success' flag of an api response, if present."""
+        if (
+            isinstance(raw_data, dict)
+            and (result := raw_data.get("success")) is not None
+        ):
+            return bool(result)
+        return None
 
     async def update(self) -> None:
         """Updates data."""

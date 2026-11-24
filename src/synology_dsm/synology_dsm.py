@@ -24,6 +24,7 @@ from yarl import URL
 from .api import SynoBaseApi
 from .api.core.external_usb import SynoCoreExternalUSB
 from .api.core.hardware import SynoCoreHardware
+from .api.core.package import SynoCorePackage
 from .api.core.security import SynoCoreSecurity
 from .api.core.share import SynoCoreShare
 from .api.core.system import SynoCoreSystem
@@ -110,6 +111,7 @@ class SynologyDSM:
         self._hardware: SynoCoreHardware | None = None
         self._information: SynoDSMInformation | None = None
         self._network: SynoDSMNetwork | None = None
+        self._package: SynoCorePackage | None = None
         self._photos: SynoPhotos | None = None
         self._security: SynoCoreSecurity | None = None
         self._share: SynoCoreShare | None = None
@@ -535,6 +537,9 @@ class SynologyDSM:
         if self._network and with_network:
             update_methods.append(self._network.update())
 
+        if self._package:
+            update_methods.append(self._package.update())
+
         if self._security:
             update_methods.append(self._security.update())
 
@@ -578,6 +583,9 @@ class SynologyDSM:
             if api == SynoCoreHardware.API_KEY:
                 self._hardware = None
                 return True
+            if api == SynoCorePackage.API_KEY:
+                self._package = None
+                return True
             if api == SynoCoreSecurity.API_KEY:
                 self._security = None
                 return True
@@ -616,6 +624,9 @@ class SynologyDSM:
             return True
         if isinstance(api, SynoCoreHardware):
             self._hardware = None
+            return True
+        if isinstance(api, SynoCorePackage):
+            self._package = None
             return True
         if isinstance(api, SynoCoreSecurity):
             self._security = None
@@ -732,6 +743,13 @@ class SynologyDSM:
         if not self._system:
             self._system = SynoCoreSystem(self)
         return self._system
+
+    @property
+    def package(self) -> SynoCorePackage:
+        """Gets NAS installed packages."""
+        if not self._package:
+            self._package = SynoCorePackage(self)
+        return self._package
 
     @property
     def upgrade(self) -> SynoCoreUpgrade:

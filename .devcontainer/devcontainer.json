@@ -2,8 +2,11 @@
   "name": "Python Synology DSM API",
   "context": "..",
   "dockerFile": "Dockerfile",
-  "postCreateCommand": "scripts/setup",
+  "postCreateCommand": ".devcontainer/setup",
   "containerEnv": { "DEVCONTAINER": "1" },
+  "remoteEnv": {
+    "PATH": "${containerWorkspaceFolder}/.venv/bin:${containerEnv:PATH}"
+  },
   "runArgs": ["-e", "GIT_EDITOR=code --wait"],
   "customizations": {
     "vscode": {
@@ -12,12 +15,12 @@
         "ms-python.black-formatter",
         "ms-python.pylint",
         "ms-python.mypy-type-checker",
-        "visualstudioexptteam.vscodeintellicode",
+        "GitHub.copilot-chat",
         "esbenp.prettier-vscode"
       ],
       // Please keep this file in sync with settings in .vscode/settings.default.json
       "settings": {
-        "python.pythonPath": "/usr/local/bin/python",
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
         "python.testing.pytestArgs": ["tests"],
         "python.testing.unittestEnabled": false,
         "python.testing.pytestEnabled": true,

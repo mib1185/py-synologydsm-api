@@ -10,6 +10,7 @@ from aiohttp import ClientTimeout
 from synology_dsm import SynologyDSM
 from synology_dsm.api.core.external_usb import SynoCoreExternalUSB
 from synology_dsm.api.core.hardware import SynoCoreHardware
+from synology_dsm.api.core.package import SynoCorePackage
 from synology_dsm.api.core.security import SynoCoreSecurity
 from synology_dsm.api.core.share import SynoCoreShare
 from synology_dsm.api.core.system import SynoCoreSystem
@@ -712,6 +713,12 @@ class TestSynologyDSM:
         assert dsm.reset("share")
         assert not dsm._share
 
+        assert not dsm._package
+        assert dsm.package
+        assert dsm._package
+        assert dsm.reset("package")
+        assert not dsm._package
+
         assert not dsm._system
         assert dsm.system
         assert dsm._system
@@ -780,6 +787,12 @@ class TestSynologyDSM:
         assert dsm.reset(SynoCoreShare.API_KEY)
         assert not dsm._share
 
+        assert not dsm._package
+        assert dsm.package
+        assert dsm._package
+        assert dsm.reset(SynoCorePackage.API_KEY)
+        assert not dsm._package
+
         assert not dsm._system
         assert dsm.system
         assert dsm._system
@@ -847,6 +860,12 @@ class TestSynologyDSM:
         assert dsm._share
         assert dsm.reset(dsm.share)
         assert not dsm._share
+
+        assert not dsm._package
+        assert dsm.package
+        assert dsm._package
+        assert dsm.reset(dsm.package)
+        assert not dsm._package
 
         assert not dsm._system
         assert dsm.system
