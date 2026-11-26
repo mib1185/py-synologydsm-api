@@ -89,7 +89,9 @@ class SynoPackage:
     @property
     def available_version_changelog(self) -> str | None:
         """Return the HTML changelog of the available version, None if unknown."""
-        return self._available.get("changelog")
+        changelog = self._available.get("changelog")
+        # DSM sometimes sends an object instead of the HTML changelog
+        return changelog if isinstance(changelog, str) else None
 
 
 class SynoCorePackage(SynoBaseApi["dict[str, SynoPackage]"]):
